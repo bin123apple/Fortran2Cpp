@@ -8,9 +8,14 @@ The Model is avaliable on Huggingface: [F2C-Translator](https://huggingface.co/B
 
 **NOTE:** We are still training the model. We will continue to update the F2C-Translator.
 
-## Training data
-
 ## Evaluation
+We tested various models on HPC_Fortran_CPP. And compared the CodeBlEU Score of the generated results.
+
+The CodeBLEU Score Comparison is shown in the figure below:
+
+![Example Image](Figures/CodeBLEU_Score.png)
+
+
 
 ## Inference and Demo
 
