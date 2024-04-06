@@ -42,7 +42,6 @@ python calc_code_bleu.py --refs F2C-Translator/Evaluation/Groundtruth_C++.txt --
 The demo code is modified from [OpenCodeInterpreter](https://github.com/OpenCodeInterpreter/OpenCodeInterpreter/tree/main/demo). Appreciate for their great project!
 
 1. Create conda and install packages
-
 ```
 cd Web_demo
 conda create -n demo python=3.10
@@ -51,7 +50,6 @@ pip install -r requirements.txt
 ```
 
 2.  Start the demo
-
 ```
 python chatbot.py
 ```
@@ -62,5 +60,7 @@ python chatbot.py
 If you have any inquiries, please feel free to raise an issue or reach out to leib2765@gmail.com
 
 ## Citation
+We will complete the technical introduction article before mid-May.
 
 ## Acknowledgments
+Appreciation to Lawrence Livermore National Laboratory for their financial support of this project.
