@@ -57,10 +57,10 @@ python chatbot.py
 **NOTE:** This demo will not use the interpreter function. This feature is a potential extension for this work.
 
 ## Contact 
-If you have any inquiries, please feel free to raise an issue or reach out to leib2765@gmail.com
+If you have any inquiries, please feel free to raise an issue or reach out to leib2765@gmail.com.
 
 ## Citation
-We will complete the technical introduction article before mid-May.
+We will complete the technical introduction paper before mid-May.
 
 ## Acknowledgments
 Appreciation to Lawrence Livermore National Laboratory for their financial support of this project.
