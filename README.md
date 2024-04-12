@@ -56,6 +56,12 @@ python chatbot.py
 
 **NOTE:** This demo will not use the interpreter function. This feature is a potential extension for this work.
 
+## Hardware requirements
+
+We used 6 A100 GPUs with 80GB memory for the training.  (Use Lora)
+
+We used 2 A100 GPUs with 80GB memory for the inference. 
+
 ## Contact 
 If you have any inquiries, please feel free to raise an issue or reach out to leib2765@gmail.com.
 
