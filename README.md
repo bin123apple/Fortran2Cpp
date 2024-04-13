@@ -35,7 +35,7 @@ This will generate the results and compress each result to one line for the furt
 
 ```
 cd CodeBLEU
-python calc_code_bleu.py --refs F2C-Translator/Evaluation/Groundtruth_C++.txt --hyp <path/to/your/results/txt/file> --lang cpp --params 0.25,0.25,0.25,0.25
+python calc_code_bleu.py --refs Fortran2Cpp/Evaluation/Groundtruth_C++.txt --hyp <path/to/your/results/txt/file> --lang cpp --params 0.25,0.25,0.25,0.25
 ```
 
 ## Inference and Demo
