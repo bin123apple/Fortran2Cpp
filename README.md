@@ -13,7 +13,7 @@ We compared with various models (WizardCoder-15B-V1.0, CodeLlama-13b-Instruct-hf
 
 The CodeBLEU Score Comparison is shown in the figure below:
 
-![CodeBLEU Score Image](Figures/CodeBLEU_Score.png)
+![CodeBLEU Score Image](Figures/CodeBLEU.png)
 
 ### Reproduce Steps
 1. Enter into Evaluation folder
