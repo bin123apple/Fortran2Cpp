@@ -15,7 +15,7 @@ We fine-tuned several popular pre-trained models,  including
 
 After the finetuning, the deepseek-coder-33b-instruct shows the greatest improvement when checking with the CodeBLEU Score. Thus we finally use the deepseek-coder-33b-instruct as the backbone of Fortran2CPP.  
 
-The Model is avaliable on Huggingface: [Fortran2Cpp](https://huggingface.co/Bin12345/F2C-Translator)
+The Model is avaliable on Huggingface: [Fortran2Cpp](https://huggingface.co/Bin12345/Fortran2Cpp) 
 
 **NOTE:** Currently, the model is only trained by using the f90 code. We are still training the model. We will continue to update the Fortran2Cpp.
 
