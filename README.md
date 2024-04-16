@@ -4,6 +4,17 @@
 Fortran has been a widely used programming language for scientific computation since 1957. With technological advancements, modern languages like C++ have become preferable for some projects due to their greater flexibility and features. However, the lack of an accurate and comprehensive Fortran-to-C++ translation dataset means that existing large models, including GPT-4, often struggle to perform this task effectively, resulting in translations that may fail to compile or pass unit tests. Fortran2Cpp aims to address this issue.
 
 ## Model
+
+We fine-tuned several popular pre-trained models,  including 
+* WizardCoder-15B-V1.0,
+* CodeLlama-13b-Instruct-hf,
+* starcoder,
+* starcoder2,
+* Magicoder-S-DS-6.7B, and
+* deepseek-coder-33b-instruct. 
+
+After the finetuning, the deepseek-coder-33b-instruct shows the greatest improvement when checking with the CodeBLEU Score. Thus we finally use the deepseek-coder-33b-instruct as the backbone of Fortran2CPP.  
+
 The Model is avaliable on Huggingface: [Fortran2Cpp](https://huggingface.co/Bin12345/F2C-Translator)
 
 **NOTE:** Currently, the model is only trained by using the f90 code. We are still training the model. We will continue to update the Fortran2Cpp.
