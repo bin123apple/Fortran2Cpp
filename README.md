@@ -49,7 +49,7 @@ cd CodeBLEU
 python calc_code_bleu.py --refs Fortran2Cpp/Evaluation/Groundtruth_C++.txt --hyp <path/to/your/results/txt/file> --lang cpp --params 0.25,0.25,0.25,0.25
 ```
 
-* Run inference on Slurm Cluster
+* Run inference on Slurm Cluster: Your should use this script to start the inference: `sbatch <The/following/script>`
 
 ```
 #!/bin/bash
