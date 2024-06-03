@@ -42,6 +42,12 @@ python text_generation_pipline.py
 
 This will generate the results and compress each result to one line for the further CodeBLEU Score test.
 
+This script does the following
+* model: Bin12345/F2C-Translator
+* dataset: Bin12345/HPC_Fortran_CPP
+* Translate Fortran Code in the dataset to C++ code
+* Write to a log
+
 3. Test CodeBLEU Score by using the following command
 
 ```
