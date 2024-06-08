@@ -96,13 +96,13 @@ chmod +x <Your/inference/file/path>
 srun -n 1 -c 8 --cpu_bind=cores -G 4 --gpu-bind=none  <Your/inference/file/path> > <Your/log/file/path> 2>&1 
 ```
 
-# Dataset Generation 
+## Dataset Generation 
 
 1. Input your OpenAI Key, Output Json file path.
 ```
 cd dataset_generation
 ```
-Modify Line `543-550` in `engine_F2C.py` file.
+Modify `line 543-550` in `engine_F2C.py` file.
 
 2. Start the dataset generation
 
