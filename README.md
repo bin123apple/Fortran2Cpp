@@ -38,6 +38,22 @@ cd CodeBLEU
 python calc_code_bleu.py --refs Fortran2Cpp/Evaluation/Groundtruth_C++.txt --hyp <path/to/your/results/txt/file> --lang cpp --params 0.25,0.25,0.25,0.25
 ```
 
+# Dataset Generation 
+
+1. Input your OpenAI Key, Output Json file path.
+```
+cd dataset_generation
+```
+Modify Line `543-550` in `engine_F2C.py` file.
+
+2. Start the dataset generation
+
+```
+python engine_F2C.py
+```
+
+The dataset that we used is included in `F2C-Translator/data/F2C_dialogue_25K.json` file.
+
 ## Inference and Demo
 The demo code is modified from [OpenCodeInterpreter](https://github.com/OpenCodeInterpreter/OpenCodeInterpreter/tree/main/demo). Appreciate for their great project!
 
