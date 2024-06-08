@@ -96,47 +96,6 @@ chmod +x <Your/inference/file/path>
 srun -n 1 -c 8 --cpu_bind=cores -G 4 --gpu-bind=none  <Your/inference/file/path> > <Your/log/file/path> 2>&1 
 ```
 
-* Run inference on Slurm Cluster: Your should use this script to start the inference: `sbatch <The/following/script>`
-
-```
-#!/bin/bash
-#SBATCH -N 1
-#SBATCH -C gpu&hbm80g
-#SBATCH -G 4
-#SBATCH -q regular
-#SBATCH -J model_training
-#SBATCH --mail-user=<Your/Email>
-#SBATCH --mail-type=ALL
-#SBATCH -t 00:30:00
-#SBATCH -A <Your/Project>
-
-# Load conda  
-echo "loading conda..."
-module load conda 
-conda activate <Your/Conda/env>
-
-# Huggingface Setting 
-echo "Setting Huggingface..."
-export HF_HOME=$SCRATCH/huggingface 
-export HF_TOKEN=<Your/HF/ToKen>
-
-# OpenMP settings:
-echo "Setting OMP..."
-export OMP_NUM_THREADS=1
-export OMP_PLACES=threads
-export OMP_PROC_BIND=spread
-
-# Set CFLAGS and LDFLAGS and CUTLASS 
-export CFLAGS="-I/<Your/Conda/env>/include $CFLAGS"
-export LDFLAGS="-L/<Your/Conda/env>/lib $LDFLAGS"
-export CUTLASS_PATH=$HOME/cutlass
-
-# run the application:
-echo "Start to run the inference..."
-chmod +x <Your/inference/file/path>
-srun -n 1 -c 8 --cpu_bind=cores -G 4 --gpu-bind=none  <Your/inference/file/path> > <Your/log/file/path> 2>&1 
-```
-
 # Dataset Generation 
 
 1. Input your OpenAI Key, Output Json file path.
