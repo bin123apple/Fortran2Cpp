@@ -1,0 +1,1976 @@
+###Example 1: 
+
+fortran_wo_com:
+
+```fortran
+      INTEGER FUNCTION ilazlrquad( M, N, A, LDA )
+      INTEGER            M, N, LDA
+      complex*32         A( LDA, * )
+
+      complex*32       ZERO
+      PARAMETER ( ZERO = (0.0q0, 0.0q0) )
+      INTEGER I, J
+
+      IF( M.EQ.0 ) THEN
+         ilazlrquad = M
+      ELSE IF( A(M, 1).NE.ZERO .OR. A(M, N).NE.ZERO ) THEN
+         ilazlrquad = M
+      ELSE
+         ilazlrquad = 0
+         DO J = 1, N
+            I=M
+            DO WHILE((A(MAX(I,1),J).EQ.ZERO).AND.(I.GE.1))
+               I=I-1
+            ENDDO
+            ilazlrquad = MAX( ilazlrquad, I )
+         END DO
+      END IF
+      RETURN
+      END
+```
+fortran_wo_com length 219
+
+qer asks for the C++ translation:
+
+Could you please translate the following Fortran code into C++? 
+
+```fortran
+INTEGER FUNCTION ilazlrquad( M, N, A, LDA )
+      INTEGER            M, N, LDA
+      complex*32         A( LDA, * )
+
+      complex*32       ZERO
+      PARAMETER ( ZERO = (0.0q0, 0.0q0) )
+      INTEGER I, J
+
+      IF( M.EQ.0 ) THEN
+         ilazlrquad = M
+      ELSE IF( A(M, 1).NE.ZERO .OR. A(M, N).NE.ZERO ) THEN
+         ilazlrquad = M
+      ELSE
+         ilazlrquad = 0
+         DO J = 1, N
+            I=M
+            DO WHILE((A(MAX(I,1),J).EQ.ZERO).AND.(I.GE.1))
+               I=I-1
+            ENDDO
+            ilazlrquad = MAX( ilazlrquad, I )
+         END DO
+      END IF
+      RETURN
+      END
+```
+
+I'm looking for a direct equivalence in C++, including the data types and logic.
+
+Solver generate the C++ translation:
+To translate the given Fortran code into C++, we'll need to make a few adjustments, keeping in mind the differences between the two languages, especially in array indexing (Fortran is 1-based while C++ is 0-based) and how arrays (especially multidimensional arrays) are handled. The Fortran `complex*32` type corresponds to the `std::complex<long double>` type in C++. Here is a direct translation:
+
+```cpp
+#include <complex>
+#include <algorithm>
+
+// Assumes complexArray is a pointer to a 2D array represented in row-major order.
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA) {
+    std::complex<long double> ZERO(0.0L, 0.0L);
+
+    if (M == 0) {
+        return M;
+    } else if (complexArray[(M-1) * LDA + 0] != ZERO || complexArray[(M-1) * LDA + (N-1)] != ZERO) {
+        // Adjusted for 0-based indexing
+        return M;
+    } else {
+        int ilazlrquad = 0;
+        for (int J = 0; J < N; ++J) {
+            int I = M - 1; // Adjust for 0-based indexing
+            while (I >= 0 && complexArray[I * LDA + J] == ZERO) {
+                --I;
+            }
+            ilazlrquad = std::max(ilazlrquad, I + 1); // Convert back to 1-based indexing
+        }
+        return ilazlrquad;
+    }
+}
+```
+
+This translation assumes that `complexArray` points to a contiguous block of memory representing a 2D array in row-major order, which is equivalent to how a 2D array is typically stored in C++. Note that since C++ uses 0-based indexing, adjustments are made accordingly when accessing array elements and when returning the result.
+
+Additionally, the C++ version uses `std::complex<long double>` to match the precision of `complex*32` from the Fortran code. The `std::max` function is used to find the maximum between `ilazlrquad` and `I + 1`. The `+ 1` adjustment is necessary because the Fortran code operates with 1-based indexing, and we need to return the result in a manner consistent with the original Fortran function's expectations.
+
+Questioner ask for the unit test:
+
+Could you provide executable unit tests for both the original Fortran code and the translated C++ code to verify that both implementations work correctly and equivalently?
+
+Solver generate the unit test:
+
+To verify the correctness and equivalence of the original Fortran code and its C++ translation, we can write simple unit tests for both implementations. Note that creating a testing environment for Fortran and C++ requires different setups, and I'll guide you through creating basic test cases for both languages.
+
+### Fortran Unit Tests
+
+For Fortran, we'll write a simple program that calls the `ilazlrquad` function with predefined inputs and checks if the outputs are as expected. You'll need a Fortran compiler like `gfortran` to compile and run this test.
+
+Create a file named `test_ilazlrquad.f90`:
+
+```fortran
+PROGRAM test_ilazlrquad
+  IMPLICIT NONE
+  INTEGER :: result
+  COMPLEX(KIND=16) :: A(4,4)
+  INTEGER :: M, N, LDA
+
+  ! Test case 1
+  M = 4
+  N = 4
+  LDA = 4
+  A = (0.0q0, 0.0q0)
+  A(4,1) = (1.0q0, 1.0q0) ! Set one element to be non-zero to test the functionality
+  result = ilazlrquad(M, N, A, LDA)
+  PRINT *, "Test Case 1: Expected 4, got ", result
+
+  ! Add more test cases as needed with different configurations of A, M, N, and LDA.
+END PROGRAM test_ilazlrquad
+
+INTEGER FUNCTION ilazlrquad( M, N, A, LDA )
+! Copy the original Fortran function here.
+END FUNCTION ilazlrquad
+```
+
+To compile and run:
+```sh
+gfortran test_ilazlrquad.f90 -o test_ilazlrquad
+./test_ilazlrquad
+```
+
+### C++ Unit Tests
+
+For C++, we can use a simple testing approach similar to the Fortran example, or for more comprehensive testing, use a testing framework like GoogleTest. Here, I'll provide a simple example without external dependencies.
+
+Create a file named `test_ilazlrquad.cpp`:
+
+```cpp
+#include <iostream>
+#include <complex>
+
+// Include or copy the C++ translation of ilazlrquad here.
+
+void test_ilazlrquad() {
+    int M = 4, N = 4, LDA = 4;
+    std::complex<long double> complexArray[16] = {}; // Initialize all to zero.
+    complexArray[(M-1) * LDA + 0] = std::complex<long double>(1.0L, 1.0L); // Set one element to be non-zero.
+
+    int result = ilazlrquad(M, N, complexArray, LDA);
+    std::cout << "Test Case 1: Expected 4, got " << result << std::endl;
+
+    // Add more test cases as needed with different configurations of complexArray, M, N, and LDA.
+}
+
+int main() {
+    test_ilazlrquad();
+    return 0;
+}
+```
+
+To compile and run:
+```sh
+g++ test_ilazlrquad.cpp -o test_ilazlrquad -std=c++11
+./test_ilazlrquad
+```
+
+### Note:
+Both test cases are quite basic and only test a simple scenario. In practice, you'd want to test with more diverse configurations of the input matrix `A` (or `complexArray` in C++) to cover more edge cases, such as matrices of different sizes, matrices with all zero elements, and matrices with non-zero elements at various positions. Also, remember to adjust the Fortran and C++ code if you copy them directly from the previous instructions, especially concerning the function and program declarations in Fortran.
+
+Runing modification 0th turn
+fortran code that need to be executed:
+ PROGRAM test_ilazlrquad
+  IMPLICIT NONE
+  INTEGER :: result
+  COMPLEX(KIND=16) :: A(4,4)
+  INTEGER :: M, N, LDA
+
+  ! Test case 1
+  M = 4
+  N = 4
+  LDA = 4
+  A = (0.0q0, 0.0q0)
+  A(4,1) = (1.0q0, 1.0q0) ! Set one element to be non-zero to test the functionality
+  result = ilazlrquad(M, N, A, LDA)
+  PRINT *, "Test Case 1: Expected 4, got ", result
+
+  ! Add more test cases as needed with different configurations of A, M, N, and LDA.
+END PROGRAM test_ilazlrquad
+
+INTEGER FUNCTION ilazlrquad( M, N, A, LDA )
+! Copy the original Fortran function here.
+END FUNCTION ilazlrquad
+c++ code that need to be executed:
+ #include <iostream>
+#include <complex>
+
+// Include or copy the C++ translation of ilazlrquad here.
+
+void test_ilazlrquad() {
+    int M = 4, N = 4, LDA = 4;
+    std::complex<long double> complexArray[16] = {}; // Initialize all to zero.
+    complexArray[(M-1) * LDA + 0] = std::complex<long double>(1.0L, 1.0L); // Set one element to be non-zero.
+
+    int result = ilazlrquad(M, N, complexArray, LDA);
+    std::cout << "Test Case 1: Expected 4, got " << result << std::endl;
+
+    // Add more test cases as needed with different configurations of complexArray, M, N, and LDA.
+}
+
+int main() {
+    test_ilazlrquad();
+    return 0;
+}
+fortran compile result in 0th turn: Fortran Stdout: b''
+Fortran Stderr: b'/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:13:21:\n\n   13 |   result = ilazlrquad(M, N, A, LDA)\n      |                     1\nError: Return type mismatch of function \xe2\x80\x98ilazlrquad\xe2\x80\x99 at (1) (UNKNOWN/INTEGER(4))\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:13:11:\n\n   13 |   result = ilazlrquad(M, N, A, LDA)\n      |           1\nError: Function \xe2\x80\x98ilazlrquad\xe2\x80\x99 at (1) has no IMPLICIT type\n'
+cpp compile result in 0th turn: C++ Stdout: b''
+C++ Stderr: b'/home/uconn/BinLei/Data_engine/NLP_Task/data/cpp_2/test.cpp: In function \xe2\x80\x98void test_ilazlrquad()\xe2\x80\x99:\n/home/uconn/BinLei/Data_engine/NLP_Task/data/cpp_2/test.cpp:11:18: error: \xe2\x80\x98ilazlrquad\xe2\x80\x99 was not declared in this scope; did you mean \xe2\x80\x98test_ilazlrquad\xe2\x80\x99?\n   11 |     int result = ilazlrquad(M, N, complexArray, LDA);\n      |                  ^~~~~~~~~~\n      |                  test_ilazlrquad\n'
+
+ff_ct gpt answer 
+
+Given the error messages you've encountered, it seems there's a mismatch in the function signature and its usage within your test program. To resolve these issues and ensure you can compile and run the Fortran unit test code directly, I'll provide a complete, modified version of the unit test code, including the definition of the `ilazlrquad` function within the program. This modification will ensure type compatibility and proper declaration of the function.
+
+```fortran
+PROGRAM test_ilazlrquad
+  IMPLICIT NONE
+  INTEGER :: result
+  COMPLEX(KIND=16) :: A(4,4)
+  INTEGER :: M, N, LDA
+
+  ! Define the function prototype
+  INTERFACE
+    INTEGER FUNCTION ilazlrquad(M, N, A, LDA)
+      INTEGER, INTENT(IN) :: M, N, LDA
+      COMPLEX(KIND=16), INTENT(IN) :: A(LDA, *)
+    END FUNCTION ilazlrquad
+  END INTERFACE
+
+  ! Test case 1
+  M = 4
+  N = 4
+  LDA = 4
+  A = (0.0q0, 0.0q0)
+  A(4,1) = (1.0q0, 1.0q0) ! Set one element to be non-zero to test the functionality
+  result = ilazlrquad(M, N, A, LDA)
+  PRINT *, "Test Case 1: Expected 4, got ", result
+
+  ! Add more test cases as needed with different configurations of A, M, N, and LDA.
+
+CONTAINS
+
+  INTEGER FUNCTION ilazlrquad( M, N, A, LDA )
+    INTEGER, INTENT(IN) :: M, N, LDA
+    COMPLEX(KIND=16), INTENT(IN) :: A(LDA, *)
+    COMPLEX(KIND=16) :: ZERO
+    INTEGER :: I, J
+
+    ZERO = (0.0q0, 0.0q0)
+
+    IF (M == 0) THEN
+       ilazlrquad = M
+    ELSE IF (A(M, 1) /= ZERO .OR. A(M, N) /= ZERO) THEN
+       ilazlrquad = M
+    ELSE
+       ilazlrquad = 0
+       DO J = 1, N
+          I = M
+          DO WHILE (A(MAX(I,1), J) == ZERO .AND. I >= 1)
+             I = I - 1
+          END DO
+          ilazlrquad = MAX(ilazlrquad, I)
+       END DO
+    END IF
+  END FUNCTION ilazlrquad
+
+END PROGRAM test_ilazlrquad
+```
+
+This version of the test program includes the `ilazlrquad` function definition within the same program, using the `CONTAINS` keyword, which is a standard way to include internal procedures in Fortran. Additionally, an `INTERFACE` block is used to declare the function prototype before its usage, ensuring that the compiler knows about the function's signature when it's called.
+
+Please make sure to replace the placeholders and adjust the logic of the `ilazlrquad` function as needed based on your original implementation. This version should compile and run without the errors you encountered earlier.
+
+ft_cf gpt answer 
+
+The error message you're seeing indicates that the compiler cannot find the declaration or definition of the `ilazlrquad` function within your C++ code. To resolve this, I'll provide you with a complete, modified version of the C++ unit test code, including the necessary implementation of the `ilazlrquad` function based on your requirements.
+
+```cpp
+#include <iostream>
+#include <complex>
+#include <algorithm>
+
+// Declaration of ilazlrquad function
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA);
+
+// Implementation of ilazlrquad function based on the translated code
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA) {
+    std::complex<long double> ZERO(0.0L, 0.0L);
+
+    if (M == 0) {
+        return M;
+    } else if (complexArray[(M-1) * LDA + 0] != ZERO || complexArray[(M-1) * LDA + (N-1)] != ZERO) {
+        return M;
+    } else {
+        int ilazlrquadValue = 0;
+        for (int J = 0; J < N; ++J) {
+            int I = M - 1;
+            while (I >= 0 && complexArray[I * LDA + J] == ZERO) {
+                --I;
+            }
+            ilazlrquadValue = std::max(ilazlrquadValue, I + 1);
+        }
+        return ilazlrquadValue;
+    }
+}
+
+// Test function
+void test_ilazlrquad() {
+    int M = 4, N = 4, LDA = 4;
+    std::complex<long double> complexArray[16] = {}; // Initialize all to zero.
+    complexArray[(M-1) * LDA + 0] = std::complex<long double>(1.0L, 1.0L); // Set one element to be non-zero.
+
+    int result = ilazlrquad(M, N, complexArray, LDA);
+    std::cout << "Test Case 1: Expected 4, got " << result << std::endl;
+
+    // Add more test cases as needed with different configurations of complexArray, M, N, and LDA.
+}
+
+int main() {
+    test_ilazlrquad();
+    return 0;
+}
+```
+
+The provided code includes the declaration and implementation of the `ilazlrquad` function within the same file as the unit test. This ensures the function is recognized when it's called from `test_ilazlrquad`. The `ilazlrquad` function itself is translated from the Fortran version you provided, with adjustments for C++ syntax and conventions, such as 0-based array indexing.
+
+To compile and run this code, you can use a command similar to the following (assuming you have a compliant C++ compiler like `g++` installed):
+
+```sh
+g++ -o test_ilazlrquad test_ilazlrquad.cpp -std=c++11
+./test_ilazlrquad
+```
+
+This command compiles the source file `test_ilazlrquad.cpp` into an executable named `test_ilazlrquad` and then runs this executable. Make sure to replace `test_ilazlrquad.cpp` with the actual name of your source file if it's different.
+Runing modification 1th turn
+fortran code that need to be executed:
+ PROGRAM test_ilazlrquad
+  IMPLICIT NONE
+  INTEGER :: result
+  COMPLEX(KIND=16) :: A(4,4)
+  INTEGER :: M, N, LDA
+
+  ! Define the function prototype
+  INTERFACE
+    INTEGER FUNCTION ilazlrquad(M, N, A, LDA)
+      INTEGER, INTENT(IN) :: M, N, LDA
+      COMPLEX(KIND=16), INTENT(IN) :: A(LDA, *)
+    END FUNCTION ilazlrquad
+  END INTERFACE
+
+  ! Test case 1
+  M = 4
+  N = 4
+  LDA = 4
+  A = (0.0q0, 0.0q0)
+  A(4,1) = (1.0q0, 1.0q0) ! Set one element to be non-zero to test the functionality
+  result = ilazlrquad(M, N, A, LDA)
+  PRINT *, "Test Case 1: Expected 4, got ", result
+
+  ! Add more test cases as needed with different configurations of A, M, N, and LDA.
+
+CONTAINS
+
+  INTEGER FUNCTION ilazlrquad( M, N, A, LDA )
+    INTEGER, INTENT(IN) :: M, N, LDA
+    COMPLEX(KIND=16), INTENT(IN) :: A(LDA, *)
+    COMPLEX(KIND=16) :: ZERO
+    INTEGER :: I, J
+
+    ZERO = (0.0q0, 0.0q0)
+
+    IF (M == 0) THEN
+       ilazlrquad = M
+    ELSE IF (A(M, 1) /= ZERO .OR. A(M, N) /= ZERO) THEN
+       ilazlrquad = M
+    ELSE
+       ilazlrquad = 0
+       DO J = 1, N
+          I = M
+          DO WHILE (A(MAX(I,1), J) == ZERO .AND. I >= 1)
+             I = I - 1
+          END DO
+          ilazlrquad = MAX(ilazlrquad, I)
+       END DO
+    END IF
+  END FUNCTION ilazlrquad
+
+END PROGRAM test_ilazlrquad
+c++ code that need to be executed:
+ #include <iostream>
+#include <complex>
+#include <algorithm>
+
+// Declaration of ilazlrquad function
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA);
+
+// Implementation of ilazlrquad function based on the translated code
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA) {
+    std::complex<long double> ZERO(0.0L, 0.0L);
+
+    if (M == 0) {
+        return M;
+    } else if (complexArray[(M-1) * LDA + 0] != ZERO || complexArray[(M-1) * LDA + (N-1)] != ZERO) {
+        return M;
+    } else {
+        int ilazlrquadValue = 0;
+        for (int J = 0; J < N; ++J) {
+            int I = M - 1;
+            while (I >= 0 && complexArray[I * LDA + J] == ZERO) {
+                --I;
+            }
+            ilazlrquadValue = std::max(ilazlrquadValue, I + 1);
+        }
+        return ilazlrquadValue;
+    }
+}
+
+// Test function
+void test_ilazlrquad() {
+    int M = 4, N = 4, LDA = 4;
+    std::complex<long double> complexArray[16] = {}; // Initialize all to zero.
+    complexArray[(M-1) * LDA + 0] = std::complex<long double>(1.0L, 1.0L); // Set one element to be non-zero.
+
+    int result = ilazlrquad(M, N, complexArray, LDA);
+    std::cout << "Test Case 1: Expected 4, got " << result << std::endl;
+
+    // Add more test cases as needed with different configurations of complexArray, M, N, and LDA.
+}
+
+int main() {
+    test_ilazlrquad();
+    return 0;
+}
+fortran compile result in 1th turn: Fortran Stdout: b''
+Fortran Stderr: b'/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:28:29:\n\n   28 |   INTEGER FUNCTION ilazlrquad( M, N, A, LDA )\n      |                             1\nError: Procedure \xe2\x80\x98ilazlrquad\xe2\x80\x99 at (1) has an explicit interface from a previous declaration\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:29:36:\n\n   29 |     INTEGER, INTENT(IN) :: M, N, LDA\n      |                                    1\nError: Unexpected data declaration statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:30:45:\n\n   30 |     COMPLEX(KIND=16), INTENT(IN) :: A(LDA, *)\n      |                                             1\nError: Unexpected data declaration statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:31:28:\n\n   31 |     COMPLEX(KIND=16) :: ZERO\n      |                            1\nError: Unexpected data declaration statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:32:19:\n\n   32 |     INTEGER :: I, J\n      |                   1\nError: Unexpected data declaration statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:34:25:\n\n   34 |     ZERO = (0.0q0, 0.0q0)\n      |                         1\nError: Unexpected assignment statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:36:20:\n\n   36 |     IF (M == 0) THEN\n      |                    1\nError: Unexpected block IF statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:37:21:\n\n   37 |        ilazlrquad = M\n      |                     1\nError: Unexpected assignment statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:38:55:\n\n   38 |     ELSE IF (A(M, 1) /= ZERO .OR. A(M, N) /= ZERO) THEN\n      |                                                       1\nError: Unexpected ELSE IF statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:39:21:\n\n   39 |        ilazlrquad = M\n      |                     1\nError: Unexpected assignment statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:40:8:\n\n   40 |     ELSE\n      |        1\nError: Unexpected ELSE statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:41:21:\n\n   41 |        ilazlrquad = 0\n      |                     1\nError: Unexpected assignment statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:42:18:\n\n   42 |        DO J = 1, N\n      |                  1\nError: Unexpected DO statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:43:15:\n\n   43 |           I = M\n      |               1\nError: Unexpected assignment statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:44:56:\n\n   44 |           DO WHILE (A(MAX(I,1), J) == ZERO .AND. I >= 1)\n      |                                                        1\nError: Unexpected DO statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:45:22:\n\n   45 |              I = I - 1\n      |                      1\nError: Unexpected assignment statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:46:13:\n\n   46 |           END DO\n      |             1\nError: Expecting END PROGRAM statement at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:47:41:\n\n   47 |           ilazlrquad = MAX(ilazlrquad, I)\n      |                                         1\nError: Unexpected assignment statement in CONTAINS section at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:48:10:\n\n   48 |        END DO\n      |          1\nError: Expecting END PROGRAM statement at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:49:7:\n\n   49 |     END IF\n      |       1\nError: Expecting END PROGRAM statement at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:50:5:\n\n   50 |   END FUNCTION ilazlrquad\n      |     1\nError: Expecting END PROGRAM statement at (1)\n'
+cpp compile result in 1th turn: C++ Stdout: Test Case 1: Expected 4, got 4
+
+C++ Stderr: 
+ff_ct gpt answer Based on the error messages, it seems there was an issue with the placement of the function definition within the `CONTAINS` section of the Fortran code. Let's correct the format and ensure the function is properly defined outside of any program or module structure, which should resolve the compilation errors. Here is the corrected Fortran unit test code that includes both the program for testing and the function:
+
+```fortran
+PROGRAM test_ilazlrquad
+  IMPLICIT NONE
+  INTEGER :: result
+  COMPLEX(KIND=16) :: A(4,4)
+  INTEGER :: M, N, LDA
+
+  ! Initialize the matrix A with zeros
+  A = (0.0q0, 0.0q0)
+  
+  ! Test case 1: Non-zero element at the lower left corner
+  M = 4
+  N = 4
+  LDA = 4
+  A(4,1) = (1.0q0, 1.0q0)
+  result = ilazlrquad(M, N, A, LDA)
+  PRINT *, "Test Case 1: Expected 4, got ", result
+
+  ! You can add more test cases here following the same pattern
+
+END PROGRAM test_ilazlrquad
+
+INTEGER FUNCTION ilazlrquad( M, N, A, LDA )
+  INTEGER, INTENT(IN) :: M, N, LDA
+  COMPLEX(KIND=16), INTENT(IN) :: A(LDA, *)
+  COMPLEX(KIND=16) :: ZERO
+  INTEGER :: I, J
+
+  ZERO = (0.0q0, 0.0q0)
+
+  IF (M == 0) THEN
+     ilazlrquad = M
+  ELSE IF (A(M, 1) /= ZERO .OR. A(M, N) /= ZERO) THEN
+     ilazlrquad = M
+  ELSE
+     ilazlrquad = 0
+     DO J = 1, N
+        I = M
+        DO WHILE (A(MAX(I,1), J) == ZERO .AND. I >= 1)
+           I = I - 1
+        END DO
+        ilazlrquad = MAX(ilazlrquad, I)
+     END DO
+  END IF
+
+END FUNCTION ilazlrquad
+```
+
+This structure separates the `PROGRAM` and `FUNCTION` at the top level, which should be compatible with most Fortran compilers. The function `ilazlrquad` is defined outside of the `PROGRAM` block, ensuring it is correctly recognized.
+
+To compile and run this code, you would use a command similar to the following (assuming you are using `gfortran` and the file is named `test_ilazlrquad.f90`):
+
+```sh
+gfortran test_ilazlrquad.f90 -o test_ilazlrquad
+./test_ilazlrquad
+```
+
+This should compile without errors and run, displaying the result of the test case.
+
+Runing modification 2th turn
+
+fortran code that need to be executed:
+ PROGRAM test_ilazlrquad
+  IMPLICIT NONE
+  INTEGER :: result
+  COMPLEX(KIND=16) :: A(4,4)
+  INTEGER :: M, N, LDA
+
+  ! Initialize the matrix A with zeros
+  A = (0.0q0, 0.0q0)
+  
+  ! Test case 1: Non-zero element at the lower left corner
+  M = 4
+  N = 4
+  LDA = 4
+  A(4,1) = (1.0q0, 1.0q0)
+  result = ilazlrquad(M, N, A, LDA)
+  PRINT *, "Test Case 1: Expected 4, got ", result
+
+  ! You can add more test cases here following the same pattern
+
+END PROGRAM test_ilazlrquad
+
+INTEGER FUNCTION ilazlrquad( M, N, A, LDA )
+  INTEGER, INTENT(IN) :: M, N, LDA
+  COMPLEX(KIND=16), INTENT(IN) :: A(LDA, *)
+  COMPLEX(KIND=16) :: ZERO
+  INTEGER :: I, J
+
+  ZERO = (0.0q0, 0.0q0)
+
+  IF (M == 0) THEN
+     ilazlrquad = M
+  ELSE IF (A(M, 1) /= ZERO .OR. A(M, N) /= ZERO) THEN
+     ilazlrquad = M
+  ELSE
+     ilazlrquad = 0
+     DO J = 1, N
+        I = M
+        DO WHILE (A(MAX(I,1), J) == ZERO .AND. I >= 1)
+           I = I - 1
+        END DO
+        ilazlrquad = MAX(ilazlrquad, I)
+     END DO
+  END IF
+
+END FUNCTION ilazlrquad
+c++ code that need to be executed:
+ #include <iostream>
+#include <complex>
+#include <algorithm>
+
+// Declaration of ilazlrquad function
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA);
+
+// Implementation of ilazlrquad function based on the translated code
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA) {
+    std::complex<long double> ZERO(0.0L, 0.0L);
+
+    if (M == 0) {
+        return M;
+    } else if (complexArray[(M-1) * LDA + 0] != ZERO || complexArray[(M-1) * LDA + (N-1)] != ZERO) {
+        return M;
+    } else {
+        int ilazlrquadValue = 0;
+        for (int J = 0; J < N; ++J) {
+            int I = M - 1;
+            while (I >= 0 && complexArray[I * LDA + J] == ZERO) {
+                --I;
+            }
+            ilazlrquadValue = std::max(ilazlrquadValue, I + 1);
+        }
+        return ilazlrquadValue;
+    }
+}
+
+// Test function
+void test_ilazlrquad() {
+    int M = 4, N = 4, LDA = 4;
+    std::complex<long double> complexArray[16] = {}; // Initialize all to zero.
+    complexArray[(M-1) * LDA + 0] = std::complex<long double>(1.0L, 1.0L); // Set one element to be non-zero.
+
+    int result = ilazlrquad(M, N, complexArray, LDA);
+    std::cout << "Test Case 1: Expected 4, got " << result << std::endl;
+
+    // Add more test cases as needed with different configurations of complexArray, M, N, and LDA.
+}
+
+int main() {
+    test_ilazlrquad();
+    return 0;
+}
+fortran compile result in 2th turn: Fortran Stdout: b''
+Fortran Stderr: b'/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:15:21:\n\n   15 |   result = ilazlrquad(M, N, A, LDA)\n      |                     1\nError: Return type mismatch of function \xe2\x80\x98ilazlrquad\xe2\x80\x99 at (1) (UNKNOWN/INTEGER(4))\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:15:11:\n\n   15 |   result = ilazlrquad(M, N, A, LDA)\n      |           1\nError: Function \xe2\x80\x98ilazlrquad\xe2\x80\x99 at (1) has no IMPLICIT type\n'
+cpp compile result in 2th turn: C++ Stdout: Test Case 1: Expected 4, got 4
+
+C++ Stderr: 
+ff_ct gpt answer 
+
+Based on the error output you've provided, it seems there are issues with the function `ilazlrquad` related to its return type and declaration. To address these issues, ensure that the function's return type is properly declared and matches the expected type in both the function declaration and the main program. Here's a modified version of the Fortran unit test code that addresses these issues and includes the function definition within the same file for simplicity.
+
+```fortran
+PROGRAM test_ilazlrquad
+  IMPLICIT NONE
+  INTEGER :: result
+  COMPLEX(KIND=16) :: A(4,4)
+  INTEGER :: M, N, LDA
+
+  ! Initialize the matrix A with zeros
+  A = CMPLX(0.0q0, 0.0q0, KIND=16)
+  
+  ! Test case 1: Non-zero element at the lower left corner
+  M = 4
+  N = 4
+  LDA = 4
+  A(4,1) = CMPLX(1.0q0, 1.0q0, KIND=16) ! Set one element to be non-zero to test the functionality
+  result = ilazlrquad(M, N, A, LDA)
+  PRINT *, "Test Case 1: Expected 4, got ", result
+
+  ! You can add more test cases here following the same pattern
+
+CONTAINS
+
+  INTEGER FUNCTION ilazlrquad(M, N, A, LDA)
+    INTEGER, INTENT(IN) :: M, N, LDA
+    COMPLEX(KIND=16), INTENT(IN) :: A(LDA, *)
+    COMPLEX(KIND=16) :: ZERO
+    INTEGER :: I, J
+
+    ZERO = CMPLX(0.0q0, 0.0q0, KIND=16)
+
+    IF (M == 0) THEN
+       ilazlrquad = M
+    ELSE IF (A(M, 1) /= ZERO .OR. A(M, N) /= ZERO) THEN
+       ilazlrquad = M
+    ELSE
+       ilazlrquad = 0
+       DO J = 1, N
+          I = M
+          DO WHILE (A(MAX(I,1), J) == ZERO .AND. I >= 1)
+             I = I - 1
+          END DO
+          ilazlrquad = MAX(ilazlrquad, I)
+       END DO
+    END IF
+  END FUNCTION ilazlrquad
+
+END PROGRAM test_ilazlrquad
+```
+
+This code now includes the `ilazlrquad` function within the same program using the `CONTAINS` keyword, which should solve the implicit type issue. The `CMPLX` function is used with the `KIND=16` argument to ensure that complex numbers are of the specified kind, matching the `complex*32` type in the original Fortran code. 
+
+Compile and run this Fortran program with a compiler that supports Fortran 2008 or later due to the use of the `KIND=16` specifier for high precision, like `gfortran`:
+
+```sh
+gfortran -o test_ilazlrquad test_ilazlrquad.f90
+./test_ilazlrquad
+```
+
+Make sure your file name matches (`test_ilazlrquad.f90`) and that your Fortran compiler supports the features used in this code.
+
+Runing modification 3th turn
+
+fortran code that need to be executed:
+ PROGRAM test_ilazlrquad
+  IMPLICIT NONE
+  INTEGER :: result
+  COMPLEX(KIND=16) :: A(4,4)
+  INTEGER :: M, N, LDA
+
+  ! Initialize the matrix A with zeros
+  A = CMPLX(0.0q0, 0.0q0, KIND=16)
+  
+  ! Test case 1: Non-zero element at the lower left corner
+  M = 4
+  N = 4
+  LDA = 4
+  A(4,1) = CMPLX(1.0q0, 1.0q0, KIND=16) ! Set one element to be non-zero to test the functionality
+  result = ilazlrquad(M, N, A, LDA)
+  PRINT *, "Test Case 1: Expected 4, got ", result
+
+  ! You can add more test cases here following the same pattern
+
+CONTAINS
+
+  INTEGER FUNCTION ilazlrquad(M, N, A, LDA)
+    INTEGER, INTENT(IN) :: M, N, LDA
+    COMPLEX(KIND=16), INTENT(IN) :: A(LDA, *)
+    COMPLEX(KIND=16) :: ZERO
+    INTEGER :: I, J
+
+    ZERO = CMPLX(0.0q0, 0.0q0, KIND=16)
+
+    IF (M == 0) THEN
+       ilazlrquad = M
+    ELSE IF (A(M, 1) /= ZERO .OR. A(M, N) /= ZERO) THEN
+       ilazlrquad = M
+    ELSE
+       ilazlrquad = 0
+       DO J = 1, N
+          I = M
+          DO WHILE (A(MAX(I,1), J) == ZERO .AND. I >= 1)
+             I = I - 1
+          END DO
+          ilazlrquad = MAX(ilazlrquad, I)
+       END DO
+    END IF
+  END FUNCTION ilazlrquad
+
+END PROGRAM test_ilazlrquad
+c++ code that need to be executed:
+ #include <iostream>
+#include <complex>
+#include <algorithm>
+
+// Declaration of ilazlrquad function
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA);
+
+// Implementation of ilazlrquad function based on the translated code
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA) {
+    std::complex<long double> ZERO(0.0L, 0.0L);
+
+    if (M == 0) {
+        return M;
+    } else if (complexArray[(M-1) * LDA + 0] != ZERO || complexArray[(M-1) * LDA + (N-1)] != ZERO) {
+        return M;
+    } else {
+        int ilazlrquadValue = 0;
+        for (int J = 0; J < N; ++J) {
+            int I = M - 1;
+            while (I >= 0 && complexArray[I * LDA + J] == ZERO) {
+                --I;
+            }
+            ilazlrquadValue = std::max(ilazlrquadValue, I + 1);
+        }
+        return ilazlrquadValue;
+    }
+}
+
+// Test function
+void test_ilazlrquad() {
+    int M = 4, N = 4, LDA = 4;
+    std::complex<long double> complexArray[16] = {}; // Initialize all to zero.
+    complexArray[(M-1) * LDA + 0] = std::complex<long double>(1.0L, 1.0L); // Set one element to be non-zero.
+
+    int result = ilazlrquad(M, N, complexArray, LDA);
+    std::cout << "Test Case 1: Expected 4, got " << result << std::endl;
+
+    // Add more test cases as needed with different configurations of complexArray, M, N, and LDA.
+}
+
+int main() {
+    test_ilazlrquad();
+    return 0;
+}
+fortran compile result in 3th turn: Fortran Stdout:  Test Case 1: Expected 4, got            4
+
+Fortran Stderr: 
+cpp compile result in 3th turn: C++ Stdout: Test Case 1: Expected 4, got 4
+
+C++ Stderr: 
+
+ft_ct gpt answer Yes
+
+yes 
+
+Certainly, here are the complete and correct Fortran and C++ code snippets based on the last unit test examples provided, ensuring that both programs are designed to perform the same task and produce identical results in the given test case.
+
+### Fortran Code
+
+```fortran
+PROGRAM test_ilazlrquad
+  IMPLICIT NONE
+  INTEGER :: result
+  COMPLEX(KIND=16) :: A(4,4)
+  INTEGER :: M, N, LDA
+
+  ! Initialize the matrix A with zeros
+  A = CMPLX(0.0q0, 0.0q0, KIND=16)
+  
+  ! Test case 1: Non-zero element at the lower left corner
+  M = 4
+  N = 4
+  LDA = 4
+  A(4,1) = CMPLX(1.0q0, 1.0q0, KIND=16) ! Set one element to be non-zero to test the functionality
+  result = ilazlrquad(M, N, A, LDA)
+  PRINT *, "Test Case 1: Expected 4, got ", result
+
+CONTAINS
+
+  INTEGER FUNCTION ilazlrquad(M, N, A, LDA)
+    INTEGER, INTENT(IN) :: M, N, LDA
+    COMPLEX(KIND=16), INTENT(IN) :: A(LDA, *)
+    COMPLEX(KIND=16) :: ZERO
+    INTEGER :: I, J
+
+    ZERO = CMPLX(0.0q0, 0.0q0, KIND=16)
+
+    IF (M == 0) THEN
+       ilazlrquad = M
+    ELSE IF (A(M, 1) /= ZERO .OR. A(M, N) /= ZERO) THEN
+       ilazlrquad = M
+    ELSE
+       ilazlrquad = 0
+       DO J = 1, N
+          I = M
+          DO WHILE (A(MAX(I,1), J) == ZERO .AND. I >= 1)
+             I = I - 1
+          END DO
+          ilazlrquad = MAX(ilazlrquad, I)
+       END DO
+    END IF
+  END FUNCTION ilazlrquad
+
+END PROGRAM test_ilazlrquad
+```
+
+### C++ Code
+
+```cpp
+#include <iostream>
+#include <complex>
+#include <algorithm>
+
+// Declaration of ilazlrquad function
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA);
+
+// Implementation of ilazlrquad function based on the translated code
+int ilazlrquad(int M, int N, std::complex<long double>* complexArray, int LDA) {
+    std::complex<long double> ZERO(0.0L, 0.0L);
+
+    if (M == 0) {
+        return M;
+    } else if (complexArray[(M-1) * LDA + 0] != ZERO || complexArray[(M-1) * LDA + (N-1)] != ZERO) {
+        return M;
+    } else {
+        int ilazlrquadValue = 0;
+        for (int J = 0; J < N; ++J) {
+            int I = M - 1; // Adjusted for 0-based index
+            while (I >= 0 && complexArray[I * LDA + J] == ZERO) {
+                --I;
+            }
+            ilazlrquadValue = std::max(ilazlrquadValue, I + 1); // Adjust the result back to 1-based index for consistency with Fortran
+        }
+        return ilazlrquadValue;
+    }
+}
+
+// Test function
+void test_ilazlrquad() {
+    int M = 4, N = 4, LDA = 4;
+    std::complex<long double> complexArray[16] = {}; // Initialize all to zero.
+    complexArray[(M-1) * LDA + 0] = std::complex<long double>(1.0L, 1.0L); // Set one element to be non-zero.
+
+    int result = ilazlrquad(M, N, complexArray, LDA);
+    std::cout << "Test Case 1: Expected 4, got " << result << std::endl;
+
+    // Add more test cases as needed with different configurations of complexArray, M, N, and LDA.
+}
+
+int main() {
+    test_ilazlrquad();
+    return 0;
+}
+```
+
+These codes provide a direct translation of the functionality from Fortran to C++ and include a simple unit test to verify correctness. The unit test sets a single non-zero element in a 4x4 matrix and checks the output of the `ilazlrquad` function, expecting a result that matches the specified case.
+
+
+
+###Example 2:
+
+fortran_wo_com:
+```fortran
+      SUBROUTINE iau_PPP ( A, B, APB )
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION A(3), B(3), APB(3)
+
+      INTEGER I
+
+      DO 1 I=1,3
+         APB(I) = A(I) + B(I)
+ 1    CONTINUE
+
+      END
+```
+fortran_wo_com length 79
+
+qer asks for the C++ translation:
+
+Could you translate the following Fortran subroutine into C++? Here's the Fortran code:
+
+```fortran
+SUBROUTINE iau_PPP ( A, B, APB )
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION A(3), B(3), APB(3)
+
+      INTEGER I
+
+      DO 1 I=1,3
+         APB(I) = A(I) + B(I)
+ 1    CONTINUE
+
+      END
+```
+
+Please ensure the C++ translation maintains the functionality and structure of the original Fortran code.
+
+Solver generate the C++ translation:
+
+Certainly! The provided Fortran subroutine performs element-wise addition of two 3-element arrays/vectors (`A` and `B`) and stores the result in a third array (`APB`). Here's how you can translate it into C++:
+
+```cpp
+#include <array>
+
+void iau_PPP(const std::array<double, 3>& A, const std::array<double, 3>& B, std::array<double, 3>& APB) {
+    for (int i = 0; i < 3; ++i) {
+        APB[i] = A[i] + B[i];
+    }
+}
+```
+
+In this C++ translation:
+- The `std::array` template is used to define arrays of `double` with 3 elements, mirroring the fixed-size arrays in the original Fortran code.
+- The `for` loop iterates from `0` to `2` (inclusive) because C++ uses 0-based indexing, unlike Fortran's 1-based indexing.
+- The function parameters `A` and `B` are passed by const reference to avoid unnecessary copies while ensuring they are not modified within the function. The output parameter `APB` is passed by reference to allow modification.
+- The subroutine's functionality, performing element-wise addition of `A` and `B` and storing the result in `APB`, is preserved in the C++ version.
+
+Questioner ask for the unit test:
+
+Could you provide executable unit tests for both the original Fortran code and the translated C++ code to verify their correctness? Please ensure the tests cover various scenarios to comprehensively evaluate the functionality of the subroutine and its translation.
+
+Solver generate the unit test:
+
+Certainly! Below are unit tests for both the original Fortran subroutine and its C++ translation. These tests cover various scenarios to ensure the correctness of both implementations.
+
+### Fortran Unit Test
+
+To test the Fortran subroutine, we'll write a simple program that calls the subroutine with different inputs and checks the output. Fortran lacks a built-in unit testing framework comparable to those available in other languages, so the test will be somewhat manual but clear.
+
+**Fortran Test Program:**
+
+```fortran
+PROGRAM TestPPP
+  IMPLICIT NONE
+  DOUBLE PRECISION A(3), B(3), APB(3)
+  INTEGER I
+
+  ! Test 1: Positive numbers
+  A = (/1.0, 2.0, 3.0/)
+  B = (/4.0, 5.0, 6.0/)
+  CALL iau_PPP(A, B, APB)
+  PRINT *, 'Test 1: ', APB
+
+  ! Test 2: Negative numbers
+  A = (/-1.0, -2.0, -3.0/)
+  B = (/-4.0, -5.0, -6.0/)
+  CALL iau_PPP(A, B, APB)
+  PRINT *, 'Test 2: ', APB
+
+  ! Test 3: Mixed numbers
+  A = (/1.5, -2.5, 3.5/)
+  B = (/-1.5, 2.5, -3.5/)
+  CALL iau_PPP(A, B, APB)
+  PRINT *, 'Test 3: ', APB
+
+END PROGRAM TestPPP
+
+SUBROUTINE iau_PPP ( A, B, APB )
+  IMPLICIT NONE
+  DOUBLE PRECISION A(3), B(3), APB(3)
+  INTEGER I
+  DO I=1,3
+     APB(I) = A(I) + B(I)
+  END DO
+END SUBROUTINE iau_PPP
+```
+
+### C++ Unit Tests
+
+For C++, we can use a more structured approach to unit testing by utilizing a testing framework like Google Test. However, to keep things simple and dependency-free, the following example uses plain assertions.
+
+**C++ Test Program:**
+
+```cpp
+#include <array>
+#include <cassert>
+#include <iostream>
+
+void iau_PPP(const std::array<double, 3>& A, const std::array<double, 3>& B, std::array<double, 3>& APB) {
+    for (int i = 0; i < 3; ++i) {
+        APB[i] = A[i] + B[i];
+    }
+}
+
+void testPPP(const std::array<double, 3>& A, const std::array<double, 3>& B, const std::array<double, 3>& expected) {
+    std::array<double, 3> APB;
+    iau_PPP(A, B, APB);
+    for (int i = 0; i < 3; ++i) {
+        assert(APB[i] == expected[i]);
+    }
+    std::cout << "Test passed." << std::endl;
+}
+
+int main() {
+    // Test 1: Positive numbers
+    testPPP({1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {5.0, 7.0, 9.0});
+
+    // Test 2: Negative numbers
+    testPPP({-1.0, -2.0, -3.0}, {-4.0, -5.0, -6.0}, {-5.0, -7.0, -9.0});
+
+    // Test 3: Mixed numbers
+    testPPP({1.5, -2.5, 3.5}, {-1.5, 2.5, -3.5}, {0.0, 0.0, 0.0});
+
+    return 0;
+}
+```
+
+**Note for Running C++ Tests:**
+- If you're not already using it, you might need to install a C++ compiler (like `g++` or `clang++`) to compile and run the test program.
+- Compile the C++ test program using a command similar to `g++ -o testPPP testPPP.cpp` and run it with `./testPPP`.
+
+These tests should cover various scenarios including positive numbers, negative numbers, and a mix of both to ensure the subroutines work as expected across different types of input.
+Runing modification 0th turn
+fortran code that need to be executed:
+ PROGRAM TestPPP
+  IMPLICIT NONE
+  DOUBLE PRECISION A(3), B(3), APB(3)
+  INTEGER I
+
+  ! Test 1: Positive numbers
+  A = (/1.0, 2.0, 3.0/)
+  B = (/4.0, 5.0, 6.0/)
+  CALL iau_PPP(A, B, APB)
+  PRINT *, 'Test 1: ', APB
+
+  ! Test 2: Negative numbers
+  A = (/-1.0, -2.0, -3.0/)
+  B = (/-4.0, -5.0, -6.0/)
+  CALL iau_PPP(A, B, APB)
+  PRINT *, 'Test 2: ', APB
+
+  ! Test 3: Mixed numbers
+  A = (/1.5, -2.5, 3.5/)
+  B = (/-1.5, 2.5, -3.5/)
+  CALL iau_PPP(A, B, APB)
+  PRINT *, 'Test 3: ', APB
+
+END PROGRAM TestPPP
+
+SUBROUTINE iau_PPP ( A, B, APB )
+  IMPLICIT NONE
+  DOUBLE PRECISION A(3), B(3), APB(3)
+  INTEGER I
+  DO I=1,3
+     APB(I) = A(I) + B(I)
+  END DO
+END SUBROUTINE iau_PPP
+c++ code that need to be executed:
+ #include <array>
+#include <cassert>
+#include <iostream>
+
+void iau_PPP(const std::array<double, 3>& A, const std::array<double, 3>& B, std::array<double, 3>& APB) {
+    for (int i = 0; i < 3; ++i) {
+        APB[i] = A[i] + B[i];
+    }
+}
+
+void testPPP(const std::array<double, 3>& A, const std::array<double, 3>& B, const std::array<double, 3>& expected) {
+    std::array<double, 3> APB;
+    iau_PPP(A, B, APB);
+    for (int i = 0; i < 3; ++i) {
+        assert(APB[i] == expected[i]);
+    }
+    std::cout << "Test passed." << std::endl;
+}
+
+int main() {
+    // Test 1: Positive numbers
+    testPPP({1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {5.0, 7.0, 9.0});
+
+    // Test 2: Negative numbers
+    testPPP({-1.0, -2.0, -3.0}, {-4.0, -5.0, -6.0}, {-5.0, -7.0, -9.0});
+
+    // Test 3: Mixed numbers
+    testPPP({1.5, -2.5, 3.5}, {-1.5, 2.5, -3.5}, {0.0, 0.0, 0.0});
+
+    return 0;
+}
+fortran compile result in 0th turn: Fortran Stdout:  Test 1:    5.0000000000000000        7.0000000000000000        9.0000000000000000     
+ Test 2:   -5.0000000000000000       -7.0000000000000000       -9.0000000000000000     
+ Test 3:    0.0000000000000000        0.0000000000000000        0.0000000000000000     
+
+Fortran Stderr: 
+cpp compile result in 0th turn: C++ Stdout: Test passed.
+Test passed.
+Test passed.
+
+C++ Stderr: 
+
+ft_ct gpt answer Yes
+
+yes Certainly! Below are the complete Fortran subroutine and its corresponding C++ translation based on the unit test codes previously provided.
+
+### Fortran Code
+
+**Subroutine:**
+
+```fortran
+SUBROUTINE iau_PPP ( A, B, APB )
+  IMPLICIT NONE
+  DOUBLE PRECISION A(3), B(3), APB(3)
+  INTEGER I
+  DO I=1,3
+     APB(I) = A(I) + B(I)
+  END DO
+END SUBROUTINE iau_PPP
+```
+
+**Unit Test Program:**
+
+```fortran
+PROGRAM TestPPP
+  IMPLICIT NONE
+  DOUBLE PRECISION A(3), B(3), APB(3)
+  INTEGER I
+
+  ! Test 1: Positive numbers
+  A = (/1.0, 2.0, 3.0/)
+  B = (/4.0, 5.0, 6.0/)
+  CALL iau_PPP(A, B, APB)
+  PRINT *, 'Test 1: ', APB
+
+  ! Test 2: Negative numbers
+  A = (/-1.0, -2.0, -3.0/)
+  B = (/-4.0, -5.0, -6.0/)
+  CALL iau_PPP(A, B, APB)
+  PRINT *, 'Test 2: ', APB
+
+  ! Test 3: Mixed numbers
+  A = (/1.5, -2.5, 3.5/)
+  B = (/-1.5, 2.5, -3.5/)
+  CALL iau_PPP(A, B, APB)
+  PRINT *, 'Test 3: ', APB
+
+END PROGRAM TestPPP
+```
+
+### C++ Code
+
+**Function:**
+
+```cpp
+#include <array>
+
+void iau_PPP(const std::array<double, 3>& A, const std::array<double, 3>& B, std::array<double, 3>& APB) {
+    for (int i = 0; i < 3; ++i) {
+        APB[i] = A[i] + B[i];
+    }
+}
+```
+
+**Unit Test Program:**
+
+```cpp
+#include <array>
+#include <cassert>
+#include <iostream>
+
+void iau_PPP(const std::array<double, 3>& A, const std::array<double, 3>& B, std::array<double, 3>& APB);
+
+void testPPP(const std::array<double, 3>& A, const std::array<double, 3>& B, const std::array<double, 3>& expected) {
+    std::array<double, 3> APB;
+    iau_PPP(A, B, APB);
+    for (int i = 0; i < 3; ++i) {
+        assert(APB[i] == expected[i]);
+    }
+    std::cout << "Test passed." << std::endl;
+}
+
+int main() {
+    // Test 1: Positive numbers
+    testPPP({1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {5.0, 7.0, 9.0});
+
+    // Test 2: Negative numbers
+    testPPP({-1.0, -2.0, -3.0}, {-4.0, -5.0, -6.0}, {-5.0, -7.0, -9.0});
+
+    // Test 3: Mixed numbers
+    testPPP({1.5, -2.5, 3.5}, {-1.5, 2.5, -3.5}, {0.0, 0.0, 0.0});
+
+    return 0;
+}
+```
+
+This C++ code snippet and the Fortran program are designed to perform the same operation and have been validated by unit tests to ensure their correctness and equivalence.
+
+
+###Example 3:
+
+fortran_wo_com:
+
+```fortran
+subroutine filltab()
+
+integer dimx, dimy
+parameter (dimx = 8, dimy = 6)
+real ftab(dimx, dimy)
+common /ftab/ ftab
+integer x, y
+
+do 100 x = 1, dimx
+   do 110 y = 1, dimy
+      ftab(x, y) = x * 100 + y
+110   continue
+100 continue
+end
+
+subroutine printtab(tab, dimx, dimy)
+
+integer dimx, dimy
+real tab(dimx, dimy)
+integer x, y
+
+do 200 x = 1, dimx
+   print 300, x, (tab(x, y), y = 1, dimy)
+300   format(/1X, I3, 2X, 10F6.1/)
+200 continue
+end
+```
+fortran_wo_com length 190
+
+qer asks for the C++ translation:
+
+Could you translate the following Fortran code to C++? The Fortran code consists of two subroutines: `filltab` and `printtab`. The `filltab` subroutine initializes a 2D array with specific values, and the `printtab` subroutine prints this array. Here's the code:
+
+```fortran
+subroutine filltab()
+
+integer dimx, dimy
+parameter (dimx = 8, dimy = 6)
+real ftab(dimx, dimy)
+common /ftab/ ftab
+integer x, y
+
+do 100 x = 1, dimx
+   do 110 y = 1, dimy
+      ftab(x, y) = x * 100 + y
+110   continue
+100 continue
+end
+
+subroutine printtab(tab, dimx, dimy)
+
+integer dimx, dimy
+real tab(dimx, dimy)
+integer x, y
+
+do 200 x = 1, dimx
+   print 300, x, (tab(x, y), y = 1, dimy)
+300   format(/1X, I3, 2X, 10F6.1/)
+200 continue
+end
+```
+
+Please ensure the translated C++ code correctly reflects the functionality of the Fortran code, including the initialization of the 2D array in `filltab` and the formatted output in `printtab`.
+
+Solver generate the C++ translation:
+
+Below is a C++ translation of your provided Fortran code. The C++ version uses a `vector` of `vector`s to represent the 2D array and includes both functions within a single program for simplicity. It also demonstrates how to pass the 2D array between functions, similar to how the original Fortran code uses a common block for sharing the array.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <iomanip> // For std::setw and std::setprecision
+
+// Constants for the dimensions of the array
+const int dimx = 8;
+const int dimy = 6;
+
+// Function declaration
+void filltab(std::vector<std::vector<float>>& ftab);
+void printtab(const std::vector<std::vector<float>>& tab);
+
+int main() {
+    // Create a 2D vector (array) with dimensions dimx x dimy
+    std::vector<std::vector<float>> ftab(dimx, std::vector<float>(dimy));
+
+    filltab(ftab); // Fill the array with values
+    printtab(ftab); // Print the array
+
+    return 0;
+}
+
+// Function definitions
+
+// Function to fill the 2D vector with specific values
+void filltab(std::vector<std::vector<float>>& ftab) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            ftab[x][y] = (x + 1) * 100 + (y + 1); // Adjusted for 0-based indexing
+        }
+    }
+}
+
+// Function to print the 2D vector
+void printtab(const std::vector<std::vector<float>>& tab) {
+    for (int x = 0; x < dimx; ++x) {
+        std::cout << std::setw(3) << x + 1 << "  "; // Adjusted for 0-based indexing and formatted output
+        for (int y = 0; y < dimy; ++y) {
+            std::cout << std::setw(6) << std::setprecision(1) << std::fixed << tab[x][y] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+```
+
+This code mimics the functionality of the original Fortran code:
+
+- It initializes a 2D array (`ftab`) with values calculated by `x*100 + y` (adjusted for 0-based indexing in C++) in the `filltab` function.
+- The `printtab` function then prints out this 2D array in a formatted manner similar to the Fortran version, using `std::setw` and `std::setprecision` to manage the formatting of the output.
+
+Note that in C++, arrays (and vectors) are 0-based, so adjustments are made in the loops and print statements accordingly.
+
+Questioner ask for the unit test:
+
+Could you please provide executable unit tests for both the original Fortran code and the translated C++ code? These unit tests should verify that both implementations correctly fill and print the 2D array as expected.
+
+Solver generate the unit test:
+
+Creating unit tests for both Fortran and C++ requires different approaches due to the nature and testing frameworks available for each language. For Fortran, there's a limited selection of testing frameworks compared to C++, so a simple approach is to manually verify the output. For C++, we can use Google Test, a widely-used C++ testing framework.
+
+### Unit Tests for Fortran
+
+Fortran lacks a standardized unit testing framework like those found in more modern programming languages. Therefore, for simplicity, we'll manually test by checking the output against expected values.
+
+```fortran
+program test
+    ! Test the filltab and printtab subroutines
+    call filltab
+    call printtab(ftab, dimx, dimy)
+end program test
+```
+
+For a more sophisticated test, you would need to manually verify the output of `printtab` or modify the `printtab` subroutine to compare the array content against expected values and report success or failure.
+
+### Unit Tests for C++ Using Google Test
+
+First, ensure you have Google Test set up in your environment. The instructions for setting up Google Test can be found in the [Google Test GitHub repository](https://github.com/google/googletest).
+
+Here's how you might write some basic unit tests for the C++ version of the code using Google Test:
+
+```cpp
+#include <gtest/gtest.h>
+#include <vector>
+
+// Assume the filltab and printtab functions are declared here
+// or included from another file
+
+// Test fixture for setup and teardown
+class ArrayTest : public ::testing::Test {
+protected:
+    std::vector<std::vector<float>> ftab;
+    void SetUp() override {
+        ftab.resize(dimx, std::vector<float>(dimy));
+        filltab(ftab);
+    }
+};
+
+// Test the filltab function
+TEST_F(ArrayTest, FillTabCorrectlyFillsArray) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            EXPECT_EQ(ftab[x][y], (x + 1) * 100 + (y + 1));
+        }
+    }
+}
+
+// Since printtab just prints to console, it's harder to unit test directly.
+// One would normally test its output by capturing stdout, which is outside
+// the scope of this simple example.
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+```
+
+To compile the C++ test with Google Test, you would typically use a command similar to this (adjust paths as necessary):
+
+```sh
+g++ -isystem /path/to/gtest/include -pthread path/to/your_test.cpp path/to/gtest_main.a -o your_test
+```
+
+And then run the compiled tests:
+
+```sh
+./your_test
+```
+
+This test suite specifically tests the `filltab` function to ensure it fills the array correctly according to the expected pattern. Testing the `printtab` function is more complex due to its side effects (printing to stdout) and would usually involve redirecting stdout to a stream buffer for comparison, which is more advanced than a basic example warrants.
+
+Remember, this is a simplified demonstration. Real-world unit testing can be more complex, especially for code with external dependencies or more complex logic.
+
+Runing modification 0th turn
+
+fortran code that need to be executed:
+
+program test
+    ! Test the filltab and printtab subroutines
+    call filltab
+    call printtab(ftab, dimx, dimy)
+end program test
+c++ code that need to be executed:
+ #include <gtest/gtest.h>
+#include <vector>
+
+// Assume the filltab and printtab functions are declared here
+// or included from another file
+
+// Test fixture for setup and teardown
+class ArrayTest : public ::testing::Test {
+protected:
+    std::vector<std::vector<float>> ftab;
+    void SetUp() override {
+        ftab.resize(dimx, std::vector<float>(dimy));
+        filltab(ftab);
+    }
+};
+
+// Test the filltab function
+TEST_F(ArrayTest, FillTabCorrectlyFillsArray) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            EXPECT_EQ(ftab[x][y], (x + 1) * 100 + (y + 1));
+        }
+    }
+}
+
+// Since printtab just prints to console, it's harder to unit test directly.
+// One would normally test its output by capturing stdout, which is outside
+// the scope of this simple example.
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+fortran compile result in 0th turn: Fortran Stdout: b''
+Fortran Stderr: b"/usr/bin/ld: /tmp/ccbpvBEE.o: in function `MAIN__':\ntest.f90:(.text+0xe): undefined reference to `filltab_'\n/usr/bin/ld: test.f90:(.text+0x25): undefined reference to `printtab_'\ncollect2: error: ld returned 1 exit status\n"
+cpp compile result in 0th turn: C++ Stdout: b''
+C++ Stderr: b'/home/uconn/BinLei/Data_engine/NLP_Task/data/cpp_2/test.cpp: In member function \xe2\x80\x98virtual void ArrayTest::SetUp()\xe2\x80\x99:\n/home/uconn/BinLei/Data_engine/NLP_Task/data/cpp_2/test.cpp:12:21: error: \xe2\x80\x98dimx\xe2\x80\x99 was not declared in this scope\n   12 |         ftab.resize(dimx, std::vector<float>(dimy));\n      |                     ^~~~\n/home/uconn/BinLei/Data_engine/NLP_Task/data/cpp_2/test.cpp:12:46: error: \xe2\x80\x98dimy\xe2\x80\x99 was not declared in this scope\n   12 |         ftab.resize(dimx, std::vector<float>(dimy));\n      |                                              ^~~~\n/home/uconn/BinLei/Data_engine/NLP_Task/data/cpp_2/test.cpp:13:9: error: \xe2\x80\x98filltab\xe2\x80\x99 was not declared in this scope; did you mean \xe2\x80\x98ftab\xe2\x80\x99?\n   13 |         filltab(ftab);\n      |         ^~~~~~~\n      |         ftab\n/home/uconn/BinLei/Data_engine/NLP_Task/data/cpp_2/test.cpp: In member function \xe2\x80\x98virtual void ArrayTest_FillTabCorrectlyFillsArray_Test::TestBody()\xe2\x80\x99:\n/home/uconn/BinLei/Data_engine/NLP_Task/data/cpp_2/test.cpp:19:25: error: \xe2\x80\x98dimx\xe2\x80\x99 was not declared in this scope\n   19 |     for (int x = 0; x < dimx; ++x) {\n      |                         ^~~~\n/home/uconn/BinLei/Data_engine/NLP_Task/data/cpp_2/test.cpp:20:29: error: \xe2\x80\x98dimy\xe2\x80\x99 was not declared in this scope\n   20 |         for (int y = 0; y < dimy; ++y) {\n      |                             ^~~~\n'
+
+Add fortran head file  
+
+To combine all the required functions into the same Fortran file without relying on additional header files or modules, you can simply place the `filltab` and `printtab` subroutines within the same file as your main program. Here's how you can organize the Fortran code:
+
+```fortran
+program test
+
+    implicit none
+    ! Declarations
+    integer :: dimx = 8, dimy = 6
+    real :: ftab(dimx, dimy)
+    
+    ! Procedure calls
+    call filltab(dimx, dimy, ftab)
+    call printtab(ftab, dimx, dimy)
+
+contains
+
+    subroutine filltab(dimx, dimy, ftab)
+        integer, intent(in) :: dimx, dimy
+        real, intent(out) :: ftab(dimx, dimy)
+        integer :: x, y
+
+        do x = 1, dimx
+            do y = 1, dimy
+                ftab(x, y) = x * 100 + y
+            end do
+        end do
+    end subroutine filltab
+
+    subroutine printtab(tab, dimx, dimy)
+        integer, intent(in) :: dimx, dimy
+        real, intent(in) :: tab(dimx, dimy)
+        integer :: x, y
+
+        do x = 1, dimx
+            write(*, '(I3, 2X, 6F8.1)'), x, (tab(x, y), y = 1, dimy)
+        end do
+    end subroutine printtab
+
+end program test
+```
+
+This Fortran code defines a simple program that first calls `filltab` to initialize a 2D array `ftab` with specific values, then calls `printtab` to print this array. Both subroutines are contained within the same file as the main program (`contains` section), avoiding the need for separate modules or includes.
+
+To compile this Fortran program, you can use a command like:
+
+```sh
+gfortran -o test_program test.f90
+```
+
+And then run it with:
+
+```sh
+./test_program
+```
+
+This should correctly compile and run the program, demonstrating the functionality of both the `filltab` and `printtab` subroutines without any undefined reference errors.
+
+ft_cf gpt answer 
+
+To address the compilation errors, I'll provide a complete, modified C++ unit test code that incorporates the necessary corrections. The errors indicate that `dimx`, `dimy`, and `filltab` were not declared in the scope they are used. To fix these issues, I'll ensure that `dimx` and `dimy` are defined and visible where needed, and that `filltab` and any other necessary functions are declared and implemented appropriately.
+
+Here's a modified version of the unit test code that includes everything you need to compile and run it directly. This assumes you have a working C++ environment with Google Test installed and properly set up:
+
+```cpp
+#include <gtest/gtest.h>
+#include <vector>
+
+// Assuming these are the dimensions you want for the test
+const int dimx = 8;
+const int dimy = 6;
+
+// Declaration of the filltab function
+void filltab(std::vector<std::vector<float>>& ftab) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            ftab[x][y] = (x + 1) * 100 + (y + 1); // Adjusted for 0-based indexing
+        }
+    }
+}
+
+// Test fixture for setup and teardown
+class ArrayTest : public ::testing::Test {
+protected:
+    std::vector<std::vector<float>> ftab;
+
+    void SetUp() override {
+        ftab.resize(dimx, std::vector<float>(dimy));
+        filltab(ftab);
+    }
+};
+
+// Test the filltab function
+TEST_F(ArrayTest, FillTabCorrectlyFillsArray) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            EXPECT_EQ(ftab[x][y], (x + 1) * 100 + (y + 1));
+        }
+    }
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+```
+
+Before running the tests, make sure you have Google Test linked correctly. The compilation command will vary based on your setup, but here's a general example if Google Test is installed system-wide:
+
+```sh
+g++ -std=c++11 -pthread test.cpp -lgtest -lgtest_main -o test
+```
+
+Then, you can run your tests with:
+
+```sh
+./test
+```
+
+This command compiles your test code (assuming `test.cpp` is the name of your file) with Google Test and produces an executable named `test`, which you run to execute your unit tests. Make sure to adjust the command according to your specific environment and file paths.
+
+Runing modification 1th turn
+
+fortran code that need to be executed:
+
+program test
+
+    implicit none
+    ! Declarations
+    integer :: dimx = 8, dimy = 6
+    real :: ftab(dimx, dimy)
+    
+    ! Procedure calls
+    call filltab(dimx, dimy, ftab)
+    call printtab(ftab, dimx, dimy)
+
+contains
+
+    subroutine filltab(dimx, dimy, ftab)
+        integer, intent(in) :: dimx, dimy
+        real, intent(out) :: ftab(dimx, dimy)
+        integer :: x, y
+
+        do x = 1, dimx
+            do y = 1, dimy
+                ftab(x, y) = x * 100 + y
+            end do
+        end do
+    end subroutine filltab
+
+    subroutine printtab(tab, dimx, dimy)
+        integer, intent(in) :: dimx, dimy
+        real, intent(in) :: tab(dimx, dimy)
+        integer :: x, y
+
+        do x = 1, dimx
+            write(*, '(I3, 2X, 6F8.1)'), x, (tab(x, y), y = 1, dimy)
+        end do
+    end subroutine printtab
+
+end program test
+
+c++ code that need to be executed:
+
+#include <gtest/gtest.h>
+#include <vector>
+
+// Assuming these are the dimensions you want for the test
+const int dimx = 8;
+const int dimy = 6;
+
+// Declaration of the filltab function
+void filltab(std::vector<std::vector<float>>& ftab) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            ftab[x][y] = (x + 1) * 100 + (y + 1); // Adjusted for 0-based indexing
+        }
+    }
+}
+
+// Test fixture for setup and teardown
+class ArrayTest : public ::testing::Test {
+protected:
+    std::vector<std::vector<float>> ftab;
+
+    void SetUp() override {
+        ftab.resize(dimx, std::vector<float>(dimy));
+        filltab(ftab);
+    }
+};
+
+// Test the filltab function
+TEST_F(ArrayTest, FillTabCorrectlyFillsArray) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            EXPECT_EQ(ftab[x][y], (x + 1) * 100 + (y + 1));
+        }
+    }
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+fortran compile result in 1th turn: Fortran Stdout: b''
+Fortran Stderr: b"/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:6:28:\n\n    6 |     real :: ftab(dimx, dimy)\n      |                            1\nError: Explicit shaped array with nonconstant bounds at (1)\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:9:33:\n\n    9 |     call filltab(dimx, dimy, ftab)\n      |                                 1\nError: Symbol \xe2\x80\x98ftab\xe2\x80\x99 at (1) has no IMPLICIT type\n/home/uconn/BinLei/Data_engine/NLP_Task/data/fortran_2/test.f90:32:39:\n\n   32 |             write(*, '(I3, 2X, 6F8.1)'), x, (tab(x, y), y = 1, dimy)\n      |                                       1\nWarning: Legacy Extension: Comma before i/o item list at (1)\n"
+cpp compile result in 1th turn: C++ Stdout: [==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ArrayTest
+[ RUN      ] ArrayTest.FillTabCorrectlyFillsArray
+[       OK ] ArrayTest.FillTabCorrectlyFillsArray (0 ms)
+[----------] 1 test from ArrayTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+
+C++ Stderr: 
+
+ff_ct gpt answer 
+
+Based on the error messages you've received, it seems there are a few issues with the Fortran code related to variable declarations and passing arrays to subroutines. Fortran requires that the dimensions of arrays passed as arguments be either explicitly defined or assumed-shape. Here's a corrected version of the Fortran code that should compile and run without errors. This version includes a module to define the subroutines, which allows for assumed-shape arrays, and a program that uses this module.
+
+```fortran
+module arrayOps
+    implicit none
+contains
+    subroutine filltab(dimx, dimy, ftab)
+        integer, intent(in) :: dimx, dimy
+        real, intent(out) :: ftab(dimx, dimy)
+        integer :: x, y
+
+        do x = 1, dimx
+            do y = 1, dimy
+                ftab(x, y) = x * 100 + y
+            end do
+        end do
+    end subroutine filltab
+
+    subroutine printtab(tab, dimx, dimy)
+        integer, intent(in) :: dimx, dimy
+        real, intent(in) :: tab(dimx, dimy)
+        integer :: x, y
+
+        do x = 1, dimx
+            ! Adjusted format string to remove comma before I/O list
+            write(*, '(I3, 2X, 6F8.1)') x, (tab(x, y), y = 1, dimy)
+        end do
+    end subroutine printtab
+end module arrayOps
+
+program test
+    use arrayOps
+    implicit none
+
+    ! Declarations
+    integer :: dimx = 8, dimy = 6
+    real, allocatable :: ftab(:,:)
+
+    ! Allocate the array
+    allocate(ftab(dimx, dimy))
+
+    ! Procedure calls
+    call filltab(dimx, dimy, ftab)
+    call printtab(ftab, dimx, dimy)
+
+    ! Deallocate the array
+    deallocate(ftab)
+end program test
+```
+
+This corrected version addresses the issues:
+
+1. The array `ftab` is now declared with `allocatable` in the main program, allowing its size to be determined at runtime. This fixes the error related to nonconstant bounds.
+2. The `module arrayOps` is used to contain the subroutine definitions. This approach is more modern and recommended for Fortran programming as it provides better scoping and allows for assumed-shape array parameters in subroutines (though not strictly necessary with explicit shape in this case).
+3. The format string in the `write` statement of the `printtab` subroutine was adjusted to comply with Fortran standards, addressing the warning about a legacy extension.
+
+To compile and run this code, save it to a file (for example, `test.f90`) and use a Fortran compiler like gfortran:
+
+```
+gfortran -o test test.f90
+./test
+```
+
+This should compile without errors and print the filled array when run.
+
+Runing modification 2th turn
+
+fortran code that need to be executed:
+
+module arrayOps
+    implicit none
+contains
+    subroutine filltab(dimx, dimy, ftab)
+        integer, intent(in) :: dimx, dimy
+        real, intent(out) :: ftab(dimx, dimy)
+        integer :: x, y
+
+        do x = 1, dimx
+            do y = 1, dimy
+                ftab(x, y) = x * 100 + y
+            end do
+        end do
+    end subroutine filltab
+
+    subroutine printtab(tab, dimx, dimy)
+        integer, intent(in) :: dimx, dimy
+        real, intent(in) :: tab(dimx, dimy)
+        integer :: x, y
+
+        do x = 1, dimx
+            ! Adjusted format string to remove comma before I/O list
+            write(*, '(I3, 2X, 6F8.1)') x, (tab(x, y), y = 1, dimy)
+        end do
+    end subroutine printtab
+end module arrayOps
+
+program test
+    use arrayOps
+    implicit none
+
+    ! Declarations
+    integer :: dimx = 8, dimy = 6
+    real, allocatable :: ftab(:,:)
+
+    ! Allocate the array
+    allocate(ftab(dimx, dimy))
+
+    ! Procedure calls
+    call filltab(dimx, dimy, ftab)
+    call printtab(ftab, dimx, dimy)
+
+    ! Deallocate the array
+    deallocate(ftab)
+end program test
+c++ code that need to be executed:
+ #include <gtest/gtest.h>
+#include <vector>
+
+// Assuming these are the dimensions you want for the test
+const int dimx = 8;
+const int dimy = 6;
+
+// Declaration of the filltab function
+void filltab(std::vector<std::vector<float>>& ftab) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            ftab[x][y] = (x + 1) * 100 + (y + 1); // Adjusted for 0-based indexing
+        }
+    }
+}
+
+// Test fixture for setup and teardown
+class ArrayTest : public ::testing::Test {
+protected:
+    std::vector<std::vector<float>> ftab;
+
+    void SetUp() override {
+        ftab.resize(dimx, std::vector<float>(dimy));
+        filltab(ftab);
+    }
+};
+
+// Test the filltab function
+TEST_F(ArrayTest, FillTabCorrectlyFillsArray) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            EXPECT_EQ(ftab[x][y], (x + 1) * 100 + (y + 1));
+        }
+    }
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+fortran compile result in 2th turn: Fortran Stdout:   1     101.0   102.0   103.0   104.0   105.0   106.0
+  2     201.0   202.0   203.0   204.0   205.0   206.0
+  3     301.0   302.0   303.0   304.0   305.0   306.0
+  4     401.0   402.0   403.0   404.0   405.0   406.0
+  5     501.0   502.0   503.0   504.0   505.0   506.0
+  6     601.0   602.0   603.0   604.0   605.0   606.0
+  7     701.0   702.0   703.0   704.0   705.0   706.0
+  8     801.0   802.0   803.0   804.0   805.0   806.0
+
+Fortran Stderr: 
+cpp compile result in 2th turn: C++ Stdout: [==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ArrayTest
+[ RUN      ] ArrayTest.FillTabCorrectlyFillsArray
+[       OK ] ArrayTest.FillTabCorrectlyFillsArray (0 ms)
+[----------] 1 test from ArrayTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+
+C++ Stderr: 
+
+ft_ct gpt answer Yes
+
+yes Based on the unit test codes and the specifications provided in previous interactions, below are the corrected and complete Fortran and C++ code pairs that implement and test the functionality of filling and printing a 2D array.
+
+### Fortran Code
+
+```fortran
+module arrayOps
+    implicit none
+    integer, parameter :: dimx = 8, dimy = 6
+    real, dimension(dimx, dimy) :: ftab
+contains
+    subroutine filltab()
+        integer :: x, y
+
+        do x = 1, dimx
+            do y = 1, dimy
+                ftab(x, y) = x * 100 + y
+            end do
+        end do
+    end subroutine filltab
+
+    subroutine printtab()
+        integer :: x, y
+
+        do x = 1, dimx
+            write(*, '(I3, 2X, 6F8.1)') x, (ftab(x, y), y = 1, dimy)
+        end do
+    end subroutine printtab
+end module arrayOps
+
+program test
+    use arrayOps
+    implicit none
+
+    call filltab()
+    call printtab()
+end program test
+```
+
+This Fortran program defines a module `arrayOps` that contains a 2D array `ftab` and two subroutines: `filltab` for filling the array and `printtab` for printing it. The `test` program uses this module to perform the operations.
+
+### C++ Code
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <iomanip> // For std::setw and std::setprecision
+#include <gtest/gtest.h>
+
+const int dimx = 8;
+const int dimy = 6;
+
+void filltab(std::vector<std::vector<float>>& ftab) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            ftab[x][y] = (x + 1) * 100 + (y + 1); // Adjusted for 0-based indexing
+        }
+    }
+}
+
+void printtab(const std::vector<std::vector<float>>& tab) {
+    for (int x = 0; x < dimx; ++x) {
+        std::cout << std::setw(3) << x + 1 << "  "; // Adjusted for 0-based indexing and formatted output
+        for (int y = 0; y < dimy; ++y) {
+            std::cout << std::setw(6) << std::setprecision(1) << std::fixed << tab[x][y] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+// Test fixture for setup and teardown
+class ArrayTest : public ::testing::Test {
+protected:
+    std::vector<std::vector<float>> ftab;
+
+    void SetUp() override {
+        ftab.resize(dimx, std::vector<float>(dimy));
+        filltab(ftab);
+    }
+};
+
+// Test the filltab function
+TEST_F(ArrayTest, FillTabCorrectlyFillsArray) {
+    for (int x = 0; x < dimx; ++x) {
+        for (int y = 0; y < dimy; ++y) {
+            EXPECT_EQ(ftab[x][y], (x + 1) * 100 + (y + 1));
+        }
+    }
+}
+
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+```
+
+To compile and run the C++ code with Google Test, you will need to have Google Test installed and properly linked in your build environment. The test checks that the `filltab` function fills the 2D vector as expected. The `printtab` function is also provided to match the functionality described, though its output is not automatically verified by the unit tests due to the nature of output testing.
+
+
