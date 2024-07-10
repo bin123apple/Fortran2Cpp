@@ -1,0 +1,126 @@
+\n\n[INST] Translate this Fortran code to C++:
+\n\n[INST] Translate this Fortran code to C++:
+\n\n[INST] Translate this Fortran code to C++:
+\n\n
+\n\n[INST] 
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n\n[INST] 
+\n\n[INST] Translate :
+\n\n[INST] Translate 
+\n\n[INST] Translate this Fortran code to C++:
+
+\n\n[INST] Translate this Fortran code to C++:
+\n\n[INST] Translate this Fortran code
+\n\n[INST] Translate this Fortran code
+\n\n[INST] Translate this Fortran code
+\n
+\n
+\n
+\n
+\n\n[INST] 
+\n
+\n
+\n
+\n
+\n\n[INST] 
+\n\n[INST] Translate this Fortran code
+\n
+\n
+\n
+\n
+\n\n[INST] 
+\n\n[INST] Translate this Fortran code to C++:
+\n\n[INST] 
+\n\n[INST] Translate this Fortran code to C++:
+n\n[INST] Translate this Fortran code to C++:
+\n\n
+\n\n[INST] 
+\n
+\n
+\n
+\n
+n\n[INST] Translate this Fortran code to C++:
+\n\n
+\n\n[INST] 
+\n
+\n\n[INST]
+\n\n[INST]
+\n\n
+\n\n[INST] 
+\n
+\n\n[INST]
+\n\n[INST]
+\n\n
+\n\n[INST] 
+\n
+\n\n[INST]
+\n\n[INST]
+\n\n[INST]
+\n\n[INST]
+\n\n[INST]
+\n\n[INST]
+\n\n
+\n\n[INST] 
+\n
+\n\n[INST]
+\n\n[INST]
+\n\n
+\n\n[INST] 
+\n
+\n\n
+\n\n[INST] 
+\n
+\n\n[INST]
+\n\n[INST]
+\n\n
+\n\n[INST] 
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+\n
+Certainly, here is the equivalent C++ code:
+\n\n[INST]
+\n\n
+\n\n[INST] 
+\n
+\n
+\n
+\n
+Certainly, here is the equivalent C++ code:
+\n\n[INST]
+\n\n
+\n\n[INST] 
+Certainly, here is the equivalent C++ code:
+\n\n[INST]
+\n
+\n
+\n
+\n
+\n
+\n
