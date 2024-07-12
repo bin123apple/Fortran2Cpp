@@ -692,7 +692,7 @@ int main() {
 Running these codes should result in 4 passing tests for both the Fortran and C++ implementations, indicating correct translation and functionality.
 
 
-###Example 2
+###Example 2:
 
 
 fortran_wo_com:
