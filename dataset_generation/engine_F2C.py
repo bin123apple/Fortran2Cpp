@@ -6,6 +6,7 @@ This is the code for Fortran to C++ code translation. Using GPT-4 as the teacher
 # sys.path.append('..')
 import os
 import glob
+import re
 import json
 import pandas as pd
 import subprocess
@@ -14,6 +15,40 @@ from datasets import load_dataset
 
 from utils.prompt import * 
 from utils.model_utils import *
+
+
+def remove_fortran_comments_fixed(code):
+    """
+    ### Code from Naveed Ahmed Sekender ###
+    Removes comments uniformly from Fortran code (marked by '!', 'C', 'c', or '*'), 
+    while preserving lines containing OpenMP directives.
+    """
+    # Patterns to identify comments and directives
+    omp_directives_pattern = re.compile(r'^[ \t]*[!C\*]\$OMP', re.IGNORECASE)
+    old_style_comment_pattern = re.compile(r'^[ \t]*[Cc\*]')
+    comment_pattern = re.compile(r'!(?![$]omp).*$', re.IGNORECASE)
+
+    lines = code.split('\n')
+    cleaned_lines = []
+
+    for line in lines:
+        if omp_directives_pattern.search(line):
+            # Remove non-directive comments from lines containing OpenMP directives
+            line = comment_pattern.sub('', line)
+            cleaned_lines.append(line.strip())
+            continue
+
+        # Check and skip old-style comments if they are not OpenMP directives
+        if old_style_comment_pattern.match(line) and not omp_directives_pattern.match(line):
+            continue
+
+        # Remove standard comments
+        line = comment_pattern.sub('', line)
+
+        if line.strip():
+            cleaned_lines.append(line.strip())
+
+    return '\n'.join(cleaned_lines)
 
 
 def generate_str_answer_gpt(input_prompt_gpt,max_tokens,gpt_model = "gpt-4-0125-preview"):
@@ -429,6 +464,8 @@ def generate_data(key, input_dataset, output_file, gpt_model="gpt-4"):
             fortran_wo_com = delete_comments.format(Fortran_Code = fortran_code)
             fortran_wo_com = generate_str_answer_gpt(fortran_wo_com, max_tokens)
             fortran_wo_com = fortran_wo_com.encode().decode('unicode_escape','replace')
+            # fortran_wo_com = remove_fortran_comments_fixed(fortran_code) 
+            
             print(f"fortran_wo_com:\n{fortran_wo_com}")
             encoding = tiktoken.encoding_for_model("gpt-4")
             token_count = len(encoding.encode(fortran_wo_com,disallowed_special=()))     

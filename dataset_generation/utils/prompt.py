@@ -93,7 +93,14 @@ Here is my fortran code: {fortran_code}. Now you need to provide a complete ques
 """
 
 q_ask_s_unit_test ="""
-Here is the answer from the solver: {ser_answer}, you now need to ask the answerer to provide the executable Unit tests codes for both the original Fortran code and the translated C++ code.
+Here is the answer from the solver: {ser_answer}, you now need to ask the answerer to provide the executable Unit tests codes for both the original Fortran code and the translated C++ code. 
+Please add the unit tests to the main function. 
+In c++ code, you should use 'assert' for the unit test checking. One example: assert (has_close_elements((1.0, 2.0, 5.9, 4.0, 5.0), 0.95) == true);
+In fortran code, you should use the following format for the unit test checking:     
+if (has_close_elements(a, n, 0.8)) then
+    write(*,*) "Test case 2 failed: assertion failed"
+    call exit(1)
+end if
 """
 
 end_prompt_ = """
