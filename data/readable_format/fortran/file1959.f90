@@ -1,0 +1,10 @@
+PROGRAM testF1
+  IMPLICIT NONE
+CALL F1
+  PRINT *, 'F1 executed successfully.'
+END PROGRAM testF1
+
+SUBROUTINE F1
+  IMPLICIT NONE
+  ! Function body
+END SUBROUTINE F1

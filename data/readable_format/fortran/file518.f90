@@ -1,0 +1,19 @@
+! Combined Fortran file with module and test program
+MODULE MODEL_CRUST_1_0_BROADCAST__genmod
+  IMPLICIT NONE
+  CONTAINS
+    SUBROUTINE MODEL_CRUST_1_0_BROADCAST(MYRANK)
+      INTEGER, INTENT(IN) :: MYRANK
+      PRINT *, 'Rank:', MYRANK
+    END SUBROUTINE MODEL_CRUST_1_0_BROADCAST
+END MODULE MODEL_CRUST_1_0_BROADCAST__genmod
+
+PROGRAM testBroadcast
+  USE MODEL_CRUST_1_0_BROADCAST__genmod
+  IMPLICIT NONE
+  INTEGER :: myRank
+
+  ! Example usage of the MODEL_CRUST_1_0_BROADCAST subroutine
+  myRank = 1
+  CALL MODEL_CRUST_1_0_BROADCAST(myRank)
+END PROGRAM testBroadcast

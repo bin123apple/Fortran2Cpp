@@ -1,0 +1,6 @@
+SUBROUTINE main2d
+END SUBROUTINE main2d
+
+PROGRAM test
+  CALL main2d
+END PROGRAM test

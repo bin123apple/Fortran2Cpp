@@ -1,0 +1,44 @@
+! test_dorgql.f90
+MODULE DORGQL__genmod
+  INTERFACE 
+    SUBROUTINE DORGQL(M,N,K,A,LDA,TAU,WORK,LWORK,INFO)
+      INTEGER(KIND=4) :: LDA
+      INTEGER(KIND=4) :: M
+      INTEGER(KIND=4) :: N
+      INTEGER(KIND=4) :: K
+      REAL(KIND=8) :: A(LDA,*)
+      REAL(KIND=8) :: TAU(*)
+      REAL(KIND=8) :: WORK(*)
+      INTEGER(KIND=4) :: LWORK
+      INTEGER(KIND=4) :: INFO
+    END SUBROUTINE DORGQL
+  END INTERFACE 
+END MODULE DORGQL__genmod
+
+SUBROUTINE DORGQL(M,N,K,A,LDA,TAU,WORK,LWORK,INFO)
+  INTEGER(KIND=4) :: LDA, M, N, K, I, J, INFO
+  REAL(KIND=8) :: A(LDA,*), TAU(*), WORK(*)
+  INFO = 0
+  DO J = 1, N
+    DO I = 1, M
+      A(I, J) = M + N + K  ! Simple operation for demonstration
+    END DO
+  END DO
+END SUBROUTINE DORGQL
+
+PROGRAM test_dorgql
+  USE DORGQL__genmod
+  IMPLICIT NONE
+  INTEGER, PARAMETER :: M=4, N=3, K=2, LDA=M, LWORK=10
+  REAL(KIND=8), ALLOCATABLE :: A(:,:), TAU(:), WORK(:)
+  INTEGER :: INFO
+
+  ALLOCATE(A(LDA,N), TAU(K), WORK(LWORK))
+  CALL DORGQL(M, N, K, A, LDA, TAU, WORK, LWORK, INFO)
+
+  IF (ALL(A == M + N + K)) THEN
+    PRINT *, "Test passed."
+  ELSE
+    PRINT *, "Test failed."
+  END IF
+END PROGRAM test_dorgql

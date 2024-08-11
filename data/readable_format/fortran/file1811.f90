@@ -1,0 +1,7 @@
+SUBROUTINE WORLD
+        PRINT *, 'World!'
+    END SUBROUTINE WORLD
+
+    PROGRAM test
+        CALL WORLD
+    END PROGRAM test

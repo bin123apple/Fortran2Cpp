@@ -1,0 +1,32 @@
+! S2MACH.f90 - The original function plus a simple test harness
+REAL FUNCTION S2MACH(XR, BASE, EXP)
+  INTEGER BASE, EXP
+  REAL TBASE, XR
+
+  TBASE = FLOAT(BASE)
+  S2MACH = XR
+
+  N = EXP
+  IF (N .GE. 0) GO TO 20
+
+  N = -N
+  TBASE = 1.0 / TBASE
+
+20 CONTINUE
+  IF (MOD(N,2) .NE. 0) S2MACH = S2MACH * TBASE
+  N = N / 2
+  IF (N .GE. 2) THEN
+    TBASE = TBASE * TBASE
+    GO TO 20
+  END IF
+
+  IF (N .EQ. 1) S2MACH = S2MACH * TBASE * TBASE
+END FUNCTION S2MACH
+
+PROGRAM test_S2MACH
+  PRINT *, 'Testing S2MACH...'
+  PRINT *, 'S2MACH(2.0, 3, 5) = ', S2MACH(2.0, 3, 5)
+  PRINT *, 'S2MACH(1.0, 2, -3) = ', S2MACH(1.0, 2, -3)
+  PRINT *, 'S2MACH(1.5, 10, 0) = ', S2MACH(1.5, 10, 0)
+  PRINT *, 'S2MACH(2.0, 2, 4) = ', S2MACH(2.0, 2, 4)
+END PROGRAM

@@ -1,0 +1,17 @@
+! combined_assign_flx.f90
+MODULE ASSIGN_FLX__genmod
+  IMPLICIT NONE
+  CONTAINS
+    SUBROUTINE ASSIGN_FLX
+      PRINT *, "ASSIGN_FLX subroutine called"
+    END SUBROUTINE ASSIGN_FLX
+END MODULE ASSIGN_FLX__genmod
+
+PROGRAM test_ASSIGN_FLX
+  USE ASSIGN_FLX__genmod
+  IMPLICIT NONE
+
+  CALL ASSIGN_FLX
+
+  PRINT *, "Fortran test passed - ASSIGN_FLX called successfully."
+END PROGRAM test_ASSIGN_FLX

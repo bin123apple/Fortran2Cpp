@@ -1,0 +1,47 @@
+MODULE MOD_TYPES
+    IMPLICIT NONE
+
+    TYPE, PUBLIC :: MY_TYPE
+        INTEGER :: X
+    END TYPE MY_TYPE
+END MODULE MOD_TYPES
+
+MODULE M
+    IMPLICIT NONE
+    CONTAINS
+        SUBROUTINE FOO(VAR)
+            USE MOD_TYPES
+            IMPLICIT NONE
+            TYPE(MY_TYPE) :: VAR
+
+            !$OMP TASK FIRSTPRIVATE(VAR)
+                VAR % X = 1
+            !$OMP END TASK
+
+            !$OMP TASKWAIT
+        END SUBROUTINE FOO
+END MODULE M
+
+MODULE TEST_MOD
+    USE MOD_TYPES
+    USE M
+    IMPLICIT NONE
+CONTAINS
+    SUBROUTINE TEST_FOO
+        TYPE(MY_TYPE) :: VAR
+        VAR % X = -1
+        CALL FOO(VAR)
+        
+        IF (VAR % X /= -1) THEN
+            PRINT*, 'Test Failed: VAR % X /= -1'
+        ELSE
+            PRINT*, 'Test Passed'
+        END IF
+    END SUBROUTINE TEST_FOO
+END MODULE TEST_MOD
+
+PROGRAM TEST_P
+    USE TEST_MOD
+    IMPLICIT NONE
+    CALL TEST_FOO
+END PROGRAM TEST_P

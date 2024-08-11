@@ -1,0 +1,80 @@
+! file: arc_functions.f90
+SUBROUTINE ARCDABS (R, X)
+    REAL, INTENT(OUT) :: R
+    REAL, INTENT(IN) :: X
+    R = ABS(X)
+END SUBROUTINE ARCDABS
+
+SUBROUTINE ARCXDABS (R, X)
+    COMPLEX, INTENT(OUT) :: R
+    COMPLEX, INTENT(IN) :: X
+    R = ABS(X)
+END SUBROUTINE ARCXDABS
+
+SUBROUTINE ARCDSQRT (R, X)
+    REAL, INTENT(OUT) :: R
+    REAL, INTENT(IN) :: X
+    R = SQRT(X)
+END SUBROUTINE ARCDSQRT
+
+SUBROUTINE ARCXDSQRT (R, X)
+    COMPLEX, INTENT(OUT) :: R
+    COMPLEX, INTENT(IN) :: X
+    R = SQRT(X)
+END SUBROUTINE ARCXDSQRT
+
+SUBROUTINE ARCDLOG (R, X)
+    REAL, INTENT(OUT) :: R
+    REAL, INTENT(IN) :: X
+    R = LOG(X)
+END SUBROUTINE ARCDLOG
+
+SUBROUTINE ARCXDLOG (R, X)
+    COMPLEX, INTENT(OUT) :: R
+    COMPLEX, INTENT(IN) :: X
+    R = LOG(X)
+END SUBROUTINE ARCXDLOG
+
+SUBROUTINE ARCDEXP (R, X)
+    REAL, INTENT(OUT) :: R
+    REAL, INTENT(IN) :: X
+    R = EXP(X)
+END SUBROUTINE ARCDEXP
+
+SUBROUTINE ARCXDEXP (R, X)
+    COMPLEX, INTENT(OUT) :: R
+    COMPLEX, INTENT(IN) :: X
+    R = EXP(X)
+END SUBROUTINE ARCXDEXP
+
+SUBROUTINE ARPOWCDI (R, C, I)
+    REAL, INTENT(OUT) :: R
+    REAL, INTENT(IN) :: C
+    INTEGER, INTENT(IN) :: I
+    R = C**I
+END SUBROUTINE ARPOWCDI
+
+SUBROUTINE ARPOWCDJ (R, C, J)
+    REAL, INTENT(OUT) :: R
+    REAL, INTENT(IN) :: C
+    INTEGER, INTENT(IN) :: J
+    R = C**J
+END SUBROUTINE ARPOWCDJ
+
+! Add other subroutines here
+
+! Test program for the subroutines
+PROGRAM testArcFunctions
+    REAL :: rReal
+    COMPLEX :: rComplex
+    REAL :: testValueReal = 4.0
+    COMPLEX :: testValueComplex = (3.0, 4.0)
+
+    CALL ARCDABS(rReal, -testValueReal)
+    PRINT *, 'ARCDABS(-4.0) = ', rReal
+
+    CALL ARCXDABS(rComplex, testValueComplex)
+    PRINT *, 'ARCXDABS((3.0, 4.0)) = ', ABS(rComplex)
+
+    ! Add tests for other subroutines here
+END PROGRAM testArcFunctions

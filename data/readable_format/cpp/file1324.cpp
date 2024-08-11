@@ -1,0 +1,1 @@
+std::cout << std::setw(12) << std::right << integer1 << std::setw(1) << integer2;

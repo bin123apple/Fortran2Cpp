@@ -1,0 +1,43 @@
+MODULE collis_I
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  IMPLICIT NONE
+CONTAINS
+  FUNCTION collis(CW, RW, CNBR, RNBR, NNBR, ISHAPE) RESULT(collision)
+    REAL(REAL64), DIMENSION(3), INTENT(IN) :: CW
+    REAL(REAL64), INTENT(IN) :: RW
+    REAL(REAL64), DIMENSION(3,200), INTENT(IN) :: CNBR
+    REAL(REAL64), DIMENSION(200), INTENT(IN) :: RNBR
+    INTEGER, INTENT(IN) :: NNBR, ISHAPE
+    LOGICAL :: collision
+
+    ! Mock-up collision logic - replace with actual logic
+    collision = .FALSE.
+  END FUNCTION collis
+END MODULE collis_I
+
+PROGRAM testCollis
+  USE collis_I
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  IMPLICIT NONE
+
+  REAL(REAL64), DIMENSION(3) :: CW = [0.0_REAL64, 0.0_REAL64, 0.0_REAL64]
+  REAL(REAL64) :: RW = 1.0_REAL64
+  REAL(REAL64), DIMENSION(3, 200) :: CNBR
+  REAL(REAL64), DIMENSION(200) :: RNBR
+  INTEGER :: NNBR = 1
+  INTEGER :: ISHAPE = 1
+  LOGICAL :: result
+
+  CNBR = 0.0_REAL64
+  CNBR(:, 1) = [3.0_REAL64, 3.0_REAL64, 0.0_REAL64]
+  RNBR = 1.0_REAL64
+
+  result = collis(CW, RW, CNBR, RNBR, NNBR, ISHAPE)
+
+  IF (result) THEN
+    PRINT *, "Test 1 failed."
+  ELSE
+    PRINT *, "Test 1 passed."
+  END IF
+
+END PROGRAM testCollis

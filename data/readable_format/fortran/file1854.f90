@@ -1,0 +1,51 @@
+PROGRAM TestSolutn
+  IMPLICIT NONE
+  DOUBLE PRECISION Z(4), DMVAL(2), X
+  DOUBLE PRECISION EPS, DMU, EPS4MU, GAMMA, XT
+  COMMON /BlockVars/ EPS, DMU, EPS4MU, GAMMA, XT
+  INTEGER I
+
+  ! Initialize variables
+  X = 0.5
+  GAMMA = 1.0
+  XT = 0.75
+
+  CALL SOLUTN(X, Z, DMVAL)
+
+  PRINT *, 'Z:'
+  DO I = 1, 4
+     PRINT *, Z(I)
+  END DO
+
+  PRINT *, 'DMVAL:'
+  DO I = 1, 2
+     PRINT *, DMVAL(I)
+  END DO
+END PROGRAM TestSolutn
+
+SUBROUTINE SOLUTN(X, Z, DMVAL)
+  IMPLICIT NONE
+  DOUBLE PRECISION X, Z(4), DMVAL(2)
+  DOUBLE PRECISION CONS, DCONS, D2CONS
+  DOUBLE PRECISION EPS, DMU, EPS4MU, GAMMA, XT
+  COMMON /BlockVars/ EPS, DMU, EPS4MU, GAMMA, XT
+
+  CONS = GAMMA*X*(1.-.5*X*X)
+  DCONS = GAMMA*(1.-1.5*X*X)
+  D2CONS = -3.*GAMMA*X
+
+  IF (X.GT.XT) THEN
+    Z(1) = 0.
+    Z(2) = 0.
+    Z(3) = -CONS
+    Z(4) = -DCONS
+    DMVAL(2) = -D2CONS
+  ELSE
+    Z(1) = 2.*X
+    Z(2) = 2.
+    Z(3) = -2.*X + CONS
+    Z(4) = -2. + DCONS
+    DMVAL(2) = D2CONS
+  END IF
+  DMVAL(1) = 0.
+END SUBROUTINE SOLUTN

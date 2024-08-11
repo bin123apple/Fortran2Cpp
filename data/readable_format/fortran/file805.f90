@@ -1,0 +1,61 @@
+PROGRAM TestDLASDT
+    IMPLICIT NONE
+    INTEGER, PARAMETER :: N = 7, MSUB = 3
+    INTEGER :: LVL, ND, I
+    INTEGER, ALLOCATABLE :: INODE(:), NDIML(:), NDIMR(:)
+
+    ALLOCATE(INODE(N))
+    ALLOCATE(NDIML(N))
+    ALLOCATE(NDIMR(N))
+
+    CALL DLASDT(N, LVL, ND, INODE, NDIML, NDIMR, MSUB)
+
+    PRINT *, 'LVL:', LVL
+    PRINT *, 'ND:', ND
+    PRINT *, 'INODE:', (INODE(I), I = 1, ND)
+    PRINT *, 'NDIML:', (NDIML(I), I = 1, ND)
+    PRINT *, 'NDIMR:', (NDIMR(I), I = 1, ND)
+
+    DEALLOCATE(INODE)
+    DEALLOCATE(NDIML)
+    DEALLOCATE(NDIMR)
+END PROGRAM TestDLASDT
+
+SUBROUTINE DLASDT(N, LVL, ND, INODE, NDIML, NDIMR, MSUB)
+    INTEGER, INTENT(IN) :: N, MSUB
+    INTEGER, INTENT(OUT) :: LVL, ND
+    INTEGER, INTENT(OUT) :: INODE(*), NDIML(*), NDIMR(*)
+    DOUBLE PRECISION :: TWO
+    PARAMETER (TWO = 2.0D0)
+    INTEGER :: I, IL, IR, LLST, MAXN, NCRNT, NLVL
+    DOUBLE PRECISION :: TEMP
+
+    MAXN = MAX(1, N)
+    TEMP = LOG(DBLE(MAXN) / DBLE(MSUB + 1)) / LOG(TWO)
+    LVL = INT(TEMP) + 1
+    
+    I = N / 2
+    INODE(1) = I + 1
+    NDIML(1) = I
+    NDIMR(1) = N - I - 1
+    IL = 0
+    IR = 1
+    LLST = 1
+    
+    DO NLVL = 1, LVL - 1
+        DO I = 0, LLST - 1
+            IL = IL + 2
+            IR = IR + 2
+            NCRNT = LLST + I
+            NDIML(IL) = NDIML(NCRNT) / 2
+            NDIMR(IL) = NDIML(NCRNT) - NDIML(IL) - 1
+            INODE(IL) = INODE(NCRNT) - NDIMR(IL) - 1
+            NDIML(IR) = NDIMR(NCRNT) / 2
+            NDIMR(IR) = NDIMR(NCRNT) - NDIML(IR) - 1
+            INODE(IR) = INODE(NCRNT) + NDIML(IR) + 1
+        END DO
+        LLST = LLST * 2
+    END DO
+    
+    ND = LLST * 2 - 1
+END SUBROUTINE DLASDT

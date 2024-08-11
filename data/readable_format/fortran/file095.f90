@@ -1,0 +1,27 @@
+PROGRAM MainProgram
+  IMPLICIT NONE
+  
+  ! Define the constants directly in the program
+  REAL(KIND(0.0d0)), PARAMETER :: PI = 3.14159265359d0
+  REAL(KIND(0.0d0)), PARAMETER :: SAT_HEIGHT = 42164.0d0
+  REAL(KIND(0.0d0)), PARAMETER :: R_EQ = 6378.169d0
+  REAL(KIND(0.0d0)), PARAMETER :: R_POL = 6356.5838d0
+  REAL(KIND(0.0d0)), PARAMETER :: SUB_LON = 0.0d0
+  
+  INTEGER, PARAMETER :: CFAC = -781648343
+  INTEGER, PARAMETER :: LFAC = -781648343
+  INTEGER, PARAMETER :: COFF = 1856
+  INTEGER, PARAMETER :: LOFF = 1856
+
+  ! Example usage of the constants
+  WRITE(*,*) "PI =", PI
+  WRITE(*,*) "SAT_HEIGHT =", SAT_HEIGHT
+  WRITE(*,*) "R_EQ =", R_EQ
+  WRITE(*,*) "R_POL =", R_POL
+  WRITE(*,*) "SUB_LON =", SUB_LON
+  WRITE(*,*) "CFAC =", CFAC
+  WRITE(*,*) "LFAC =", LFAC
+  WRITE(*,*) "COFF =", COFF
+  WRITE(*,*) "LOFF =", LOFF
+
+END PROGRAM MainProgram

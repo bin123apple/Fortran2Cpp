@@ -1,5 +1,6 @@
 import re
 import json
+import os
 
 def extract_code(data):
     
@@ -35,26 +36,44 @@ def extract_code(data):
 
     return cplusplus_code, fortran_code, first_sentence
 
-file_path = '' # Input Json file
-output_file_path = "" # Output Json file
+file_path = '/home/uconn/BinLei/F2C-Translator/data/F2C_dialogue_25K.json'  # 输入的 JSON 文件路径
+cpp_output_directory = '/home/uconn/BinLei/F2C-Translator/data/readable_format/cpp'  # 用于保存 C++ 代码的文件夹路径
+fortran_output_directory = '/home/uconn/BinLei/F2C-Translator/data/readable_format/fortran'  # 用于保存 Fortran 代码的文件夹路径
+
+# 创建保存文件的文件夹，如果它们不存在
+if not os.path.exists(cpp_output_directory):
+    os.makedirs(cpp_output_directory)
+
+if not os.path.exists(fortran_output_directory):
+    os.makedirs(fortran_output_directory)
+
 with open(file_path, 'r', encoding='utf-8') as f:
     datas = json.load(f)
     cleaned_dataset = []
     for index in range(len(datas)):
         data = datas[index]
         cpp_code, fortran_code, first_sentence = extract_code(data)
-        cleaned_data = {"id":index,
-        "messages":[{"role": "user",
-                    "content":first_sentence + "\n\n" + fortran_code },
-                    {"role": "assistant",
-                     "content": cpp_code 
-                    }]
-                    }
+        
+        # 将 C++ 代码保存到 .cpp 文件中
+        cpp_filename = os.path.join(cpp_output_directory, f"file{index:03d}.cpp")
+        with open(cpp_filename, 'w', encoding='utf-8') as cpp_file:
+            cpp_file.write(cpp_code)
+        
+        # 将 Fortran 代码保存到 .f90 文件中
+        fortran_filename = os.path.join(fortran_output_directory, f"file{index:03d}.f90")
+        with open(fortran_filename, 'w', encoding='utf-8') as fortran_file:
+            fortran_file.write(fortran_code)
+        
+        cleaned_data = {
+            "id": index,
+            "messages": [
+                {"role": "user", "content": first_sentence + "\n\n" + fortran_code },
+                {"role": "assistant", "content": cpp_code }
+            ]
+        }
         cleaned_dataset.append(cleaned_data)
+        
         if index % 1000 == 0:
-            print(f"index:{index}")
+            print(f"index: {index}")
             print("C++ Code:\n", cpp_code)
             print("Fortran Code:\n", fortran_code)
-
-with open(output_file_path, 'w', encoding='utf-8') as f:
-    json.dump(cleaned_dataset, f, ensure_ascii=False, indent=4)

@@ -1,0 +1,59 @@
+PROGRAM TestDLASDT
+  IMPLICIT NONE
+  INTEGER, PARAMETER :: N = 8
+  INTEGER :: LVL, ND, MSUB
+  INTEGER :: INODE(N), NDIML(N), NDIMR(N)
+  DOUBLE PRECISION :: OPS, ITCNT
+  INTEGER :: I
+
+  MSUB = 2
+  OPS = 0.0D0
+  ITCNT = 0.0D0
+
+  CALL DLASDT(N, LVL, ND, INODE, NDIML, NDIMR, MSUB)
+
+  PRINT*, 'LVL:', LVL
+  PRINT*, 'ND:', ND
+  PRINT*, 'INODE:', (INODE(I), I = 1, N)
+  PRINT*, 'NDIML:', (NDIML(I), I = 1, N)
+  PRINT*, 'NDIMR:', (NDIMR(I), I = 1, N)
+
+END PROGRAM TestDLASDT
+
+SUBROUTINE DLASDT( N, LVL, ND, INODE, NDIML, NDIMR, MSUB )
+  INTEGER            LVL, MSUB, N, ND
+  INTEGER            INODE( * ), NDIML( * ), NDIMR( * )
+  DOUBLE PRECISION   OPS, ITCNT
+  DOUBLE PRECISION   TWO
+  PARAMETER          ( TWO = 2.0D0 )
+  INTEGER            I, IL, IR, LLST, MAXN, NCRNT, NLVL
+  DOUBLE PRECISION   TEMP
+  INTRINSIC          DBLE, INT, LOG, MAX
+  OPS = OPS + DBLE( 2 )
+  MAXN = MAX( 1, N )
+  TEMP = LOG( DBLE( MAXN ) / DBLE( MSUB+1 ) ) / LOG( TWO )
+  LVL = INT( TEMP ) + 1
+  I = N / 2
+  INODE( 1 ) = I + 1
+  NDIML( 1 ) = I
+  NDIMR( 1 ) = N - I - 1
+  IL = 0
+  IR = 1
+  LLST = 1
+  DO 20 NLVL = 1, LVL - 1
+     DO 10 I = 0, LLST - 1
+        IL = IL + 2
+        IR = IR + 2
+        NCRNT = LLST + I
+        NDIML( IL ) = NDIML( NCRNT ) / 2
+        NDIMR( IL ) = NDIML( NCRNT ) - NDIML( IL ) - 1
+        INODE( IL ) = INODE( NCRNT ) - NDIMR( IL ) - 1
+        NDIML( IR ) = NDIMR( NCRNT ) / 2
+        NDIMR( IR ) = NDIMR( NCRNT ) - NDIML( IR ) - 1
+        INODE( IR ) = INODE( NCRNT ) + NDIML( IR ) + 1
+10     CONTINUE
+     LLST = LLST*2
+20  CONTINUE
+  ND = LLST*2 - 1
+  RETURN
+END SUBROUTINE DLASDT

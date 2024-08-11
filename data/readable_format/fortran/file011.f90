@@ -1,0 +1,38 @@
+MODULE G01PBLMod
+  IMPLICIT NONE
+CONTAINS
+  INTEGER FUNCTION G01PBL(NCHARS, NBYTES)
+    INTEGER, INTENT(IN) :: NCHARS, NBYTES
+    INTEGER :: LEN
+
+    LEN = 1 + NCHARS + NBYTES
+
+    IF (NCHARS > 254) THEN
+      LEN = LEN + 2
+    END IF
+    G01PBL = LEN
+
+  END FUNCTION G01PBL
+END MODULE G01PBLMod
+
+PROGRAM TestG01PBL
+  USE G01PBLMod
+  IMPLICIT NONE
+  INTEGER :: result
+
+  ! Test case 1
+  result = G01PBL(10, 20)
+  PRINT *, "Test 1 (NCHARS=10, NBYTES=20): ", result
+
+  ! Test case 2
+  result = G01PBL(254, 1)
+  PRINT *, "Test 2 (NCHARS=254, NBYTES=1): ", result
+
+  ! Test case 3
+  result = G01PBL(255, 0)
+  PRINT *, "Test 3 (NCHARS=255, NBYTES=0): ", result
+
+  ! Test case 4
+  result = G01PBL(300, 10)
+  PRINT *, "Test 4 (NCHARS=300, NBYTES=10): ", result
+END PROGRAM TestG01PBL

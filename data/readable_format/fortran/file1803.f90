@@ -1,0 +1,62 @@
+PROGRAM testDSRCOM
+  IMPLICIT NONE
+  INTEGER :: i
+  INTEGER, PARAMETER :: LENRLS = 218, LENILS = 37
+  INTEGER, DIMENSION(LENILS) :: ISAV
+  DOUBLE PRECISION, DIMENSION(LENRLS) :: RSAV
+  INTEGER :: JOB
+
+  ! Initialize arrays with test data
+  DO i = 1, LENRLS
+     RSAV(i) = i * 1.0
+  END DO
+
+  DO i = 1, LENILS
+     ISAV(i) = -i
+  END DO
+
+  ! Test JOB = 1
+  JOB = 1
+  CALL DSRCOM(RSAV, ISAV, JOB)
+
+  ! Print results to verify
+  PRINT *, 'After JOB=1:'
+  PRINT *, 'RSAV(1) =', RSAV(1), ', RSAV(LENRLS) =', RSAV(LENRLS)
+  PRINT *, 'ISAV(1) =', ISAV(1), ', ISAV(LENILS) =', ISAV(LENILS)
+
+  ! Test JOB = 2
+  JOB = 2
+  CALL DSRCOM(RSAV, ISAV, JOB)
+
+  ! Print results to verify
+  PRINT *, 'After JOB=2:'
+  PRINT *, 'RSAV(1) =', RSAV(1), ', RSAV(LENRLS) =', RSAV(LENRLS)
+  PRINT *, 'ISAV(1) =', ISAV(1), ', ISAV(LENILS) =', ISAV(LENILS)
+
+END PROGRAM testDSRCOM
+
+SUBROUTINE DSRCOM(RSAV, ISAV, JOB)
+  INTEGER ISAV(*), JOB
+  DOUBLE PRECISION RSAV(*)
+  INTEGER ILS(37)
+  DOUBLE PRECISION RLS(218)
+  INTEGER I, LENILS, LENRLS
+  SAVE LENRLS, LENILS
+  COMMON /DLS001/ RLS, ILS
+  DATA LENRLS/218/, LENILS/37/
+  IF (JOB .EQ. 2) THEN
+    DO I = 1,LENRLS
+      RLS(I) = RSAV(I)
+    END DO
+    DO I = 1,LENILS
+      ILS(I) = ISAV(I)
+    END DO
+  ELSE
+    DO I = 1,LENRLS
+      RSAV(I) = RLS(I)
+    END DO
+    DO I = 1,LENILS
+      ISAV(I) = ILS(I)
+    END DO
+  END IF
+END SUBROUTINE DSRCOM

@@ -1,0 +1,38 @@
+PROGRAM TestZROTG
+  IMPLICIT NONE
+  COMPLEX*16 CA, CB, S
+  DOUBLE PRECISION C
+
+  ! Test case 1
+  CA = (1.0D0, 2.0D0)
+  CB = (3.0D0, 4.0D0)
+  CALL ZROTG(CA, CB, C, S)
+  PRINT *, 'Test 1 - CA:', CA, ' CB:', CB, ' C:', C, ' S:', S
+
+  ! Add more test cases here if needed
+
+CONTAINS
+
+  SUBROUTINE ZROTG(CA, CB, C, S)
+    COMPLEX*16 CA, CB, S
+    DOUBLE PRECISION C
+    COMPLEX*16 ALPHA
+    DOUBLE PRECISION NORM, SCALE
+    INTRINSIC CDABS, DCMPLX, DCONJG, DSQRT
+
+    IF (CDABS(CA) == 0.0D0) THEN
+      C = 0.0D0
+      S = (1.0D0, 0.0D0)
+      CA = CB
+    ELSE
+      SCALE = CDABS(CA) + CDABS(CB)
+      NORM = SCALE * DSQRT((CDABS(CA / DCMPLX(SCALE, 0.0D0))**2) + &
+           (CDABS(CB / DCMPLX(SCALE, 0.0D0))**2))
+      ALPHA = CA / CDABS(CA)
+      C = CDABS(CA) / NORM
+      S = ALPHA * DCONJG(CB) / NORM
+      CA = ALPHA * NORM
+    END IF
+  END SUBROUTINE ZROTG
+
+END PROGRAM TestZROTG

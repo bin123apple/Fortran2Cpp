@@ -1,0 +1,48 @@
+PROGRAM testDCOORD
+    IMPLICIT NONE
+    DOUBLE PRECISION :: A0, B0, AP, BP, A1, B1, A2, B2
+
+    ! Test Case 1
+    A0 = 0.1
+    B0 = 0.2
+    AP = 0.3
+    BP = 0.4
+    A1 = 0.5
+    B1 = 0.6
+    CALL DCOORD(A0, B0, AP, BP, A1, B1, A2, B2)
+    PRINT *, "Test Case 1 - A2:", A2, "B2:", B2
+
+    ! Feel free to add more test cases here
+
+END PROGRAM testDCOORD
+
+! DCOORD Subroutine Definition
+SUBROUTINE DCOORD(A0,B0,AP,BP,A1,B1,A2,B2)
+    IMPLICIT NONE
+    DOUBLE PRECISION, INTENT(IN) :: A0, B0, AP, BP, A1, B1
+    DOUBLE PRECISION, INTENT(OUT) :: A2, B2
+    DOUBLE PRECISION :: SB0, CB0, SBP, CBP, SB1, CB1, SB2, CB2
+    DOUBLE PRECISION :: SAA, CAA, CBB, SBB, SA2, CA2, TA2O2
+
+    SB0=sin(B0)
+    CB0=cos(B0)
+    SBP=sin(BP)
+    CBP=cos(BP)
+    SB1=sin(B1)
+    CB1=cos(B1)
+    SB2=SBP*SB1 + CBP*CB1*cos(AP-A1)
+    CB2=SQRT(1.D0-SB2**2)
+    B2=ATAN2(SB2,CB2)
+    SAA=sin(AP-A1)*CB1/CB2
+    CAA=(SB1-SB2*SBP)/(CB2*CBP)
+    CBB=SB0/CBP
+    SBB=sin(AP-A0)*CB0
+    SA2=SAA*CBB-CAA*SBB
+    CA2=CAA*CBB+SAA*SBB
+    TA2O2=0.0
+    IF(CA2.LE.0.D0) TA2O2=(1.D0-CA2)/SA2 
+    IF(CA2.GT.0.D0) TA2O2=SA2/(1.D0+CA2)
+    A2=2.D0*ATAN(TA2O2)
+    IF(A2.LT.0.D0) A2=A2+6.2831853071795864D0
+
+END SUBROUTINE DCOORD

@@ -1,0 +1,49 @@
+SUBROUTINE FSCAN (OPCODE, NLC, NLI, NLD, NLCPRM, NLIPRM, NLDPRM, WORLD, PIXEL, CONTRL, CONTXT, IERR)
+      INTEGER   CONTRL, IERR, NLC, NLD, NLI, NLIPRM(NLI), OPCODE
+      DOUBLE PRECISION CONTXT(20), NLDPRM(NLD), PIXEL(2), S, WORLD(2)
+      CHARACTER NLCPRM(NLC)*1
+      IERR = 0
+
+      IF (OPCODE.GT.0) THEN
+        PIXEL(1) =  NLDPRM(1) + (WORLD(1) - NLDPRM(3))/NLDPRM(5)
+        S =  NLDPRM(4) + PIXEL(1)*NLDPRM(7)
+        PIXEL(2) =  NLDPRM(2) + (WORLD(2) - S)/NLDPRM(6)
+        CONTRL = 0
+      ELSE IF (OPCODE.EQ.0) THEN
+        IF (NLC.LT.1 .OR. NLI.LT.1 .OR. NLD.LT.7) IERR = 1
+        IF (NLDPRM(5).EQ.0D0) IERR = 1
+        IF (NLDPRM(6).EQ.0D0) IERR = 1
+        IF (NLDPRM(7).EQ.0D0) IERR = 1
+        CONTRL = 0
+      ELSE IF (OPCODE.EQ.-1) THEN
+        WORLD(1) = NLDPRM(3) + NLDPRM(5)*(PIXEL(1) - NLDPRM(1))
+        WORLD(2) = NLDPRM(4) + NLDPRM(6)*(PIXEL(2) - NLDPRM(2)) + PIXEL(1)*NLDPRM(7)
+      ELSE
+        IERR = 1
+      END IF
+      RETURN
+      END
+
+      PROGRAM TestFSCAN
+      IMPLICIT NONE
+      INTEGER :: CONTRL, IERR, NLC, NLD, NLI, OPCODE
+      DOUBLE PRECISION :: CONTXT(20), NLDPRM(7), PIXEL(2), WORLD(2)
+      CHARACTER(LEN=1) :: NLCPRM(1)
+      INTEGER :: NLIPRM(1)
+
+      ! Initialize test parameters
+      NLC = 1
+      NLI = 1
+      NLD = 7
+      NLCPRM = 'X'
+      NLIPRM = 0
+      NLDPRM = (/1.0D0, 2.0D0, 3.0D0, 4.0D0, 5.0D0, 6.0D0, 7.0D0/)
+      WORLD = (/10.0D0, 20.0D0/)
+      OPCODE = 1
+
+      ! Call the subroutine with OPCODE > 0
+      CALL FSCAN(OPCODE, NLC, NLI, NLD, NLCPRM, NLIPRM, NLDPRM, WORLD, PIXEL, CONTRL, CONTXT, IERR)
+      PRINT *, "PIXEL:", PIXEL
+      PRINT *, "IERR:", IERR
+
+      END PROGRAM TestFSCAN

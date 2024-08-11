@@ -1,0 +1,23 @@
+PROGRAM TESTMYABS
+      DOUBLE PRECISION MYABS
+      DOUBLE PRECISION A, RESULT
+
+      A = -3.0
+      RESULT = MYABS(A)
+      PRINT *, 'MYABS(-3.0) = ', RESULT
+
+      A = 3.0
+      RESULT = MYABS(A)
+      PRINT *, 'MYABS(3.0) = ', RESULT
+
+      A = 0.0
+      RESULT = MYABS(A)
+      PRINT *, 'MYABS(0.0) = ', RESULT
+
+      END
+
+      DOUBLE PRECISION FUNCTION MYABS(A)
+      DOUBLE PRECISION A
+      MYABS = DABS(A)
+      RETURN
+      END

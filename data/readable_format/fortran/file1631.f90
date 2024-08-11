@@ -1,0 +1,26 @@
+PROGRAM testXLAENV
+  INTEGER            IPARMS( 100 )
+  COMMON             / CLAENV / IPARMS
+  INTEGER            I
+
+  CALL XLAENV(1, 10)
+  CALL XLAENV(2, 20)
+  CALL XLAENV(16, 160)
+
+  IF (IPARMS(1) == 10 .AND. IPARMS(2) == 20 .AND. IPARMS(16) == 160) THEN
+     PRINT *, 'Test Passed'
+  ELSE
+     PRINT *, 'Test Failed'
+  END IF
+
+END PROGRAM testXLAENV
+
+SUBROUTINE XLAENV( ISPEC, NVALUE )
+  INTEGER            ISPEC, NVALUE
+  INTEGER            IPARMS( 100 )
+  COMMON             / CLAENV / IPARMS
+  IF( ISPEC.GE.1 .AND. ISPEC.LE.16 ) THEN
+     IPARMS( ISPEC ) = NVALUE
+  END IF
+  RETURN
+END

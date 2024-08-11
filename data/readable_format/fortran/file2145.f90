@@ -1,0 +1,39 @@
+MODULE HLAY__genmod
+  INTERFACE 
+    SUBROUTINE HLAY(PE, RE, HE, IJK)
+      REAL(KIND=8), INTENT(IN) :: PE, RE
+      REAL(KIND=8), INTENT(OUT) :: HE
+      INTEGER(KIND=4), INTENT(IN) :: IJK
+    END SUBROUTINE HLAY
+  END INTERFACE 
+END MODULE HLAY__genmod
+
+SUBROUTINE HLAY(PE, RE, HE, IJK)
+  IMPLICIT NONE
+  REAL(KIND=8), INTENT(IN) :: PE, RE
+  REAL(KIND=8), INTENT(OUT) :: HE
+  INTEGER(KIND=4), INTENT(IN) :: IJK
+  ! Sample operation
+  HE = PE + RE + IJK
+END SUBROUTINE HLAY
+
+PROGRAM HLAY_TEST
+  USE HLAY__genmod
+  IMPLICIT NONE
+  REAL(KIND=8) :: PE, RE, HE
+  INTEGER(KIND=4) :: IJK
+  
+  ! Sample values for testing
+  PE = 1.0
+  RE = 2.0
+  IJK = 3
+  
+  CALL HLAY(PE, RE, HE, IJK)
+  
+  PRINT *, "HE: ", HE
+  IF (HE == PE + RE + IJK) THEN
+    PRINT *, "Test passed."
+  ELSE
+    PRINT *, "Test failed."
+  END IF
+END PROGRAM HLAY_TEST

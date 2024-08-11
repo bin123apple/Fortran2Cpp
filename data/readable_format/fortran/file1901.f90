@@ -1,0 +1,34 @@
+PROGRAM testFactori
+  IMPLICIT NONE
+  INTEGER :: i
+  REAL :: result
+
+  INTERFACE
+    REAL FUNCTION FACTORI(N)
+      INTEGER, INTENT(IN) :: N
+    END FUNCTION FACTORI
+  END INTERFACE
+
+  DO i = 0, 10
+     result = FACTORI(i)
+     PRINT *, "Factorial of", i, "is", result
+  END DO
+
+END PROGRAM testFactori
+
+REAL FUNCTION FACTORI(N)
+  IMPLICIT NONE
+  INTEGER, INTENT(IN) :: N
+  INTEGER :: I
+
+  IF (N .EQ. 0 .OR. N .EQ. 1) THEN
+     FACTORI = 1.0
+  ELSE
+     FACTORI = 1.0
+     DO I = 2, N
+        FACTORI = FACTORI * I
+     END DO
+  END IF
+
+  RETURN
+END FUNCTION FACTORI

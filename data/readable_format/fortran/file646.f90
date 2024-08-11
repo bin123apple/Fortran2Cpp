@@ -1,0 +1,33 @@
+MODULE DLABAD__genmod
+  IMPLICIT NONE
+  CONTAINS
+    SUBROUTINE DLABAD(SMALL, LARGE)
+      REAL(KIND=8) :: SMALL, LARGE
+      IF (SMALL < 0.1D0) SMALL = 0.1D0
+      IF (LARGE > 100D0) LARGE = 100D0
+    END SUBROUTINE DLABAD
+END MODULE DLABAD__genmod
+
+PROGRAM testDLABAD
+  USE DLABAD__genmod
+  REAL(KIND=8) :: SMALL, LARGE
+
+  ! Test 1: SMALL and LARGE within expected range
+  SMALL = 0.5D0
+  LARGE = 50.0D0
+  CALL DLABAD(SMALL, LARGE)
+  PRINT *, "Test 1 (within range): ", SMALL, LARGE
+
+  ! Test 2: SMALL below threshold
+  SMALL = 0.05D0
+  LARGE = 50.0D0
+  CALL DLABAD(SMALL, LARGE)
+  PRINT *, "Test 2 (SMALL below threshold): ", SMALL, LARGE
+
+  ! Test 3: LARGE above threshold
+  SMALL = 0.5D0
+  LARGE = 150.0D0
+  CALL DLABAD(SMALL, LARGE)
+  PRINT *, "Test 3 (LARGE above threshold): ", SMALL, LARGE
+
+END PROGRAM testDLABAD

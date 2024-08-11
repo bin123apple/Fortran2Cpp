@@ -1,0 +1,13 @@
+delete[] n0array;
+delete[] n1array;
+delete[] psi0;
+delete[] psi;
+delete[] polar;
+delete[] iwork_st;
+delete[] iblock_st;
+delete[] isplit_st;
+delete[] d_st;
+delete[] e_st;
+delete[] w_st;
+delete[] work_st;
+delete[] z_st;

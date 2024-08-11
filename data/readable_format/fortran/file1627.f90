@@ -1,0 +1,26 @@
+PROGRAM testZADD
+  IMPLICIT NONE
+  INTEGER, PARAMETER :: N = 3
+  DOUBLE COMPLEX :: A(N) = [(1.0D0, 2.0D0), (3.0D0, 4.0D0), (5.0D0, 6.0D0)]
+  DOUBLE COMPLEX :: B(N) = [(6.0D0, 5.0D0), (4.0D0, 3.0D0), (2.0D0, 1.0D0)]
+  DOUBLE COMPLEX :: C(N)
+  INTEGER :: i
+
+  CALL ZADD(A, B, C, N)
+
+  PRINT *, 'Result of A + B:'
+  DO i = 1, N
+    PRINT '(F6.2, ", ", F6.2, "i")', REAL(C(i)), AIMAG(C(i))
+  END DO
+END PROGRAM testZADD
+
+SUBROUTINE ZADD(A,B,C,N)
+  DOUBLE COMPLEX A(*)
+  DOUBLE COMPLEX B(*)
+  DOUBLE COMPLEX C(*)
+  INTEGER N
+  INTEGER J
+  DO J = 1, N
+     C(J) = A(J) + B(J)
+  END DO
+END SUBROUTINE ZADD

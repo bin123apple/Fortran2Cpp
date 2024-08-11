@@ -1,0 +1,26 @@
+MODULE IT_COMPUTE_STRAIN_ATT_BACKWARD__genmod
+  INTERFACE 
+    SUBROUTINE IT_COMPUTE_STRAIN_ATT_BACKWARD(input, output)
+      INTEGER, INTENT(IN) :: input
+      INTEGER, INTENT(OUT) :: output
+    END SUBROUTINE IT_COMPUTE_STRAIN_ATT_BACKWARD
+  END INTERFACE 
+END MODULE IT_COMPUTE_STRAIN_ATT_BACKWARD__genmod
+
+SUBROUTINE IT_COMPUTE_STRAIN_ATT_BACKWARD(input, output)
+  INTEGER, INTENT(IN) :: input
+  INTEGER, INTENT(OUT) :: output
+  output = input * input
+END SUBROUTINE IT_COMPUTE_STRAIN_ATT_BACKWARD
+
+PROGRAM TestStrain
+  USE IT_COMPUTE_STRAIN_ATT_BACKWARD__genmod
+  INTEGER :: inputValue, outputValue
+
+  ! Set a test input value
+  inputValue = 4
+  CALL IT_COMPUTE_STRAIN_ATT_BACKWARD(inputValue, outputValue)
+
+  PRINT *, "Input: ", inputValue
+  PRINT *, "Output: ", outputValue
+END PROGRAM TestStrain

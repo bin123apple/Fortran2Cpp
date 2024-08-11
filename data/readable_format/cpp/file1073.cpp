@@ -1,0 +1,1 @@
+void great_ne(char var1, char var2);

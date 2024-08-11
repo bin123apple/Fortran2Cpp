@@ -1,0 +1,20 @@
+PROGRAM TESTMYSIGN
+    IMPLICIT NONE
+
+    PRINT *, 'MYSIGN(5.0, -2.0) = ', MYSIGN(5.0, -2.0)
+    PRINT *, 'MYSIGN(-3.0, 3.0) = ', MYSIGN(-3.0, 3.0)
+    PRINT *, 'MYSIGN(-4.0, -1.0) = ', MYSIGN(-4.0, -1.0)
+    PRINT *, 'MYSIGN(2.0, 0.0) = ', MYSIGN(2.0, 0.0)
+
+CONTAINS
+
+    REAL FUNCTION MYSIGN(PARM1, PARM2)
+        REAL, INTENT(IN) :: PARM1, PARM2
+        IF (PARM2 >= 0.0) THEN
+            MYSIGN = ABS(PARM1)
+        ELSE
+            MYSIGN = -ABS(PARM1)
+        END IF
+    END FUNCTION MYSIGN
+
+END PROGRAM TESTMYSIGN

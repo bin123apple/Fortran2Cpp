@@ -1,0 +1,33 @@
+MODULE DLAQP2_genmod
+  IMPLICIT NONE
+CONTAINS
+  SUBROUTINE DLAQP2(M, N, OFFSET, A, LDA, JPVT, TAU, VN1, VN2, WORK)
+    INTEGER, INTENT(IN) :: M, N, OFFSET, LDA
+    REAL(KIND=8), INTENT(INOUT) :: A(LDA,*)
+    INTEGER, INTENT(INOUT) :: JPVT(*)
+    REAL(KIND=8), INTENT(OUT) :: TAU(*)
+    REAL(KIND=8), INTENT(INOUT) :: VN1(*), VN2(*)
+    REAL(KIND=8), INTENT(INOUT) :: WORK(*)
+    INTEGER :: i, j
+    ! Simple operation: increment each element of A by 1
+    DO i = 1, M
+      DO j = 1, N
+        A(i, j) = A(i, j) + 1.0D0
+      END DO
+    END DO
+  END SUBROUTINE DLAQP2
+END MODULE DLAQP2_genmod
+
+PROGRAM test_dlaqp2
+  USE DLAQP2_genmod
+  IMPLICIT NONE
+  INTEGER, PARAMETER :: M=2, N=2, LDA=M, OFFSET=1
+  REAL(KIND=8) :: A(LDA,N) = RESHAPE([1.0D0, 3.0D0, 2.0D0, 4.0D0], [LDA, N])
+  INTEGER :: JPVT(N) = [1, 2]
+  REAL(KIND=8) :: TAU(N), VN1(N), VN2(N), WORK(N)
+
+  CALL DLAQP2(M, N, OFFSET, A, LDA, JPVT, TAU, VN1, VN2, WORK)
+
+  PRINT *, 'A after DLAQP2:'
+  PRINT *, A
+END PROGRAM test_dlaqp2

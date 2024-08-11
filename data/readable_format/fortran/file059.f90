@@ -1,0 +1,15 @@
+module ints
+   INTERFACE
+      SUBROUTINE NOZZLE()
+      END SUBROUTINE NOZZLE
+   END INTERFACE
+end module ints
+
+SUBROUTINE NOZZLE()
+    PRINT *, "NOZZLE function executed."
+END SUBROUTINE NOZZLE
+
+program CORTESA 
+USE INTS
+CALL NOZZLE ()
+END program CORTESA

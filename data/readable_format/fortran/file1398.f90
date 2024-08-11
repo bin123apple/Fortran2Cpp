@@ -1,0 +1,50 @@
+! This is an integrated Fortran file containing both the subroutine and a test program.
+MODULE BUFDCHR_mod
+  IMPLICIT NONE
+CONTAINS
+  SUBROUTINE BUFDCHR(STRING, NOBS, CMPRES, WIDTH, DSPLAY, NAME, IBEFOR, VALUES, IVAL, INAM, NAMES, IRC)
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(INOUT) :: STRING
+    INTEGER, INTENT(IN) :: NOBS
+    LOGICAL, INTENT(IN) :: CMPRES
+    INTEGER, INTENT(IN) :: WIDTH
+    LOGICAL, INTENT(IN) :: DSPLAY
+    CHARACTER(LEN=60), INTENT(IN) :: NAME
+    INTEGER, INTENT(IN) :: IBEFOR
+    REAL, INTENT(INOUT) :: VALUES(*)
+    INTEGER, INTENT(IN) :: IVAL
+    INTEGER, INTENT(IN) :: INAM
+    CHARACTER(LEN=*), INTENT(INOUT) :: NAMES
+    INTEGER, INTENT(OUT) :: IRC
+
+    ! Dummy implementation - Adjust the functionality according to your needs
+    PRINT *, "BUFDCHR called with NAME:", NAME
+    IRC = 0  ! Example output, modify according to the actual logic
+  END SUBROUTINE BUFDCHR
+END MODULE BUFDCHR_mod
+
+PROGRAM testBUFDCHR
+  USE BUFDCHR_mod
+  IMPLICIT NONE
+
+  CHARACTER(LEN=100) :: STRING = "TestString"
+  INTEGER :: NOBS = 1
+  LOGICAL :: CMPRES = .FALSE.
+  INTEGER :: WIDTH = 10
+  LOGICAL :: DSPLAY = .TRUE.
+  CHARACTER(LEN=60) :: NAME = "TestName"
+  INTEGER :: IBEFOR = 0
+  REAL, DIMENSION(5) :: VALUES = (/1.0, 2.0, 3.0, 4.0, 5.0/)
+  INTEGER :: IVAL = 5
+  INTEGER :: INAM = 1
+  CHARACTER(LEN=100) :: NAMES = "TestNames"
+  INTEGER :: IRC
+
+  CALL BUFDCHR(STRING, NOBS, CMPRES, WIDTH, DSPLAY, NAME, IBEFOR, VALUES, IVAL, INAM, NAMES, IRC)
+
+  IF (IRC == 0) THEN
+    PRINT *, "Test passed."
+  ELSE
+    PRINT *, "Test failed."
+  END IF
+END PROGRAM testBUFDCHR

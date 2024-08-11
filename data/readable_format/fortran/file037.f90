@@ -1,0 +1,18 @@
+MODULE AAPMod
+  IMPLICIT NONE
+  CONTAINS
+    SUBROUTINE AAP(NOOT)
+      INTEGER, DIMENSION(:), INTENT(INOUT) :: NOOT
+      PRINT *, "Fortran subroutine AAP called with an array of size ", SIZE(NOOT)
+    END SUBROUTINE AAP
+END MODULE AAPMod
+
+PROGRAM testAAP
+  USE AAPMod
+  IMPLICIT NONE
+  INTEGER, ALLOCATABLE :: testArray(:)
+  
+  ALLOCATE(testArray(5))
+  CALL AAP(testArray)
+  DEALLOCATE(testArray)
+END PROGRAM testAAP

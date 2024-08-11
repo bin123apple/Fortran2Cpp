@@ -1,0 +1,52 @@
+PROGRAM TestOEDCTR2IndexReorder
+    IMPLICIT NONE
+
+    INTEGER, PARAMETER :: NXYZT = 10
+    INTEGER, PARAMETER :: NCTR = 5
+    INTEGER, PARAMETER :: NCGTOR = 3
+    INTEGER, PARAMETER :: NCGTOS = 2
+    INTEGER, PARAMETER :: IXOFFI = 1
+    INTEGER, PARAMETER :: IXOFFJ = 2
+    DOUBLE PRECISION X(1:NXYZT, 1:NCTR)
+    DOUBLE PRECISION Y(1:NXYZT, 1:NCTR)
+    INTEGER I, J
+
+    ! Initialize X with some values
+    DO I = 1, NXYZT
+        DO J = 1, NCTR
+            X(I, J) = REAL(I * J)
+        END DO
+    END DO
+
+    CALL OED__CTR_2INDEX_REORDER(NXYZT, NCTR, NCGTOR, NCGTOS, IXOFFI, IXOFFJ, X, Y)
+
+    ! Print the result
+    PRINT *, 'Y = '
+    DO I = 1, NXYZT
+        PRINT *, (Y(I, J), J = 1, NCTR)
+    END DO
+
+END PROGRAM
+
+SUBROUTINE OED__CTR_2INDEX_REORDER(NXYZT, NCTR, NCGTOR, NCGTOS, IXOFFI, IXOFFJ, X, Y)
+    IMPLICIT NONE
+    INTEGER NXYZT, NCTR, NCGTOR, NCGTOS, IXOFFI, IXOFFJ
+    DOUBLE PRECISION X(1:NXYZT, 1:NCTR), Y(1:NXYZT, 1:NCTR)
+    INTEGER J, IJ, N, R, S, RS
+
+    RS = 0
+    J = -IXOFFJ + 1
+    DO S = 1, NCGTOS
+        J = J + IXOFFJ
+        IJ = J - IXOFFI
+        DO R = 1, NCGTOR
+            IJ = IJ + IXOFFI
+            RS = RS + 1
+            DO N = 1, NXYZT
+                IF (RS <= NCTR) THEN
+                    Y(N, IJ) = X(N, RS)
+                END IF
+            END DO
+        END DO
+    END DO
+END SUBROUTINE OED__CTR_2INDEX_REORDER

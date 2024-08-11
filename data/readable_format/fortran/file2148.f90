@@ -1,0 +1,48 @@
+PROGRAM test_fdexp
+  IMPLICIT NONE
+
+  DOUBLE PRECISION X, Y
+  DOUBLE PRECISION A(10), DYDA(10)
+  INTEGER I
+
+  ! Initialize test values
+  X = 1.0D0
+  A = (/1.0D0, 2.0D0, 3.0D0, 4.0D0, 5.0D0, 0.0D0, 0.0D0, 0.0D0, 0.0D0, 0.0D0/)
+
+  CALL FDEXP(X, A, Y, DYDA)
+
+  ! Print results
+  PRINT *, 'Y: ', Y
+  PRINT *, 'DYDA:'
+  DO I = 1, 4
+      PRINT *, DYDA(I)
+  END DO
+
+END PROGRAM test_fdexp
+
+SUBROUTINE FDEXP(X, A, Y, DYDA)
+  IMPLICIT NONE
+
+  DOUBLE PRECISION TINY
+  PARAMETER(TINY=1.0D-10)
+
+  DOUBLE PRECISION A(10), DYDA(10)
+  DOUBLE PRECISION X, Y
+
+  DOUBLE PRECISION ARG1, ARG2, EX1, EX2, FAC
+
+  IF (A(3) .LT. TINY) A(3) = TINY
+  IF (A(4) .LT. TINY) A(4) = TINY
+  ARG1 = (X - A(2)) / A(3)
+  ARG2 = (X - A(2)) / A(4)
+  EX1 = EXP(-ARG1)
+  EX2 = EXP(ARG2)
+  FAC = EX1 + EX2
+  Y = 2.0D0 * A(1) / FAC
+  DYDA(1) = 2.0D0 / FAC
+  DYDA(2) = Y * (EX2 / A(4) - EX1 / A(3)) / FAC
+  DYDA(3) = -Y * ARG1 * EX1 / (FAC * A(3))
+  DYDA(4) = Y * ARG2 * EX2 / (FAC * A(4))
+
+  RETURN
+END SUBROUTINE FDEXP

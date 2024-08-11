@@ -1,0 +1,43 @@
+MODULE KVECANS__genmod
+  IMPLICIT NONE
+CONTAINS
+  SUBROUTINE KVECANS(NCPX, P, U_KNOT, UK, UB)
+    INTEGER, INTENT(IN) :: NCPX, P
+    DOUBLE PRECISION, INTENT(IN) :: U_KNOT(NCPX+P+1)
+    DOUBLE PRECISION, INTENT(IN) :: UK
+    DOUBLE PRECISION, INTENT(OUT) :: UB(NCPX+P+1+P)
+    INTEGER :: i
+    ! Dummy implementation for demonstration
+    DO i = 1, NCPX + P + 1 + P
+       UB(i) = UK * i
+    END DO
+  END SUBROUTINE KVECANS
+END MODULE KVECANS__genmod
+
+PROGRAM testKVECANS
+  USE KVECANS__genmod
+  IMPLICIT NONE
+  INTEGER :: NCPX, P, i
+  DOUBLE PRECISION :: UK
+  DOUBLE PRECISION, ALLOCATABLE :: U_KNOT(:), UB(:)
+
+  ! Example parameters
+  NCPX = 10
+  P = 3
+  UK = 2.5
+  ALLOCATE(U_KNOT(NCPX+P+1), UB(NCPX+P+1+P))
+
+  ! Initialize U_KNOT for demonstration purposes
+  DO i = 1, NCPX+P+1
+     U_KNOT(i) = i * 1.0
+  END DO
+
+  CALL KVECANS(NCPX, P, U_KNOT, UK, UB)
+
+  PRINT *, "UB:"
+  DO i = 1, NCPX+P+1+P
+     PRINT *, UB(i)
+  END DO
+
+  DEALLOCATE(U_KNOT, UB)
+END PROGRAM testKVECANS

@@ -1,0 +1,48 @@
+PROGRAM TestXLAENV
+    IMPLICIT NONE
+    INTEGER :: ISPEC, NVALUE
+    INTEGER :: IPARMS(100)
+    COMMON /CLAENV/ IPARMS
+
+    CALL InitializeIPARMS()
+
+    ! Test case 1: Set ISPEC = 5, NVALUE = 10
+    ISPEC = 5
+    NVALUE = 10
+    CALL XLAENV(ISPEC, NVALUE)
+    PRINT *, 'IPARMS(5) = ', IPARMS(5)  ! Should print 10
+
+    ! Test case 2: Set ISPEC = 3, NVALUE = 20
+    ISPEC = 3
+    NVALUE = 20
+    CALL XLAENV(ISPEC, NVALUE)
+    PRINT *, 'IPARMS(3) = ', IPARMS(3)  ! Should print 20
+
+    ! Test case 3: Set ISPEC = 10, NVALUE = 30 (out of range)
+    ISPEC = 10
+    NVALUE = 30
+    CALL XLAENV(ISPEC, NVALUE)
+    PRINT *, 'IPARMS(10) = ', IPARMS(10)  ! Should print 0 (since ISPEC is out of range)
+
+END PROGRAM TestXLAENV
+
+SUBROUTINE XLAENV(ISPEC, NVALUE)
+    IMPLICIT NONE
+    INTEGER, INTENT(IN) :: ISPEC, NVALUE
+    INTEGER :: IPARMS(100)
+    COMMON /CLAENV/ IPARMS
+
+    IF (ISPEC >= 1 .AND. ISPEC <= 9) THEN
+        IPARMS(ISPEC) = NVALUE
+    END IF
+END SUBROUTINE XLAENV
+
+SUBROUTINE InitializeIPARMS()
+    IMPLICIT NONE
+    INTEGER :: IPARMS(100), I
+    COMMON /CLAENV/ IPARMS
+
+    DO I = 1, 100
+        IPARMS(I) = 0
+    END DO
+END SUBROUTINE InitializeIPARMS

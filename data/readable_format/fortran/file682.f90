@@ -1,0 +1,53 @@
+PROGRAM testRecCell
+  IMPLICIT NONE
+  REAL :: cell(6), rCell(6)
+  INTEGER :: i
+
+  ! Initialize the cell array with some values
+  cell = (/90.0, 90.0, 90.0, 1.57079632679, 1.57079632679, 1.57079632679/)
+
+  ! Call the subroutine
+  CALL RECCEL(cell, rCell)
+
+  ! Print the results
+  PRINT *, "rCell values:"
+  DO i = 1, 6
+    PRINT *, rCell(i)
+  END DO
+
+  CONTAINS
+
+  SUBROUTINE RECCEL(CELL,RCELL)
+    IMPLICIT NONE
+    REAL :: CELL(6),RCELL(6)
+    REAL :: CASQ,CBSQ,CCSQ,CBA,ALBTGM,VOLUME,XNUM,DEN,TEMP
+
+    CASQ = (COS(CELL(4)))**2
+    CBSQ = (COS(CELL(5)))**2
+    CCSQ = (COS(CELL(6)))**2
+    CBA = CELL(1)*CELL(2)*CELL(3)
+    ALBTGM = COS(CELL(4))*COS(CELL(5))*COS(CELL(6))
+    VOLUME = CBA*(SQRT(1.0-CASQ-CBSQ-CCSQ+2.0*ALBTGM))
+
+    RCELL(1) = CELL(2)*CELL(3)*SIN(CELL(4))/VOLUME
+    RCELL(2) = CELL(1)*CELL(3)*SIN(CELL(5))/VOLUME
+    RCELL(3) = CELL(1)*CELL(2)*SIN(CELL(6))/VOLUME
+
+    XNUM = COS(CELL(5))*COS(CELL(6)) - COS(CELL(4))
+    DEN = SIN(CELL(5))*SIN(CELL(6))
+    TEMP = XNUM/DEN
+    RCELL(4) = ACOS(TEMP)
+ 
+    XNUM = COS(CELL(4))*COS(CELL(6)) - COS(CELL(5))
+    DEN = SIN(CELL(4))*SIN(CELL(6))
+    TEMP = XNUM/DEN
+    RCELL(5) = ACOS(TEMP)
+ 
+    XNUM = COS(CELL(4))*COS(CELL(5)) - COS(CELL(6))
+    DEN = SIN(CELL(4))*SIN(CELL(5))
+    TEMP = XNUM/DEN
+    RCELL(6) = ACOS(TEMP)
+
+  END SUBROUTINE RECCEL
+
+END PROGRAM testRecCell
