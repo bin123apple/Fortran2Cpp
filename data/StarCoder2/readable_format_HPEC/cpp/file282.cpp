@@ -1,0 +1,1 @@
+#include` directive is used instead of `use` for including libraries, and the syntax for OpenMP directives is slightly different. Also, C++ does not have a direct equivalent of Fortran's `implicit none`, but type declarations are mandatory in C++, so there's no direct need for `implicit none`.

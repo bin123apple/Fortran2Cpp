@@ -1,0 +1,1 @@
+#include` directive is used instead of `use` for including libraries, and the syntax for OpenMP directives is slightly different. Also, C++ does not have a direct equivalent of Fortran modules, but you can include header files for similar functionality.

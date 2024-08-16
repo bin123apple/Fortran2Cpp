@@ -1,0 +1,100 @@
+Certainly! Below is the translated Fortran code to C++:
+
+```cpp
+#include <cmath>
+#include <algorithm>
+
+// Assuming sp_data is a struct or class that contains the necessary constants and variables
+struct sp_data {
+    double c1, c2, c3, c4, c5;
+    double bt;
+    double dnxm1, dnym1, dnzm1;
+    double c1c2, c1c5, c3c4, c1345;
+    double conz1;
+    double tx1, tx2, tx3;
+    double ty1, ty2, ty3;
+    double tz1, tz2, tz3;
+    double dx1, dx2, dx3, dx4, dx5;
+    double dy1, dy2, dy3, dy4, dy5;
+    double dz1, dz2, dz3, dz4, dz5;
+    double dxmax, dymax, dzmax;
+    double dssp;
+    double c4dssp, c5dssp;
+    double dttx1, dttx2, dttx3, dttx4, dttx5;
+    double dttx6, dttx7, dttx8, dttx9, dttx10;
+    double dttx11, dttx12, dttx13;
+    double dttx14, dttx15, dttx16;
+    double dttx17, dttx18, dttx19;
+    double dttx20, dttx21, dttx22;
+    double dttx23, dttx24, dttx25;
+    double dttx26, dttx27, dttx28;
+    double dttx29, dttx30, dttx31;
+    double dttx32, dttx33, dttx34;
+    double dttx35, dttx36, dttx37;
+    double dttx38, dttx39, dttx40;
+    double dttx41, dttx42, dttx43;
+    double dttx44, dttx45, dttx46;
+    double dttx47, dttx48, dttx49;
+    double dttx50, dttx51, dttx52;
+    double dttx53, dttx54, dttx55;
+    double dttx56, dttx57, dttx58;
+    double dttx59, dttx60, dttx61;
+    double dttx62, dttx63, dttx64;
+    double dttx65, dttx66, dttx67;
+    double dttx68, dttx69, dttx70;
+    double dttx71, dttx72, dttx73;
+    double dttx74, dttx75, dttx76;
+    double dttx77, dttx78, dttx79;
+    double dttx80, dttx81, dttx82;
+    double dttx83, dttx84, dttx85;
+    double dttx86, dttx87, dttx88;
+    double dttx89, dttx90, dttx91;
+    double dttx92, dttx93, dttx94;
+    double dttx95, dttx96, dttx97;
+    double dttx98, dttx99, dttx100;
+    double dttx101, dttx102, dttx103;
+    double dttx104, dttx105, dttx106;
+    double dttx107, dttx108, dttx109;
+    double dttx110, dttx111, dttx112;
+    double dttx113, dttx114, dttx115;
+    double dttx116, dttx117, dttx118;
+    double dttx119, dttx120, dttx121;
+    double dttx122, dttx123, dttx124;
+    double dttx125, dttx126, dttx127;
+    double dttx128, dttx129, dttx130;
+    double dttx131, dttx132, dttx133;
+    double dttx134, dttx135, dttx136;
+    double dttx137, dttx138, dttx139;
+    double dttx140, dttx141, dttx142;
+    double dttx143, dttx144, dttx145;
+    double dttx146, dttx147, dttx148;
+    double dttx149, dttx150, dttx151;
+    double dttx152, dttx153, dttx154;
+    double dttx155, dttx156, dttx157;
+    double dttx158, dttx159, dttx160;
+    double dttx161, dttx162, dttx163;
+    double dttx164, dttx165, dttx166;
+    double dttx167, dttx168, dttx169;
+    double dttx170, dttx171, dttx172;
+    double dttx173, dttx174, dttx175;
+    double dttx176, dttx177, dttx178;
+    double dttx179, dttx180, dttx181;
+    double dttx182, dttx183, dttx184;
+    double dttx185, dttx186, dttx187;
+    double dttx188, dttx189, dttx190;
+    double dttx191, dttx192, dttx193;
+    double dttx194, dttx195, dttx196;
+    double dttx197, dttx198, dttx199;
+    double dttx200, dttx201, dttx202;
+    double dttx203, dttx204, dttx205;
+    double dttx206, dttx207, dttx208;
+    double dttx209, dttx210, dttx211;
+    double dttx212, dttx213, dttx214;
+    double dttx215, dttx216, dttx217;
+    double dttx218, dttx219, dttx220;
+    double dttx221, dttx222, dttx223;
+    double dttx224, dttx225, dttx226;
+    double dttx227, dttx228, dttx229;
+    double dttx230, dttx231, dttx232;
+    double dttx233, dttx234, dttx235;
+    double dttx236, dttx237, d

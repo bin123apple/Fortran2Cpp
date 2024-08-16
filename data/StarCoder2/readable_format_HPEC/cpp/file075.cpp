@@ -1,0 +1,1 @@
+#include <omp.h>` directive is used to include the OpenMP library, and the `omp_set_num_threads(num_threads)` function can be used to set the number of threads explicitly if needed. However, for simplicity and to maintain the structure of the original code, I'll stick with the default behavior of the OpenMP runtime.
