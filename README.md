@@ -13,9 +13,9 @@ We fine-tuned several popular pre-trained models,  including
 * Magicoder-S-DS-6.7B, and
 * deepseek-coder-33b-instruct. 
 
-After the finetuning, the deepseek-coder-33b-instruct shows the greatest improvement when checking with the CodeBLEU Score. Thus we finally use the deepseek-coder-33b-instruct as the backbone of Fortran2CPP.  
+After the fine-tuning, the deepseek-coder-33b-instruct shows the greatest improvement when checking with the CodeBLEU Score. Thus we finally use the deepseek-coder-33b-instruct as the backbone of Fortran2CPP.  
 
-The Model is avaliable on Huggingface: [Fortran2Cpp](https://huggingface.co/Bin12345/Fortran2Cpp) 
+The Model is available on Hugging Face: [Fortran2Cpp](https://huggingface.co/Bin12345/Fortran2Cpp) 
 
 **NOTE:** Currently, the model is trained by using a dataset with paired Fortran (f90) and C++ code. We are still training the model. We will continue to update the Fortran2Cpp.
 
@@ -48,7 +48,7 @@ cd Evaluation
 
 You can modify things like
 * the model that you want to test: defined between line 9 and line 14.
-* the file path where you want to store your results: deflined in line 59, default is log.txt . 
+* the file path where you want to store your results: defined in line 59, default is log.txt . 
 
 Run:
 ```
@@ -204,4 +204,4 @@ If you have any inquiries, please feel free to raise an issue or reach out to le
 We will complete the technical introduction paper before mid-May.
 
 ## Acknowledgments
-Appreciation to Lawrence Livermore National Laboratory for their financial support of this project.
+Appreciation to Lawrence Livermore National Laboratory (Technical Contact: liao6@llnl.gov) for their financial support of this project.
