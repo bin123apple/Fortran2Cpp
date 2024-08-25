@@ -27,17 +27,78 @@ The CodeBLEU Score Comparison is shown in the figure below:
 ![CodeBLEU Score Image](Figures/CodeBLEU.png)
 
 ### Reproduce Steps
+
+We recommend using virtual environment to set up the python environments and install required packages:
+
+```
+python3.9 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+pip install -r requirements.txt
+```
+
 1. Enter into Evaluation folder
 
 ```
 cd Evaluation
 ```
 
-2. Generate the results. Go the script `text_generation_pipline.py`. Add your own huggingface token to line 16. Modify the path where you want to store your results in line 55. Then select the model that you want to test between line 8 and line 13.
+2. To generate the results. Go the script `text_generation_pipline.py`. 
+
+You can modify things like
+* the model that you want to test: defined between line 9 and line 14.
+* the file path where you want to store your results: deflined in line 59, default is log.txt . 
 
 Run:
 ```
+export HUGGINGFACE_TOKEN="your_access_token_here"
 python text_generation_pipline.py
+
+
+# sample output of the text generation pipeline:
+
+input_prompt: 
+Translate this Fortran code to C++: 
+program DRB096_doall2_taskloop_collapse_orig_no\n    use omp_lib\n    use DRB096\n    implicit none\n\n    integer :: len, i, j\n    len = 100\n\n    allocate (a(len,len))\n\n    !$omp parallel\n        !$omp single\n            !$omp taskloop collapse(2)\n            do i = 1, len\n                do j = 1, len\n                    a(i,j) = a(i,j)+1\n                end do\n            end do\n            !$omp end taskloop\n        !$omp end single\n    !$omp end parallel\n\n    print 100, a(50,50)\n    100 format ('a(50,50) =',i3)\n\nend program
+#1 Fortran Code has been translated. 
+Translated C++ Code:
+ DRB096_doall2_taskloop_collapse_orig_no
+
+#include <omp.h>
+#include <iostream>
+
+int main() {
+    int len = 100;
+    double **a = new double*[len];
+    for (int i = 0; i < len; ++i) {
+        a[i] = new double[len];
+    }
+
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            #pragma omp taskloop collapse(2)
+            for (int i = 1; i <= len; ++i) {
+                for (int j = 1; j <= len; ++j) {
+                    a[i-1][j-1] += 1;
+                }
+            }
+        }
+    }
+
+    std::cout << "a(50,50) = " << a[49][49] << std::endl;
+
+    for (int i = 0; i < len; ++i) {
+        delete[] a[i];
+    }
+    delete[] a;
+
+    return 0;
+}
+
+This C++ code does the same thing as the Fortran code. It allocates a 2D array `a`, then uses OpenMP to parallelize the task of incrementing each element of `a`. The `collapse(2)` clause is used to collapse the two loops into a single loop, which is then parallelized by OpenMP. The result is printed to the console.
 ```
 
 This will generate the results and compress each result to one line for the further CodeBLEU Score test.
