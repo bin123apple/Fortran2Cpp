@@ -17,7 +17,7 @@ After the finetuning, the deepseek-coder-33b-instruct shows the greatest improve
 
 The Model is avaliable on Huggingface: [Fortran2Cpp](https://huggingface.co/Bin12345/Fortran2Cpp) 
 
-**NOTE:** Currently, the model is only trained by using the f90 code. We are still training the model. We will continue to update the Fortran2Cpp.
+**NOTE:** Currently, the model is trained by using a dataset with paired Fortran (f90) and C++ code. We are still training the model. We will continue to update the Fortran2Cpp.
 
 ## Evaluation
 We compared with various models (WizardCoder-15B-V1.0, CodeLlama-13b-Instruct-hf, starcoder, Magicoder-S-DS-6.7B, deepseek-coder-33b-instruct and GPT-4) on [HPC_Fortran_CPP](https://huggingface.co/datasets/Bin12345/HPC_Fortran_CPP). And compared the CodeBLEU Score of the generated results.
