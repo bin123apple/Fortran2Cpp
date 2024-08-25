@@ -203,5 +203,9 @@ If you have any inquiries, please feel free to raise an issue or reach out to le
 ## Citation
 We will complete the technical introduction paper before mid-May.
 
+## Known Issues
+
+https://huggingface.co/datasets/Bin12345/HPC_Fortran_CPP seems to have 315 rows of data. However, Groundtruth_C++.txt has only 296 rows.  The reason is that we filtered some long data samples. 
+
 ## Acknowledgments
 Appreciation to Lawrence Livermore National Laboratory (Technical Contact: liao6@llnl.gov) for their financial support of this project.
