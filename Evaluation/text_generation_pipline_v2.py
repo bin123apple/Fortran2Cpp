@@ -36,14 +36,7 @@ def log_progress(message):
 # Determine model's maximum input length and output tokens
 MAX_INPUT_LENGTH = tokenizer.model_max_length
 
-# output length should be similar to input length
-MAX_NEW_TOKENS = min(
-    model.config.max_position_embeddings - MAX_INPUT_LENGTH,
-    int(MAX_INPUT_LENGTH * 1.2)
-)
-
 log_progress(f"Model's max input length: {MAX_INPUT_LENGTH}")
-log_progress(f"Model's max new tokens: {MAX_NEW_TOKENS}")
 
 pipe = pipeline("text-generation",
                 model=model,
@@ -63,10 +56,26 @@ for split in input_dataset.keys():
     for fortran_code in input_dataset[split]['fortran']:
         translated_count += 1
         try:
+# TODO: the input prompt for translating code can have more instructions about how to generate code in markdown syntax and other details.     
             input_prompt = f"Translate this Fortran code to C++:\n{fortran_code}"
             log_progress(f"Processing code {translated_count}/{total_codes}")
             
             if len(input_prompt) < MAX_INPUT_LENGTH:
+
+                # output length should be similar to input length
+                input_ids = tokenizer.encode(input_prompt, return_tensors="pt")
+                input_token_length = input_ids.shape[1]
+                MAX_NEW_TOKENS = min(2 * input_token_length, model.config.max_position_embeddings - input_token_length)
+
+                if MAX_NEW_TOKENS <= 0:
+                    error_message = f"Error: MAX_NEW_TOKENS is {MAX_NEW_TOKENS}. Not enough space for output generation."
+                    log_progress(error_message)
+                    print(error_message)
+                    raise ValueError(error_message)
+
+                log_progress(f"Input prompt tokens: {input_token_length}")
+                log_progress(f"Model's max new tokens: {MAX_NEW_TOKENS}")
+
                 new_chars = pipe(input_prompt,
                                  do_sample=True,
                                  temperature=TEMPERATURE,
