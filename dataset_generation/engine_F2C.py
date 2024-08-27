@@ -16,7 +16,18 @@ from datasets import load_dataset
 from utils.prompt import * 
 from utils.model_utils import *
 
+DEFAULT_MODEL_ID="gpt-4o-mini"
+TIMEOUT_LIMIT=60 # timeout limit in seconds for compiling or running original or translation generated code
 
+# Function to get the OpenAI API key from environment variables
+def get_openai_api_key():
+    api_key = os.getenv('OPENAI_API_KEY')
+    if not api_key:
+        raise ValueError("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
+    # assign to a global variable!!
+    return api_key
+
+#this function is not used right now.
 def remove_fortran_comments_fixed(code):
     """
     ### Code from Naveed Ahmed Sekender ###
@@ -51,7 +62,18 @@ def remove_fortran_comments_fixed(code):
     return '\n'.join(cleaned_lines)
 
 
-def generate_str_answer_gpt(input_prompt_gpt,max_tokens,gpt_model = "gpt-4-0125-preview"):
+def generate_str_answer_gpt(input_prompt_gpt, max_tokens, gpt_model = DEFAULT_MODEL_ID):
+    """
+    Generates a response from GPT-4 based on the provided prompt.
+
+    Parameters:
+    - input_prompt_gpt (str): The prompt to be sent to GPT-4.
+    - max_tokens (int): The maximum number of tokens to generate.
+    - gpt_model (str): The GPT model to use (default is "gpt-4o-mini").
+
+    Returns:
+    - str: The content of the response from GPT-4.
+    """
     messages = []
     message = {
         "role": "user",
@@ -66,6 +88,19 @@ def generate_str_answer_gpt(input_prompt_gpt,max_tokens,gpt_model = "gpt-4-0125-
 
 
 def fur_modification(history, ser_messages, modification_prompt, max_tokens = 4096):
+    """
+    Modifies the code based on the provided prompt and updates the history and messages.
+
+    Parameters:
+    - history (list): The conversation history to be updated.
+    - ser_messages (list): The list of messages exchanged during the conversation.
+    - modification_prompt (str): The prompt used to generate modifications.
+    - max_tokens (int): The maximum number of tokens to generate.
+
+    Updates:
+    - history: Appends the modification prompts and responses to the history.
+    - ser_messages: Appends the modified prompts and responses.
+    """
     m_ser = {
         "role": "user",
         "content": modification_prompt
@@ -74,7 +109,7 @@ def fur_modification(history, ser_messages, modification_prompt, max_tokens = 40
     ser_messages.append(m_ser)
     m_ser_gpt = generate_from_GPT(key,prompts=ser_messages, 
                                 max_tokens=max_tokens, 
-                                model="gpt-4-0125-preview", 
+                                model=DEFAULT_MODEL_ID, 
                                 n=1)[0]["message"]
     ser_answer = m_ser_gpt["content"]    
     ser_messages.append(m_ser_gpt)
@@ -84,24 +119,14 @@ def fur_modification(history, ser_messages, modification_prompt, max_tokens = 40
     }
     history.append(m_his)
 
-
 def add_to_json(history, file_path='dialogues.json'):
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:  
-                data = []
-    else:
-        data = []
+    """
+    Adds the conversation history to a JSON file.
 
-    data.append(history)
-
-    with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4)
-       
-        
-def add_to_json(history, file_path='dialogues.json'):
+    Parameters:
+    - history (list): The conversation history to be added.
+    - file_path (str): The path to the JSON file where the history will be stored.
+    """
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             try:
@@ -123,7 +148,21 @@ def add_to_json(history, file_path='dialogues.json'):
         json.dump(dialogues, file, indent=4)
      
 
-def run_codes(fortran_folder, f_code_exe, cpp_folder, c_code_exe, timeout_seconds=20):
+def run_codes(fortran_folder, f_code_exe, cpp_folder, c_code_exe, timeout_seconds=TIMEOUT_LIMIT):
+    """
+    Compiles and runs Fortran and C++ code and captures their output.
+
+    Parameters:
+    - fortran_folder (str): The directory where Fortran code and binaries are stored.
+    - f_code_exe (str): The Fortran code to be compiled and executed.
+    - cpp_folder (str): The directory where C++ code and binaries are stored.
+    - c_code_exe (str): The C++ code to be compiled and executed.
+    - timeout_seconds (int): The timeout for the compilation and execution processes.
+
+    Returns:
+    - tuple: Contains stdout and stderr of the Fortran and C++ programs, and their success status.
+    """
+
     fortran_file_path = os.path.join(fortran_folder, 'test.f90')
     with open(fortran_file_path, 'w') as file:
         file.write(f_code_exe)
@@ -132,6 +171,8 @@ def run_codes(fortran_folder, f_code_exe, cpp_folder, c_code_exe, timeout_second
     with open(cpp_file_path, 'w') as file:
         file.write(c_code_exe)
 
+    # The -J {fortran_folder} option in the gfortran command is used to 
+    # specify the directory where the generated object files should be placed.
     fortran_compile_cmd = f'gfortran -fopenmp -J {fortran_folder} -o {fortran_folder}/test {fortran_file_path}'
     fortran_compile_process = subprocess.run(fortran_compile_cmd, 
                                                 shell=True, 
@@ -154,12 +195,14 @@ def run_codes(fortran_folder, f_code_exe, cpp_folder, c_code_exe, timeout_second
         except subprocess.TimeoutExpired: # avoid infinite loop
             fortran_p_f = False
             fortran_stdout = ''
-            fortran_stderr = b'It seems to go into an infinite loop! Fortran execution timed out.'
+            fortran_stderr = b'It seems that the program hangs. Fortran execution timed out.'
         # delete generated .mod files
         mod_files = glob.glob(f'{fortran_folder}/*.mod')
         for file in mod_files:
             os.remove(file)
-    cpp_compile_cmd = f'g++ -fopenmp {cpp_file_path} -lgtest -lgtest_main -pthread -o {cpp_folder}/test'
+    # This is no longer true: C++ code may have unit testing using Google Tests
+#cpp_compile_cmd = f'g++ -fopenmp {cpp_file_path} -lgtest -lgtest_main -pthread -o {cpp_folder}/test'
+    cpp_compile_cmd = f'g++ -fopenmp {cpp_file_path} -o {cpp_folder}/test'
     cpp_compile_process = subprocess.run(cpp_compile_cmd, 
                                             shell=True, 
                                             capture_output=True,
@@ -181,11 +224,24 @@ def run_codes(fortran_folder, f_code_exe, cpp_folder, c_code_exe, timeout_second
         except subprocess.TimeoutExpired: # avoid infinite loop
             cpp_p_f = False
             cpp_stdout = ''
-            cpp_stderr = b'It seems to go into an infinite loop! C++ execution timed out.'
+            cpp_stderr = b'It seems that the program hangs! C++ execution timed out.'
     return fortran_stdout, fortran_stderr, fortran_p_f, cpp_stdout, cpp_stderr, cpp_p_f
 
 
 def extract_codes(f_code_exe, c_code_exe, Str_Exe):
+    """
+    Extracts Fortran and C++ code snippets from the provided text.
+    Use them to update the current codes, if any.
+
+    Parameters:
+    - f_code_exe (str): The current Fortran code.
+    - c_code_exe (str): The current C++ code.
+    - Str_Exe (str): The text containing the code snippets.
+
+    Returns:
+    - tuple: Updated Fortran and C++ code snippets.
+    """
+
     fortran_start = Str_Exe.find("```fortran") + 10
     if fortran_start != 9:
         fortran_end = Str_Exe.find("```", fortran_start)
@@ -209,13 +265,39 @@ def extract_codes(f_code_exe, c_code_exe, Str_Exe):
     return f_code_exe, c_code_exe
 
 def update_code_from_history(f_code_exe, c_code_exe, history):
+    """
+    Update Fortran and C++ code from the history of previous interactions.
+
+    Args:
+        f_code_exe (str): The current Fortran code to be updated.
+        c_code_exe (str): The current C++ code to be updated.
+        history (list): A list of historical messages containing code updates.
+
+    Returns:
+        tuple: Updated Fortran and C++ code.
+    """
     Str_Exe = history[-1]["content"]
     Str_Exe = Str_Exe.encode().decode('unicode_escape')
     f_code_exe, c_code_exe = extract_codes(f_code_exe, c_code_exe, Str_Exe)
     return f_code_exe, c_code_exe
     
 
-def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = "gpt-4-0125-preview",turns_limitation = 3):
+def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, turns_limitation = 3):
+    """
+    Simulate a conversation between a questioner and a solver using an AI model to translate Fortran code
+    to C++ and generate unit tests, handling errors and updates iteratively.
+
+    Args:
+        key (str): API key for accessing the AI model.
+        fortran_code (str): The Fortran code to be translated and tested.
+        max_tokens (int): Maximum number of tokens for AI responses.
+        gpt_model (str): Model name for the AI.
+        turns_limitation (int): Number of modification turns to perform (default is 3).
+
+    Returns:
+        tuple: History of the conversation and a flag indicating if the process should stop.
+    """
+
     qer_messages = []
     ser_messages = []
     history = []
@@ -232,19 +314,20 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = "gpt-4-0125-previe
         "role": "user",
         "content": q_ask_s_translation.format(fortran_code = fortran_code)
     }  
-    qer_messages.append(m_qer) # user provide the question
+    qer_messages.append(m_qer) # user provides the question
     
-    # Questioner ask for the C++ translation
+    # Questioner asks for the C++ translation from Fortran
+    #-----------------------------------
     m_qer_gpt = generate_from_GPT(key,prompts=qer_messages, 
                                 max_tokens=max_tokens, 
                                 model=gpt_model, 
                                 n=1)[0]["message"]
     qer_answer = m_qer_gpt["content"]
     qer_messages.append(m_qer_gpt)
-    print(f"qer asks for the C++ translation:\n{qer_answer}")
+    print(f"qer (questioner) asked for the C++ translation:\n{qer_answer}")
     # print("qer_messages after Questioner ask for the C++ translation", qer_messages)
     
-    # Solver generate the C++ translation
+    # Solver generates the C++ translation
     m_ser = {
         "role": "user",
         "content": f"{qer_answer}"
@@ -256,7 +339,7 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = "gpt-4-0125-previe
                                 model=gpt_model, 
                                 n=1)[0]["message"]
     ser_answer = m_ser_gpt["content"]
-    print(f"Solver generate the C++ translation:\n{ser_answer}")
+    print(f"Solver generated the C++ translation:\n{ser_answer}")
     ser_messages.append(m_ser_gpt)
     m_his = {
         "role": "assistant",
@@ -264,7 +347,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = "gpt-4-0125-previe
     }
     history.append(m_his)  
     
-    # Questioner ask for the unit test
+    # Questioner asks for the unit test
+    #-----------------------------------
     m_qer = {
         "role": "user",
         "content": q_ask_s_unit_test.format(ser_answer = ser_answer)
@@ -275,10 +359,10 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = "gpt-4-0125-previe
                                 model=gpt_model, 
                                 n=1)[0]["message"]
     qer_answer = m_qer_gpt["content"] 
-    print(f"Questioner ask for the unit test:\n{qer_answer}")   
+    print(f"Questioner asks for the unit test:\n{qer_answer}")   
     qer_messages.append(m_qer_gpt)
     
-    # Solver generate the unit test
+    # Solver generates the unit test
     m_ser = {
         "role": "user",
         "content": f"{qer_answer}"
@@ -300,8 +384,9 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = "gpt-4-0125-previe
     history.append(m_his)  
     
     """
-    Compile and execute the unit test codes
+    Compile, execute, and repair the pair of unit test codes
     """
+    #-----------------------------------
     f_code_exe = ''
     c_code_exe = ''
     f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)    
@@ -318,8 +403,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = "gpt-4-0125-previe
         ser_messages_init_copy.append(ser_message_unit_test)
         ser_messages = ser_messages_init_copy
         # Extract compile and execute fortran and cpp unit test
-        fortran_folder = '/home/uconn/BinLei/F2C-Translator/sandbox/fortran'
-        cpp_folder = '/home/uconn/BinLei/F2C-Translator/sandbox/cpp'
+        fortran_folder = '../sandbox/fortran'
+        cpp_folder = '../sandbox/cpp'
         
         os.makedirs(fortran_folder, exist_ok=True)
         os.makedirs(cpp_folder, exist_ok=True)
@@ -442,8 +527,20 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = "gpt-4-0125-previe
 
 
 
-def generate_data(key, input_dataset, output_file, gpt_model="gpt-4"):
-    
+def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
+    """
+    Processes a dataset of Fortran codes to generate cleaned and translated code along with explanations.
+    The results are saved to an output file.
+
+    Args:
+        key (str): API key for accessing the AI model.
+        input_dataset (dict): Dictionary containing Fortran code snippets.
+        output_file (str): Path to the output file where results will be saved.
+        gpt_model (str): Name of the GPT model to be used.
+
+    Returns:
+        None
+    """    
     # initialize the list for holding each row of the dataset
     dialogues = []
     
@@ -453,7 +550,7 @@ def generate_data(key, input_dataset, output_file, gpt_model="gpt-4"):
         fortran_code = input_dataset['code'][idx]
         
         # Count the length of the input tokens
-        encoding = tiktoken.encoding_for_model("gpt-4")
+        encoding = tiktoken.encoding_for_model(DEFAULT_MODEL_ID)
         token_count = len(encoding.encode(fortran_code + "\n",disallowed_special=()))
         
         # set a upper limit of the length of the input prompt and generate the answer
@@ -467,7 +564,7 @@ def generate_data(key, input_dataset, output_file, gpt_model="gpt-4"):
             # fortran_wo_com = remove_fortran_comments_fixed(fortran_code) 
             
             print(f"fortran_wo_com:\n{fortran_wo_com}")
-            encoding = tiktoken.encoding_for_model("gpt-4")
+            encoding = tiktoken.encoding_for_model(DEFAULT_MODEL_ID)
             token_count = len(encoding.encode(fortran_wo_com,disallowed_special=()))     
             print("fortran_wo_com length", token_count)
             # control the length
@@ -577,13 +674,15 @@ def generate_data(key, input_dataset, output_file, gpt_model="gpt-4"):
 #     return res.count(1)/(res.count(1)+res.count(0))
 
 if __name__ == "__main__":
-    key = "" # Input your OpenAI Key
+    key = get_openai_api_key() # Obtain your OpenAI Key from an environment variable named OPENAI_API_KEY
     
     # You can also use other datasets
-    Fortran_dataset = load_dataset("codeparrot/github-code", "FORTRAN-all")
-    data = Fortran_dataset["train"][78000:85000]
-    
-    output_file = "" # Output Json file
-    generate_data(key, data, output_file, gpt_model="gpt-4o") # Need to change
-    
+#The repository for codeparrot/github-code contains custom code which must be executed to correctly load the dataset. 
+    Fortran_dataset = load_dataset("codeparrot/github-code", "FORTRAN-all", trust_remote_code=True)
+#    data = Fortran_dataset["train"][78000:85000] # 7000 data samples here
+    data = Fortran_dataset["train"][78000:78100] # debug smaller 
+    openai_model_id = DEFAULT_MODEL_ID # default gpt-4o : over 10x expensive than 4o-mini
+
+    output_file = "gpt-4o-mini-100-samples.json" # Output Json file
+    generate_data(key, data, output_file, gpt_model=openai_model_id) # May need to change, default gpt-4o
     

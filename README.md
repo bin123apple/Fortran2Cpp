@@ -159,11 +159,25 @@ srun -n 1 -c 8 --cpu_bind=cores -G 4 --gpu-bind=none  <Your/inference/file/path>
 
 ## Dataset Generation 
 
-1. Input your OpenAI Key, Output Json file path.
+1. Setup your OpenAI Key.
 ```
 cd dataset_generation
+export export OPENAI_API_KEY="sk...."
 ```
-Modify `line 543-550` in `engine_F2C.py` file.
+
+Modify engine_F2C.py to customize the input dataset range, teacher model ID, output folder, etc.
+Default values are the following:
+```
+if __name__ == "__main__":
+    key = get_openai_api_key() # Obtain your OpenAI Key from an environment variable named OPENAI_API_KEY
+
+    # You can also use other datasets
+    Fortran_dataset = load_dataset("codeparrot/github-code", "FORTRAN-all")
+    data = Fortran_dataset["train"][78000:85000]
+
+    output_file = "" # Output Json file
+    generate_data(key, data, output_file, gpt_model="gpt-4o") # Need to change
+```
 
 2. Start the dataset generation
 

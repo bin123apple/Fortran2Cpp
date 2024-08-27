@@ -4,25 +4,43 @@ import backoff
 from transformers import pipeline
 from transformers import OPTForCausalLM, AutoTokenizer,GPT2LMHeadModel,AutoModelForCausalLM, AutoConfig,CodeLlamaTokenizer,AddedToken 
 
-@backoff.on_exception(backoff.expo, openai.error.OpenAIError, max_tries=2)
+@backoff.on_exception(backoff.expo, openai.OpenAIError, max_tries=2)
 def completions_with_backoff(**kwargs):
     """
     openai.ChatCompletion with backoff.
     """
     try:
         return openai.ChatCompletion.create(**kwargs)
-    except openai.error.OpenAIError as e:
+    except openai.OpenAIError as e:
         print(f"Error details: {e}")
         raise
 
+import openai
+import logging
+
+# Set up logging to capture errors
+file_handler = logging.FileHandler('data_generation.log') #, buffering=128)  # 128 bytes buffer
+logging.basicConfig(
+    handlers=[file_handler],
+    level=logging.DEBUG, 
+    format='%(asctime)s - %(levelname)s - %(message)s'
+    )
 
 def generate_from_GPT(key,prompts, max_tokens, model="gpt-4", temperature=0.7, n=1):
     """
     Generate answer from GPT model with the given prompt.
-    input:
-        @max_tokens: the maximum number of tokens to generate; in this project, it is 8000 - len(fortran_code)
-        @n: the number of samples to return
-    return: a list of #n generated_ans when no error occurs, otherwise None
+
+    Args:
+        key: OpenAI API key.
+        prompts: List of messages for the GPT model.
+        max_tokens: Maximum number of tokens to generate.
+        model: GPT model to use (default: "gpt-4").
+        temperature: Sampling temperature (default: 0.7).
+        n: Number of samples to return (default: 1).
+
+    Returns:
+        A list of generated answers, or an empty list if an error occurs.
+        Otherwise None.
 
     return example (n=3):
         [
@@ -52,7 +70,6 @@ def generate_from_GPT(key,prompts, max_tokens, model="gpt-4", temperature=0.7, n
         }
     ]
     """
-    import openai
     openai.api_key = key # TODO
 
     try:
@@ -68,7 +85,8 @@ def generate_from_GPT(key,prompts, max_tokens, model="gpt-4", temperature=0.7, n
         return generated_ans
     
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred in generate_from_GPT(): {e}")
+        logging.error(f"Error during GPT generation: {e}")
         return None
 
 def load_local_model(model_name_or_path, device_num=3):

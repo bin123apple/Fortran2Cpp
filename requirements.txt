@@ -2,3 +2,6 @@ torch
 transformers
 datasets
 accelerate
+tiktoken
+openai==0.28.0
+backoff
