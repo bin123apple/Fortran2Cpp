@@ -16,15 +16,6 @@ def completions_with_backoff(**kwargs):
         raise
 
 import openai
-import logging
-
-# Set up logging to capture errors
-file_handler = logging.FileHandler('data_generation.log') #, buffering=128)  # 128 bytes buffer
-logging.basicConfig(
-    handlers=[file_handler],
-    level=logging.DEBUG, 
-    format='%(asctime)s - %(levelname)s - %(message)s'
-    )
 
 def generate_from_GPT(key,prompts, max_tokens, model="gpt-4", temperature=0.7, n=1):
     """

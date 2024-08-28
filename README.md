@@ -185,7 +185,10 @@ if __name__ == "__main__":
 python engine_F2C.py
 ```
 
-The dataset that we used is included in `F2C-Translator/data/F2C_dialogue_25K.json` file.
+A sample log file and json file are stored in 
+* dataset_generation/example_results
+
+The dataset that we used is included in `F2C-Translator/data/F2C_dialogue_2.5K.json` file.
 
 ## Inference and Demo
 The demo code is modified from [OpenCodeInterpreter](https://github.com/OpenCodeInterpreter/OpenCodeInterpreter/tree/main/demo). Appreciate for their great project!

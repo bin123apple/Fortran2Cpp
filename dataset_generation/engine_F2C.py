@@ -19,6 +19,16 @@ from utils.model_utils import *
 DEFAULT_MODEL_ID="gpt-4o-mini"
 TIMEOUT_LIMIT=60 # timeout limit in seconds for compiling or running original or translation generated code
 
+import logging
+
+# Set up logging to capture errors
+file_handler = logging.FileHandler('data_generation.log') #, buffering=128)  # 128 bytes buffer
+logging.basicConfig(
+    handlers=[file_handler],
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+
 # Function to get the OpenAI API key from environment variables
 def get_openai_api_key():
     api_key = os.getenv('OPENAI_API_KEY')
@@ -324,8 +334,7 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                                 n=1)[0]["message"]
     qer_answer = m_qer_gpt["content"]
     qer_messages.append(m_qer_gpt)
-    print(f"qer (questioner) asked for the C++ translation:\n{qer_answer}")
-    # print("qer_messages after Questioner ask for the C++ translation", qer_messages)
+    logging.info(f"qer (questioner) asked for the C++ translation:\n{qer_answer}")
     
     # Solver generates the C++ translation
     m_ser = {
@@ -339,7 +348,7 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                                 model=gpt_model, 
                                 n=1)[0]["message"]
     ser_answer = m_ser_gpt["content"]
-    print(f"Solver generated the C++ translation:\n{ser_answer}")
+    logging.info(f"Solver generated the C++ translation:\n{ser_answer}")
     ser_messages.append(m_ser_gpt)
     m_his = {
         "role": "assistant",
@@ -359,7 +368,7 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                                 model=gpt_model, 
                                 n=1)[0]["message"]
     qer_answer = m_qer_gpt["content"] 
-    print(f"Questioner asks for the unit test:\n{qer_answer}")   
+    logging.info(f"Questioner asks for the unit test:\n{qer_answer}")   
     qer_messages.append(m_qer_gpt)
     
     # Solver generates the unit test
@@ -374,7 +383,7 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                                 model=gpt_model, 
                                 n=1)[0]["message"]
     ser_answer = m_ser_gpt["content"]    
-    print(f"Solver generate the unit test:\n{ser_answer}")   
+    logging.info(f"Solver generate the unit test:\n{ser_answer}")   
     ser_messages_init = ser_messages
     ser_messages.append(m_ser_gpt)
     m_his = {
@@ -392,7 +401,7 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
     f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)    
     
     for turn in range(turns_limitation):
-        print(f"Runing modification {turn}th turn")
+        logging.info(f"Runing modification {turn}th turn")
         # Initialize the solver message to avoid the potential impact from previous wrong answers
         Init_solver = Init_solver_prompt.format(fortran_code = f_code_exe, cpp_code = c_code_exe)
         ser_message_unit_test = {
@@ -408,14 +417,14 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
         
         os.makedirs(fortran_folder, exist_ok=True)
         os.makedirs(cpp_folder, exist_ok=True)
-        print("fortran code that need to be executed:\n",f_code_exe)    
-        print("c++ code that need to be executed:\n",c_code_exe)  
+        logging.info("fortran code that need to be executed:\n {f_code_exe}")    
+        logging.info("c++ code that need to be executed:\n{c_code_exe}")  
         fortran_stdout, fortran_stderr, fortran_p_f, cpp_stdout, cpp_stderr, cpp_p_f = run_codes(fortran_folder, f_code_exe, cpp_folder, c_code_exe)
    
         fortran_compile_result = f"Fortran Stdout: {fortran_stdout}\nFortran Stderr: {fortran_stderr}"
         cpp_compile_result = f"C++ Stdout: {cpp_stdout}\nC++ Stderr: {cpp_stderr}"   
-        print(f"fortran compile result in {turn}th turn:", fortran_compile_result)
-        print(f"cpp compile result in {turn}th turn:", cpp_compile_result)
+        logging.info(f"fortran compile result in {turn}th turn:\n{fortran_compile_result}")
+        logging.info(f"cpp compile result in {turn}th turn:\n{cpp_compile_result}")
         
         # further modification / end
         break_outer_loop = False
@@ -430,7 +439,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                             modification_prompt)
                 except:
                     break
-                print("Add fortran head file ",history[-1]["content"]) 
+                content=history[-1]["content"];
+                logging.info("Add fortran head file:\n{content}") 
                 f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)
                 
             # Other errors
@@ -442,7 +452,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                                         modification_prompt)   
                 except:
                     break 
-                print("ff_ct gpt answer",history[-1]["content"])      
+                content=history[-1]["content"];
+                logging.info("ff_ct gpt answer:\n{content}")      
                 f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)        
         
         if cpp_p_f == False: # Modify cpp
@@ -456,7 +467,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                             modification_prompt)
                 except:
                     break 
-                print("Add c++ head file ",history[-1]["content"]) 
+                content = history[-1]["content"]
+                logging.info("Add c++ head file:\n{content}") 
                 f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)  
             
             #  Missing terminating error
@@ -468,7 +480,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                                         modification_prompt)   
                 except:
                     break                  
-                print("Missing terminating",history[-1]["content"])     
+                content = history[-1]["content"]
+                logging.info("Missing terminating:\n{content}")     
                 f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)   
                  
             # Other errors
@@ -480,7 +493,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                                         modification_prompt)     
                 except:
                     break                 
-                print("ft_cf gpt answer",history[-1]["content"])     
+                content =  history[-1]["content"]
+                logging.info("ft_cf gpt answer:\n{content}")     
                 f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)                               
                  
         if fortran_p_f == True and cpp_p_f == True:
@@ -492,7 +506,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                                     decision_prompt)  
             except:
                 break
-            print("ft_ct gpt answer",history[-1]["content"])
+            content = history[-1]["content"] 
+            logging.info("ft_ct gpt answer:\n{content}")
             f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)              
             for end_check in range(2):
                 Str_y_n = history[-1]["content"]    
@@ -501,7 +516,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                     fur_modification(history, 
                                         ser_messages, 
                                         end_prompt)
-                    print("yes",history[-1]["content"])
+                    content = history[-1]["content"]
+                    logging.info("yes\n{content}")
                     break_outer_loop = True # break outer layer
                     f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)                     
                     break
@@ -510,7 +526,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                     fur_modification(history, 
                                         ser_messages, 
                                         further_modification)
-                    print("no",history[-1]["content"])
+                    content = history[-1]["content"]
+                    logging.info("no\n{content}")
                     f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)                     
                     break
                 else:
@@ -518,7 +535,8 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                     fur_modification(history, 
                                         ser_messages, 
                                         clear_prompt)                             
-                    print("unclear",history[-1]["content"])
+                    content = history[-1]["content"]
+                    logging.info("unclear\n{content}")
                     f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)                 
         if break_outer_loop:
             break
@@ -546,7 +564,7 @@ def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
     
     # select source fortran codes from a dataset
     for idx in range(len(input_dataset['code'])):
-        print(f"Working on the {idx}th code...")
+        logging.info(f"Working on the {idx}th code...")
         fortran_code = input_dataset['code'][idx]
         
         # Count the length of the input tokens
@@ -563,15 +581,15 @@ def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
             fortran_wo_com = fortran_wo_com.encode().decode('unicode_escape','replace')
             # fortran_wo_com = remove_fortran_comments_fixed(fortran_code) 
             
-            print(f"fortran_wo_com:\n{fortran_wo_com}")
+            logging.info(f"fortran_wo_com:\n{fortran_wo_com}")
             encoding = tiktoken.encoding_for_model(DEFAULT_MODEL_ID)
             token_count = len(encoding.encode(fortran_wo_com,disallowed_special=()))     
-            print("fortran_wo_com length", token_count)
+            logging.info(f"fortran_wo_com tokenn_count:\{token_count}")
             # control the length
             if token_count < 600:     
                 fortran_start = fortran_wo_com.find("```fortran") + 10
                 if fortran_start == 9:
-                    print("Did not find the fortran code!")
+                    logging.info("Did not find the fortran code!")
                     continue
                 else:
                     fortran_end = fortran_wo_com.find("```", fortran_start)
@@ -579,7 +597,7 @@ def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
                 try:
                     fortran_wo_com
                 except NameError as e:
-                    print("Did not find the fortran code!", str(e))
+                    logging.info("Did not find the fortran code!\n{str(e)}")
                     continue 
                 
                 # Step 2: Remove non-executable code 
@@ -589,7 +607,7 @@ def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
                 keywords_to_remove = ['OPEN', 'READ', 'WRITE', 'CLOSE']
                 if any(keyword in fortran_wo_com for keyword in keywords_to_remove):
                     skip_code = True
-                    print("This fortran code contains external file reading operations, it will be skipped!")
+                    logging.info("This fortran code contains external file reading operations, it will be skipped!")
 
                 # Remove code that contains operations for user input
                 keywords_to_remove = ['GET_ENVIRONMENT_VARIABLE', 
@@ -600,7 +618,7 @@ def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
                              
                 if any(keyword in fortran_wo_com.upper() for keyword in keywords_to_remove):
                     skip_code = True
-                    print("This Fortran code contains operations for user input, it will be skipped!")    
+                    logging.info("This Fortran code contains operations for user input, it will be skipped!")    
                     
                 # Remove Fortran code containing undefined external functions
                 if_contain_ext = if_contain_ext_prompt.format(Fortran_Code = fortran_wo_com)
@@ -608,7 +626,7 @@ def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
                 if_contain_ext = if_contain_ext.encode().decode('unicode_escape')    
                 if "no" not in if_contain_ext.lower():      
                     skip_code = True             
-                    print("This Fortran code contains undefined external functions, it will be skipped!")          
+                    logging.info("This Fortran code contains undefined external functions, it will be skipped!")          
                                                
                 # Step 3: get function of the code; translated cpp code and explanation    
                 if skip_code == False:
@@ -619,7 +637,7 @@ def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
                                                 gpt_model = gpt_model,
                                                 turns_limitation = 7)
                     except:
-                        print("Skip!", str(e))
+                        logging.info("Skip!\n{str(e)}")
                         continue 
                     if break_outer_loop:
                         add_to_json(history, output_file)
@@ -650,7 +668,7 @@ def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
 #         input_prompt_local = "Translate the following Fortran code to cpp " + fortran_code
 #         try:
 #             predicted_answer = generate_from_local_model(input_prompt_local, 2*len(input_prompt_local), tokenizer, model, device_num, n=1, max_prompt_length=1024)[0]                
-#             print("predicted_answer",predicted_answer) # Print the generated data
+#             logging.info("predicted_answer",predicted_answer) # Print the generated data
             
 #             # assert: compiler
 #             yes_or_no_compiler, reason = check_by_compiler(predicted_answer)
@@ -669,8 +687,8 @@ def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
 #             else:
 #                 res[i] = 0
 #         except Exception as e:
-#             print(f"An error occurred: {e}")
-#     print("RATIO:", res.count(1)/(res.count(1)+res.count(0)))
+#             logging.info(f"An error occurred: {e}")
+#     logging.info("RATIO:", res.count(1)/(res.count(1)+res.count(0)))
 #     return res.count(1)/(res.count(1)+res.count(0))
 
 if __name__ == "__main__":
@@ -680,7 +698,7 @@ if __name__ == "__main__":
 #The repository for codeparrot/github-code contains custom code which must be executed to correctly load the dataset. 
     Fortran_dataset = load_dataset("codeparrot/github-code", "FORTRAN-all", trust_remote_code=True)
 #    data = Fortran_dataset["train"][78000:85000] # 7000 data samples here
-    data = Fortran_dataset["train"][78000:78100] # debug smaller 
+    data = Fortran_dataset["train"][78000:78050] # debug smaller sample size: 50 only
     openai_model_id = DEFAULT_MODEL_ID # default gpt-4o : over 10x expensive than 4o-mini
 
     output_file = "gpt-4o-mini-100-samples.json" # Output Json file
