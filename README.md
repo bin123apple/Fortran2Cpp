@@ -162,7 +162,7 @@ srun -n 1 -c 8 --cpu_bind=cores -G 4 --gpu-bind=none  <Your/inference/file/path>
 1. Setup your OpenAI Key.
 ```
 cd dataset_generation
-export export OPENAI_API_KEY="sk...."
+export OPENAI_API_KEY="sk...."
 ```
 
 Modify engine_F2C.py to customize the input dataset range, teacher model ID, output folder, etc.
