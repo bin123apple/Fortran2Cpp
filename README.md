@@ -3,6 +3,9 @@
 ## Introduction
 Fortran has been a widely used programming language for scientific computation since 1957. With technological advancements, modern languages like C++ have become preferable for some projects due to their greater flexibility and features. However, the lack of an accurate and comprehensive Fortran-to-C++ translation dataset means that existing large models, including GPT-4, often struggle to perform this task effectively, resulting in translations that may fail to compile or pass unit tests. Fortran2Cpp aims to address this issue.
 
+This work builts on our previous work: 
+* https://github.com/bin123apple/OpenMP-Fortran-CPP-Translation
+
 ## Model
 
 We fine-tuned several popular pre-trained models,  including 
