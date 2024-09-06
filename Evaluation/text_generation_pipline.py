@@ -1,7 +1,8 @@
+import os
 import torch
 from transformers import pipeline
 from datasets import load_dataset
-from transformers import AutoTokenizer ,AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # Select the model that you want to test
 
@@ -10,10 +11,13 @@ from transformers import AutoTokenizer ,AutoModelForCausalLM
 # checkpoint = "WizardLM/WizardCoder-15B-V1.0"
 # checkpoint = "codellama/CodeLlama-13b-Instruct-hf"
 # checkpoint = "deepseek-ai/deepseek-coder-33b-instruct"
-checkpoint = "Bin12345/F2C-Translator"
+checkpoint = "Bin12345/Fortran2Cpp" # just renamed from Bin12345/F2C-Translator
 
 
-access_token = "" # Use your own huggingface token
+access_token = os.getenv('HUGGINGFACE_TOKEN')
+
+if not access_token:
+    raise ValueError("HUGGINGFACE_TOKEN environment variable is not set")
 
 # Muti GPU inference
 model = AutoModelForCausalLM.from_pretrained(checkpoint,
@@ -33,7 +37,7 @@ pipe = pipeline("text-generation",
 input_dataset = load_dataset("Bin12345/HPC_Fortran_CPP")
 
 translated_texts = []
-index = 0
+index = 1 # starting from 1 as a counter of Fortran input programs
 for split in input_dataset.keys():
     for fortran_code in input_dataset[split]['fortran']:     
         try:
