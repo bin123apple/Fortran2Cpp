@@ -13,10 +13,30 @@ def compile_and_run_each_line(source_file):
         executable = 0
         for index, line in enumerate(lines):
             print(f"Working on {index}")
-            # Create a temporary C++ source file
+            
+            # Skip \n within quotes
+            def skip_newline_within_quotes(line):
+                in_quotes = False
+                result = []
+                i = 0
+                while i < len(line):
+                    char = line[i]
+                    if char == '"' and (i == 0 or line[i - 1] != '\\'): 
+                        in_quotes = not in_quotes
+                    if in_quotes and char == '\\' and i + 1 < len(line) and line[i + 1] == 'n':
+                        result.append('\\n')
+                        i += 2
+                        continue
+                    result.append(char)
+                    i += 1
+                return ''.join(result)
+            
+            # First process the line to skip \n inside quotes
+            processed_line = skip_newline_within_quotes(line)
+            formatted_line = bytes(processed_line, "utf-8").decode("unicode_escape")
+            
             cpp_source_path = os.path.join(tmpdirname, f"temp_{index}.cpp")
             executable_path = os.path.join(tmpdirname, f"temp_{index}")
-            formatted_line = bytes(line, "utf-8").decode("unicode_escape")
             with open(cpp_source_path, 'w') as cpp_file:
                 cpp_file.write(formatted_line)
             
@@ -67,7 +87,7 @@ def compile_and_run_each_line(source_file):
     return results, compilable, executable
 
 # Usage
-source_file = '/home/uconn/BinLei/HPC_Dataset_test/Final_Results/GPT_4o_HPEC.txt'
+source_file = '/home/uconn/BinLei/F2C-Translator/data/StarCoder2/StarCoder2_FT_HPEC_Clean.txt'
 result, compilable, executable = compile_and_run_each_line(source_file)
 print(f"Number of compilable: {compilable}")
 print(f"Number of executable: {executable}")
