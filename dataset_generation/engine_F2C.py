@@ -292,7 +292,7 @@ def update_code_from_history(f_code_exe, c_code_exe, history):
     return f_code_exe, c_code_exe
     
 
-def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, turns_limitation = 3):
+def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, turns_limitation = 3, idx = 0):
     """
     Simulate a conversation between a questioner and a solver using an AI model to translate Fortran code
     to C++ and generate unit tests, handling errors and updates iteratively.
@@ -519,7 +519,12 @@ def Ai_chat_with_Ai(key,fortran_code, max_tokens, gpt_model = DEFAULT_MODEL_ID, 
                     content = history[-1]["content"]
                     logging.info("yes\n{content}")
                     break_outer_loop = True # break outer layer
-                    f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history)                     
+                    f_code_exe,c_code_exe = update_code_from_history(f_code_exe, c_code_exe, history) 
+                    # save the code to readable file with different names
+                    with open(f'F2C-Translator/data/final_pairs/fortran_code{idx}.f90', 'w') as file:
+                        file.write(f_code_exe)
+                    with open(f'F2C-Translator/data/final_pairs/cpp_code{idx}.cpp', 'w') as file:
+                        file.write(c_code_exe)                 
                     break
                 elif "no" in Str_y_n.lower():
                     further_modification = further_modification_
@@ -635,7 +640,8 @@ def generate_data(key, input_dataset, output_file, gpt_model=DEFAULT_MODEL_ID):
                                                 fortran_wo_com, 
                                                 max_tokens = 4096, 
                                                 gpt_model = gpt_model,
-                                                turns_limitation = 7)
+                                                turns_limitation = 7,
+                                                idx = idx)
                     except:
                         logging.info("Skip!\n{str(e)}")
                         continue 
