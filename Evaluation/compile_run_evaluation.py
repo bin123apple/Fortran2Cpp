@@ -21,11 +21,11 @@ def compile_and_run_each_line(source_file):
                 i = 0
                 while i < len(line):
                     char = line[i]
-                    if char == '"' and (i == 0 or line[i - 1] != '\\'): 
+                    if char == '"' and (i == 0 or line[i - 1] != '\\'):
                         in_quotes = not in_quotes
-                    if in_quotes and char == '\\' and i + 1 < len(line) and line[i + 1] == 'n':
+                    if in_quotes and char == '\n':  # If inside quotes and a newline, replace with \n
                         result.append('\\n')
-                        i += 2
+                        i += 1
                         continue
                     result.append(char)
                     i += 1
