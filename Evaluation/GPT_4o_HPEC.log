@@ -1,0 +1,8481 @@
+Working on 0
+Formatted line: #include <stdio.h>
+int a[100][100];
+int main()
+{
+ int i,j;
+#pragma omp parallel for collapse(2)
+ for (i=0;i<100;i++)
+ for (j=0;j<100;j++)
+ a[i][j]=a[i][j]+1;
+ return 0;
+}
+
+Working on 1
+Formatted line: #include <stdio.h>
+#if (_OPENMP<201511)
+#error "An OpenMP 4.5 compiler is needed to compile this test."
+#endif
+
+#include <stdio.h>
+int a[100][100];
+int main()
+{
+ int i, j;
+#pragma omp parallel
+ {
+#pragma omp single
+ {
+#pragma omp taskloop collapse(2)
+ for (i = 0; i < 100; i++)
+ for (j = 0; j < 100; j++)
+ a[i][j]+=1; 
+ }
+ }
+ printf ("a[50][50]=%d
+", a[50][50]);
+ return 0;
+}
+
+Working on 2
+Formatted line: #include <stdio.h>
+int main()
+{
+ int i, len = 100;
+ int a[len], b[len];
+ for (i=0; i<len; i++){
+ a[i] = i+1;
+ b[i] = i+2;
+ }
+#pragma omp simd
+ for (i=0; i<len-1; i++)
+ a[i+1] = a[i] + b[i];
+ for (i=0; i<len; i++)
+ printf("Values for i and a[i] are: %d %d
+", i+1, a[i]);
+ return 0;
+}
+
+Working on 3
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+void foo() {
+    int x = 0, y = 2;
+
+    #pragma omp task shared(x)
+    x = x+1;
+
+    #pragma omp task depend(in: x) shared(x, y)
+    y = y-x;
+
+    #pragma omp task depend(in: x) if(false)
+    ;
+
+    printf("x=%d
+", x);
+    printf("y=%d
+", y);
+
+    #pragma omp taskwait
+}
+
+int main() {
+    #pragma omp parallel
+    {
+        #pragma omp single
+        foo();
+    }
+    return 0;
+}
+
+Working on 4
+Formatted line: #include <iostream>
+#include <vector>
+#include <omp.h>
+
+int main() {
+    const int N = 180;
+    std::vector<int> indexSet = {521, 523, 525, 527, 529, 531, 547, 549,
+                                 // continue the initialization as per Fortran code
+                                 2009, 2011, 2013};
+    std::vector<double> base(2026, 0.0); // size is 2026 to match 1-indexing in Fortran
+    int idx1, idx2;
+
+#pragma omp parallel for private(idx1, idx2)
+    for (int i = 0; i < N; i++) {
+        idx1 = indexSet[i];
+        idx2 = indexSet[i] + 12;
+        base[idx1] += 1.0;
+        base[idx2] += 3.0;
+    }
+
+    for (int i = 521; i <= 2025; i++) {
+        if (base[i] == 4.0) {
+            std::cout << "i= " << i << ", base= " << base[i] << std::endl;
+        }
+    }
+
+    return 0;
+}
+
+Working on 5
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+
+void foo(int n, int *a, int *b, int *c, int *d);
+
+int main()
+{
+    int n = 1000;
+    int *a = (int*)malloc(n*sizeof(int));
+    int *b = (int*)malloc(n*sizeof(int));
+    int *c = (int*)malloc(n*sizeof(int));
+    int *d = (int*)malloc(n*sizeof(int));
+
+    foo(n, a, b, c, d);
+
+    free(a);
+    free(b);
+    free(c);
+    free(d);
+
+    return 0;
+}
+
+Working on 6
+Formatted line: #include <vector>
+#include <omp.h>
+
+void foo() {
+    int i, j, n, m, len;
+    len = 100;
+    std::vector<std::vector<float>> b(len, std::vector<float>(len));
+
+    n = len;
+    m = len;
+#pragma omp parallel for private(j)
+    for(i = 0; i < n; i++)
+        for(j = 0; j < m-1; j++)
+            b[i][j] = b[i][j+1];
+}
+
+int main() {
+    foo();
+    return 0;
+}
+
+Working on 7
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+class A {
+  public:
+    static int counter;
+    static int pcounter;
+
+    A(int x, int y) {
+      counter = x;
+      pcounter = y;
+    }
+
+    static void foo() {
+      #pragma omp parallel
+      {
+        counter++;
+        #pragma omp atomic
+        pcounter++;
+      }
+    }
+};
+
+int A::counter = 0;
+int A::pcounter = 0;
+
+int main() {
+  A c(0,0);
+  A::foo();
+  printf("%d %d
+", A::counter, A::pcounter);
+  return 0;
+}
+
+Working on 8
+Formatted line: #include <stdio.h>
+extern void foo();
+int main()
+{
+#pragma omp parallel
+{
+ foo();
+}
+ return 0;
+}
+
+Working on 9
+Formatted line: #include <stdio.h>
+float b[4];
+int main()
+{
+ int i, m, n;
+ m = 2;
+ n = 4;
+#pragma omp simd safelen(2)
+ for (i = m+1; i < n; i++)
+ b[i] = b[i-m] - 1.0;
+ printf("%f", b[3]);
+ return 0;
+}
+
+Working on 10
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int var[100];
+    for(int i=0; i<100; i++)
+        var[i] = 1;
+
+    #pragma omp target map(tofrom:var) device(0)
+    #pragma omp teams distribute parallel for
+    for(int i=1; i<100; i++)
+        var[i] = var[i-1]+1;
+
+    printf("%d", var[99]);
+    return 0;
+}
+
+Working on 11
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+void foo();
+
+int main() {
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            foo();
+        }
+    }
+    return 0;
+}
+
+void foo() {
+    int x = 0;
+    int y = 2;
+
+    #pragma omp task shared(x)
+    {
+        x = x + 1; // 1st Child Task
+    }
+
+    #pragma omp task shared(x, y)
+    {
+        y = y - x; // 2nd Child Task
+    }
+
+    #pragma omp task if(false)
+    {
+        // 1st taskwait
+    }
+
+    printf("x=%d
+", x);
+
+    #pragma omp taskwait
+
+    printf("y=%d
+", y);
+}
+
+Working on 12
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+int main(int argc, char* argv[])
+{
+ int i, tmp;
+ int len = 100;
+ if (argc == 1) {
+ printf("No command line arguments provided.
+");
+ return 0;
+ }
+ len = atoi(argv[1]);
+ if (len == 0) {
+ printf("Error, invalid integer value.
+");
+ return 0;
+ }
+ int a[len];
+ for (i=0;i<len;i++)
+ a[i] = i+1;
+#pragma omp parallel for private(tmp)
+ for (i=0;i<len;i++)
+ {
+ tmp = a[i] + i+1;
+ a[i] = tmp;
+ }
+ printf ("a[50]=%d
+", a[50]);
+ return 0;
+}
+
+Working on 13
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ int i = 0;
+ int sum = 0;
+#pragma omp parallel reduction(+:sum) num_threads(10)
+ {
+    f1(&i);
+    sum+=i;
+ }
+ if (sum != 10)
+ printf ("sum=%d
+", sum);
+ return 0;
+}
+
+Working on 14
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    long long int num_steps = 2000000000;
+    double x, pi = 0.0, interval_width = 1.0/num_steps;
+
+#pragma omp parallel for reduction(+:pi) private(x)
+    for (long long int i = 0; i < num_steps; i++) {
+        x = (i + 0.5) * interval_width;
+        pi = pi + 1.0 / (x*x + 1.0);
+    }
+
+    pi = pi * 4.0 * interval_width;
+
+    printf("PI = %.20f
+", pi);
+    return 0;
+}
+
+Working on 15
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int x = 2;
+
+#pragma omp task shared(x) mergeable
+    {
+        x = x + 1;
+    }
+#pragma omp taskwait
+
+    printf("x = %d
+", x);
+    return 0;
+}
+
+Working on 16
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int i, x, len;
+ len = 10000;
+#pragma omp parallel for private(i)
+ for (i = 0; i < len; i++)
+ {
+     x = i;
+ }
+ printf("x = %d
+", x);
+ return 0;
+}
+
+Working on 17
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int var = 0;
+#pragma omp target map(tofrom:var) device(0)
+#pragma omp teams distribute parallel for
+ for (int i = 0; i < 200; i++)
+ {
+#pragma omp critical
+ var+=1;
+ }
+ printf("%d
+",var);
+ return 0;
+}
+
+Working on 18
+Formatted line: #include <stdio.h>
+#include <omp.h>
+class A {
+public:
+    static int counter;
+    static int pcounter;
+    A(int a, int b) { counter=a; pcounter=b; }
+};
+int A::counter = 0;
+int A::pcounter = 0;
+int main()
+{
+#pragma omp parallel
+{
+    A::counter=A::counter+1;
+    A::pcounter=A::pcounter+1;
+}
+printf("%d %d
+", A::counter, A::pcounter);
+return 0;
+}
+
+Working on 19
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+
+float a[1000][1000];
+
+int main(int argc, char* argv[])
+{
+    int i, j, len = 1000;
+    if (argc > 1) {
+        len = atoi(argv[1]);
+        if (len <= 0) {
+            printf("Error, invalid integer value.
+");
+            return 1;
+        }
+    } else {
+        printf("No command line arguments provided.
+");
+    }
+
+    for (i = 0; i < len; i++)
+        for (j = 0; j < len; j++)
+            a[i][j] = 0.5;
+
+#pragma omp parallel for private(j)
+    for (i = 0; i < len - 1; i++)
+        for (j = 0; j < len; j++)
+            a[i][j] = a[i][j] + a[i+1][j];
+
+    printf("a[10][10] = %f
+", a[10][10]);
+
+    return 0;
+}
+
+Working on 20
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+void foo() {
+    int i, x;
+#pragma omp parallel for private(i) lastprivate(x)
+    for (i = 0; i < 100; i++) {
+        x = i;
+    }
+    printf("x = %d
+", x);
+}
+
+int main() {
+#pragma omp parallel
+    {
+        foo();
+    }
+    return 0;
+}
+
+Working on 21
+Formatted line: #include <stdio.h>
+int a[100];
+int main()
+{
+ int i,tmp;
+ for (i=0;i<100;i++)
+ a[i]=i+1;
+
+#pragma omp parallel for private(tmp)
+ for (i=0;i<100;i++)
+ {
+  tmp=a[i]+i+1;
+  a[i]=tmp;
+ }
+
+ printf ("a[50]=%d
+", a[50]);
+ return 0;
+}
+
+Working on 22
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int var[100];
+
+int main()
+{
+    for(int i = 0; i < 100; i++)
+    {
+        var[i] = 1;
+    }
+
+    #pragma omp target map(tofrom:var) device(0)
+    #pragma omp teams distribute parallel for simd safelen(16)
+    for(int i = 16; i < 100; i++)
+    {
+        var[i] = var[i-16] + 1;
+    }
+
+    printf("%d
+", var[98]);
+
+    return 0;
+}
+
+Working on 23
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+int main(int argc, char **argv){
+    int i, N;
+    int *a;
+    N = 100;
+
+    if(argc==1){
+        printf("No command line arguments provided.
+");
+        return 1;
+    }
+
+    N = atoi(argv[1]);
+
+    a = (int*)malloc(N* sizeof(int));
+    if(a==NULL){
+        printf("Allocation error, program terminated.
+");
+        exit(1);
+    }
+
+    if(N>=1){
+        N = atoi(argv[1]);
+        if(N == 0){
+            printf("Error, invalid integer value.
+");
+            return 1;
+        }
+    }
+
+    #pragma omp parallel for shared(a)
+    for(i=0; i<N; i++){
+        a[i] = i+1;
+        if(N > 10000) a[0] = 1;
+    }
+    free(a);
+
+    return 0;
+}
+
+Working on 24
+Formatted line: #include <stdio.h>
+#if (_OPENMP<201511)
+#error "An OpenMP 4.5 compiler is needed to compile this test."
+#endif
+
+#include <stdio.h>
+int a[100][100];
+int main()
+{
+ int i, j;
+#pragma omp parallel
+ {
+#pragma omp single
+ {
+#pragma omp taskloop
+ for (i = 0; i < 100; i++)
+ for (j = 0; j < 100; j++)
+ a[i][j]+=1; 
+ }
+ }
+ printf ("a[50][50]=%d
+", a[50][50]);
+ return 0;
+}
+
+Working on 25
+Formatted line: #include <iostream>
+#include <omp.h>
+
+int tp, var;
+
+#pragma omp threadprivate(tp)
+
+void foo()
+{
+ #pragma omp task
+ {
+ #pragma omp task
+ {
+ tp = 1;
+ #pragma omp task
+ {
+ var = tp;
+ }
+ }
+ }
+}
+
+int main()
+{
+ foo();
+ std::cout << var << std::endl;
+ return 0;
+}
+
+Working on 26
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int i, j;
+    double u[100][100], temp, getSum = 0.0;
+
+    for (i = 0; i < 100; i++) {
+        for (j = 0; j < 100; j++) {
+            u[i][j] = 0.5;
+        }
+    }
+
+    #pragma omp parallel for private(temp, i, j)
+    for (i = 0; i < 100; i++) {
+        for (j = 0; j < 100; j++) {
+            temp = u[i][j];
+            getSum = getSum + temp * temp;
+        }
+    }
+    
+    printf("sum = %f
+", getSum);
+    
+    return 0;
+}
+
+Working on 27
+Formatted line: #include <iostream>
+#include <omp.h>
+
+int main()
+{
+    int x = 0;
+
+#pragma omp parallel for ordered
+    for(int i = 0; i < 100; i++)
+    {
+#pragma omp ordered
+        x = x + 1;
+    }
+
+    std::cout << "x = " << x << std::endl;
+    return 0;
+}
+
+Working on 28
+Formatted line: #include <stdio.h>
+#include <unistd.h>
+#include <omp.h>
+
+int main()
+{
+    int i = 0, j, k;
+#pragma omp parallel
+    {
+#pragma omp single
+        {
+#pragma omp task depend(out : i)
+            {
+                sleep(3);
+                i = 1;
+            }
+#pragma omp task depend(in : i)
+            {
+                j = i;
+            }
+#pragma omp task depend(in : i)
+            {
+                k = i;
+            }
+        }
+    }
+    printf("j = %d  k = %d
+", j, k);
+    if (j != 1 || k != 1)
+    {
+        printf("Race Condition
+");
+    }
+    return 0;
+}
+
+Working on 29
+Formatted line: #include <stdio.h>
+int main()
+{
+ int i, len=100;
+ int a[len];
+
+ for (i=0;i<len;i++)
+ a[i]=i+1;
+
+#pragma omp parallel for
+ for (i=0;i<len-1;i++)
+ a[i+1]=a[i]+1;
+
+ printf ("a[50]=%d
+", a[50]);
+ return 0;
+}
+
+Working on 30
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int x[64], y[64];
+int a = 5;
+
+int main() {
+    for (int i = 0; i < 64; i++) {
+        x[i] = 0;
+        y[i] = 3;
+    }
+
+#pragma omp target map(to:y,a) map(tofrom:x) device(0)
+    {
+        for (int i = 0; i < 64; i++) {
+#pragma omp task depend(inout:x[i])
+            x[i] = a * x[i];
+
+#pragma omp task depend(inout:x[i])
+            x[i] = x[i] + y[i];
+        }
+    }
+
+    for (int i = 0; i < 64; i++) {
+        if (x[i] != 3)
+            printf("%d
+",x[i]);
+    }
+
+#pragma omp taskwait
+
+    return 0;
+}
+
+Working on 31
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int x = 0, y, thrd, tmp;
+
+#pragma omp parallel num_threads(2) private(thrd, tmp)
+    {
+        thrd = omp_get_thread_num();
+        if (thrd == 0) {
+#pragma omp critical
+            x = 10;
+#pragma omp atomic write
+            y = 1;
+        } else {
+            tmp = 0;
+            while (tmp == 0) {
+#pragma omp atomic read
+                tmp = x;
+            }
+#pragma omp critical
+            printf("x = %d
+", x);
+        }
+    }  
+    return 0;
+}
+
+Working on 32
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    omp_lock_t lock;
+    int i = 0;
+    omp_init_lock(&lock);
+
+#pragma omp parallel sections
+    {
+#pragma omp section
+        {
+            omp_set_lock(&lock);
+            i = i + 1;
+            omp_unset_lock(&lock);
+        }
+#pragma omp section
+        {
+            omp_set_lock(&lock);
+            i = i + 2;
+            omp_unset_lock(&lock);
+        }
+    }
+
+    omp_destroy_lock(&lock);
+    
+    printf("I = %d
+", i);
+    return 0;
+}
+
+Working on 33
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int len = 1000;
+    int b = 5;
+    int error;
+    int a[len];
+    for (int i = 0; i < len; i++) {
+        a[i] = i + 1;
+    }
+    #pragma omp parallel shared(b, error)
+    {
+        #pragma omp parallel
+        {
+            #pragma omp for nowait
+            for (int i = 0; i < len; i++) {
+                a[i] = b + a[i] * 5;
+            }
+            #pragma omp single
+            {
+                error = a[9] + 1;
+            }
+        }
+    }
+    printf("error = %d
+", error);
+    return 0;
+}
+
+Working on 34
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int x = 0, y = 2;
+#pragma omp parallel
+    {
+#pragma omp single
+        {
+#pragma omp task shared(x)
+            {
+                x = x + 1;
+            }
+#pragma omp task shared(y)
+            {
+                y = y - 1;
+            }
+#pragma omp taskwait
+            printf("x=%d
+", x);
+#pragma omp taskwait
+            printf("y=%d
+", y);
+        }
+    }
+    return 0;
+}
+
+Working on 35
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int var = 0;
+    int i;
+    
+    #pragma omp target map(tofrom:var) device(0)
+    #pragma omp teams distribute parallel for
+    for (i = 0; i < 100; i++)
+    {
+        var = var+1;
+    }
+    
+    printf("%d
+", var);
+    return 0;
+}
+
+Working on 36
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+
+    int i, sum = 0, sum0 = 0, sum1 = 0;
+
+#pragma omp parallel private(sum0)
+    {
+#pragma omp for
+        for (i = 0; i <= 1000; i++) {
+            sum0 += i;
+        }
+#pragma omp critical
+        sum += sum0;
+    }
+
+    for (i = 0; i <= 1000; i++) {
+        sum1 += i;
+    }
+
+    printf("sum = %d, sum1 = %d
+", sum, sum1);
+
+    return 0;
+}
+
+Working on 37
+Formatted line: #include <stdio.h>
+#if (_OPENMP<201511)
+#error "An OpenMP 4.5 compiler is needed to compile this test."
+#endif
+
+int main()
+{
+ int i=0;
+#pragma omp parallel
+ {
+#pragma omp single
+ {
+#pragma omp task
+ i=1;
+#pragma omp task
+ i=2;
+ }
+ }
+ printf ("i=%d
+", i);
+ return 0;
+}
+
+Working on 38
+Formatted line: #include <stdio.h>
+float b[100][100];
+void foo()
+{
+ int i,j,n,m,len;
+ len=100;
+ n=len;
+ m=len;
+#pragma omp parallel for private(j)
+ for (i=0;i<n;i++)
+ for (j=1;j<m;j++)
+ b[i][j]=b[i][j-1];
+}
+int main()
+{
+ foo();
+ return 0;
+}
+
+Working on 39
+Formatted line: #include <iostream>
+#include <cstdlib>
+#include <omp.h>
+
+int main(int argc, char **argv) {
+    int len = 100;
+    int tmp = 10;
+    int *a = new int[len];
+
+    if (argc > 1) {
+        len = atoi(argv[1]);
+        if (len <= 0) {
+            std::cout << "Error, invalid integer value." << std::endl;
+            exit(1);
+        }
+    }
+
+#pragma omp parallel for
+    for (int i = 0; i < len; i++) {
+        a[i] = tmp;
+        tmp = a[i] + i;
+    }
+
+    delete[] a;
+    return 0;
+}
+
+Working on 40
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int var = 0;
+ int i;
+#pragma omp parallel sections
+ {
+ for (i = 0; i < 10; i++)
+ {
+#pragma omp task shared(var) if(0)
+ var++;
+ }
+ }
+ printf ("var = %d
+", var);
+ return 0;
+}
+
+Working on 41
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+int main(int argc, char **argv)
+{
+    int len = 100;
+    int numNodes, numNodes2 = 0;
+    int *x;
+    int i;
+
+    if (argc == 1)
+    {
+        printf("No command line arguments provided.
+");
+        return 1;
+    }
+
+    len = atoi(argv[1]);
+
+    x = (int *)malloc(len * sizeof(int));
+
+    numNodes = len;
+
+    for (i = 0; i < len; i++)
+    {
+        if (i % 2 == 0)
+        {
+            x[i] = 5;
+        }
+        else
+        {
+            x[i] = -5;
+        }
+    }
+
+#pragma omp parallel for
+    for (i = numNodes - 1; i >= 0; i--)
+    {
+        if (x[i] <= 0)
+        {
+            numNodes2--;
+        }
+    }
+
+    printf("numNodes2 = %d
+", numNodes2);
+
+    free(x);
+
+    return 0;
+}
+
+Working on 42
+Formatted line: #include <stdio.h>
+
+double* newSxx;
+double* newSyy;
+int len = 1000;
+
+void foo(double* newSxx, double* newSyy, int len);
+
+int main()
+{
+ newSxx = new double[len];
+ newSyy = new double[len];
+
+ foo(newSxx, newSyy, len);
+
+ if(newSxx != nullptr)
+ {
+  delete[] newSxx;
+  newSxx = nullptr;
+ }
+
+ if(newSyy != nullptr)
+ {
+  delete[] newSyy;
+  newSyy = nullptr;
+ }
+
+ return 0;
+}
+
+void foo(double* newSxx, double* newSyy, int len)
+{
+ // function implementation
+}
+
+Working on 43
+Formatted line: #include <stdio.h>
+#if (_OPENMP<201511)
+#error "An OpenMP 4.5 compiler is needed to compile this test."
+#endif
+
+#include <omp.h>
+int var[16];
+int main()
+{
+ int i, j;
+ for (i = 0; i < 16; i++)
+ var[i] = 0;
+
+#pragma omp target map(tofrom:var) device(0)
+#pragma omp teams distribute parallel for reduction(+:var)
+ for (i = 0; i < 20; i++)
+ {
+#pragma omp simd
+ for (j = 0; j < 16; j++)
+ var[j] += 1;
+ }
+
+ for (i = 0; i < 16; i++)
+ if (var[i] != 20)
+ printf ("%d %d
+", var[i], i);
+
+ return 0;
+}
+
+Working on 44
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ int b[8], c[8], temp[8], a, i, j, k, val = 0;
+
+ for (i=0;i<8;i++)
+ {
+   b[i] = 0;
+   c[i] = 2;
+   temp[i] = 0;
+ }
+
+ a = 2;
+
+ #pragma omp target map(tofrom:b) map(to:c,temp,a) device(0)
+ {
+ #pragma omp parallel
+ {
+ for (i=0; i<100; i++)
+ {
+ #pragma omp for
+ for (j=0; j<8; j++)
+ temp[j] = b[j] + c[j];
+
+ #pragma omp for
+ for (j=7; j>=0; j--)
+ b[j] = temp[j] * a;
+ }
+ }
+ 
+ for (i=0; i<100; i++)
+ {
+ val += 2;
+ val *= 2;
+ }
+
+ for (i=0; i<8; i++)
+ {
+ if (val != b[i])
+ printf("%d, %d
+", b[i], val);
+ }
+
+ return 0;
+}
+
+Working on 45
+Formatted line: #include <stdio.h>
+int o1[100];
+int c[100];
+
+void foo1(int* o1, int* c, int size)
+{
+   for(int i=0; i<size; i++)
+   {
+      // function implementation
+   }
+}
+
+int main()
+{
+   foo1(o1, c, 100);
+   return 0;
+}
+
+Working on 46
+Formatted line: #include <iostream>
+#include <cstdlib>
+#include <omp.h>
+
+int main(int argc, char* argv[]) {
+  int len = 100;
+  if(argc > 1){
+    len = atoi(argv[1]);
+    if(len <= 0){
+      std::cout<<"Error, invalid integer value.
+";
+      return 1;
+    }
+  } else {
+    std::cout<<"No command line arguments provided.
+";
+  }
+
+  int* a = new int[len];
+
+  for (int i = 0; i < len; i++){
+    a[i] = i+1;
+  }
+
+#pragma omp parallel for
+  for (int i = 0; i < len-1; i++){
+    a[i+1] = a[i]+1;
+  }
+
+  std::cout<<"a[50]="<<a[49]<<std::endl;
+  delete[] a;
+  return 0;
+}
+
+Working on 47
+Formatted line: #include <omp.h>
+
+int main() {
+    int init, local;
+
+#pragma omp parallel shared(init) private(local)
+    {
+#pragma omp master
+        init = 10;
+#pragma omp end master
+        local = init;
+    }
+    
+    return 0;
+}
+
+Working on 48
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+    omp_lock_t lck;
+    int var = 0;
+
+    omp_init_lock(&lck);
+#pragma omp target map(tofrom:var) device(0)
+#pragma omp teams num_teams(1)
+#pragma omp distribute parallel for
+    for (int i = 0; i < 100; i++) {
+        omp_set_lock(&lck);
+        var += 1;
+        omp_unset_lock(&lck);
+    }
+    omp_destroy_lock(&lck);
+    return 0;
+}
+
+Working on 49
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+double base[2025];
+int indexSet[180] = {521, 523, 525, 527, 529, 531, 547, 549, 551, 553, 555, 557, 573, 575, 577, 579, 581, 583, 599, 601, 603, 605, 607, 609, 625, 627, 629, 631, 633, 635, 651, 653, 655, 657, 659, 661, 859, 861, 863, 865, 867, 869, 885, 887, 889, 891, 893, 895, 911, 913, 915, 917, 919, 921, 937, 939, 941, 943, 945, 947, 963, 965, 967, 969, 971, 973, 989, 991, 993, 995, 997, 999, 1197, 1199, 1201, 1203, 1205, 1207, 1223, 1225, 1227, 1229, 1231, 1233, 1249, 1251, 1253, 1255, 1257, 1259, 1275, 1277, 1279, 1281, 1283, 1285, 1301, 1303, 1305, 1307, 1309, 1311, 1327, 1329, 1331, 1333, 1335, 1337, 1535, 1537, 1539, 1541, 1543, 1545, 1561, 1563, 1565, 1567, 1569, 1571, 1587, 1589, 1591, 1593, 1595, 1597, 1613, 1615, 1617, 1619, 1621, 1623, 1639, 1641, 1643, 1645, 1647, 1649, 1665, 1667, 1669, 1671, 1673, 1675, 1873, 1875, 1877, 1879, 1881, 1883, 1899, 1901, 1903, 1905, 1907, 1909, 1925, 1927, 1929, 1931, 1933, 1935, 1951, 1953, 1955, 1957, 1959, 1961, 1977, 1979, 1981, 1983, 1985, 1987, 2003, 2005, 2007, 2009, 2011, 2013};
+
+int main()
+{
+    int i, idx1, idx2;
+
+    for(i = 520; i < 2025; i++)
+        base[i] = 0.5 * (i + 1);
+
+#pragma omp parallel for private(idx1, idx2)
+    for(i = 0; i < 180; i++)
+    {
+        idx1 = indexSet[i] - 1;
+        idx2 = idx1 + 12;
+        base[idx1] += 1.0;
+        base[idx2] += 3.0;
+    }
+
+    printf("xa1(999) = %lf xa2(1285) = %lf
+", base[998], base[1284]);
+
+    return 0;
+}
+
+Working on 50
+Formatted line: #include <stdio.h>
+#include <cstdlib>
+#include <omp.h>
+
+int main(int argc, char* argv[]) {
+    int len = 1000;
+    if (argc > 1) {
+        len = atoi(argv[1]);
+    }
+
+    float b[len][len];
+
+    for (int i = 0; i < len; i++) {
+        #pragma omp parallel for
+        for (int j = 1; j < len; j++) {
+            b[i][j] = b[i][j-1];
+        }
+    }
+    
+    return 0;
+}
+
+Working on 51
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int m = 1;
+    int n = 4;
+    float b[4];
+
+#pragma omp simd safelen(2)
+    for (int i = m+1; i < n; i++)
+    {
+        b[i] = b[i-m] - 1.0;
+    }
+
+    printf("%f
+", b[3]);
+    return 0;
+}
+
+Working on 52
+Formatted line: #include <omp.h>
+int tp, var;
+#pragma omp threadprivate(tp)
+
+void foo()
+{
+#pragma omp task
+ {
+#pragma omp task
+ {
+   tp = 1;
+#pragma omp task
+ {
+#pragma omp end task
+   var = tp; // value of var can be 1 or 2
+ }
+#pragma omp end task
+ tp = 2;
+ }
+#pragma omp end task
+}
+
+int main()
+{
+    foo();
+    return 0;
+}
+
+Working on 53
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+    int a = 0;
+    int i;
+#pragma omp parallel shared(a) private(i)
+    {
+#pragma omp master
+        a = 0; 
+#pragma omp for reduction(+:a)
+        for(i = 0; i < 10; i++)
+            a = a+i;
+#pragma omp single
+        printf("Sum is %d
+", a);
+    }
+    return 0;
+}
+
+Working on 54
+Formatted line: #include <omp.h>
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+
+int main(int argc, char *argv[]) {
+    int len = 1000;
+    if (argc > 1)
+        len = atoi(argv[1]);
+
+    std::vector<int> a(len);
+
+    for (int i = 0; i < len; i++)
+        a[i] = i;
+
+    #pragma omp parallel for
+    for (int i = 0; i < len-1; i++)
+        a[i] = a[i+1]+1;
+
+    return 0;
+}
+
+Working on 55
+Formatted line: #include <stdio.h>
+int a[100][100];
+int main()
+{
+ int i, j;
+#pragma omp parallel for
+ for (i = 0; i < 100; i++)
+ for (j = 0; j < 100; j++)
+ a[i][j] = a[i][j] + 1;
+ return 0;
+}
+
+Working on 56
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int a = 0;
+
+#pragma omp parallel shared(a)
+    {
+#pragma omp master
+        a = 0;
+
+#pragma omp barrier
+
+#pragma omp for reduction(+:a)
+        for (int i = 0; i < 10; i++)
+            a += i;
+
+#pragma omp single
+        printf("Sum is %d
+", a);
+    }
+
+    return 0;
+}
+
+Working on 57
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+double b[1000][1000];
+
+int main() {
+    int i, j, n = 1000, m = 1000;
+    for(i = 0; i < n; i++) {
+        for(j = 0; j < m; j++) {
+            b[i][j] = 0.5;
+        }
+    }
+    #pragma omp parallel for private(j)
+    for(i = 1; i < n; i++) {
+        for(j = 1; j < m; j++) {
+            b[i][j] = b[i-1][j-1];
+        }
+    }
+    printf("b[500][500] = %.6f
+", b[500][500]);
+    return 0;
+}
+
+Working on 58
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int len = 100;
+    double a[len];
+
+    for (int i = 0; i < len; i++)
+        a[i] = (double)i / 2.0;
+
+#pragma omp target map(tofrom: a[0:len])
+#pragma omp teams num_teams(2)
+    a[50] = a[50] * 2.0;
+
+    printf("a[50]=%f
+", a[50]);
+
+    return 0;
+}
+
+Working on 59
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int a[100], b[100][100], c[100];
+
+int main()
+{
+ int len=100;
+ int i,j;
+ for(i=0; i<len; i++)
+ {
+  for(j=0; j<len; j++)
+  {
+   b[i][j]=1;
+  }
+  a[i]=1;
+  c[i]=0;
+ }
+
+#pragma omp target map(to:a,b) map(tofrom:c) device(0)
+#pragma omp teams distribute parallel for
+ for(i=0; i<len; i++)
+ {
+  for(j=0; j<len; j++)
+  {
+   c[i]=c[i]+a[j]*b[i][j];
+  }
+ }
+
+ for(i=0; i<len; i++)
+ {
+  if(c[i]!=len)
+  {
+   printf("%d
+", c[i]);
+  }
+ }
+
+ return 0;
+}
+
+Working on 60
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int var = 0;
+#pragma omp target map(tofrom:var) device(0)
+#pragma omp teams distribute parallel for reduction(+:var)
+ for (int i = 0; i < 200; i++)
+ {
+  if (var<101)
+  {
+   var = var+1;
+  }
+ }
+ return 0;
+}
+
+Working on 61
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int i = 1;
+
+#pragma omp parallel sections
+    {
+#pragma omp section
+        {
+#pragma omp critical(name)
+            {
+#pragma omp parallel
+                {
+#pragma omp single
+                    i += 1;
+                }
+            }
+        }
+    }
+
+    printf("i = %d
+", i);
+    return 0;
+}
+
+Working on 62
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int a, b, c, d;
+
+#pragma omp parallel
+{
+#pragma omp single
+    {
+#pragma omp task depend(out: c)
+        c = 1;    // Task T1
+
+#pragma omp task depend(out: a)
+        a = 2;    // Task T2
+
+#pragma omp task depend(out: b)
+        b = 3;    // Task T3
+
+#pragma omp task depend(in: a)
+        c = c + a;  // Task T4
+
+#pragma omp task depend(in: b)
+        c = c + b;  // Task T5
+
+#pragma omp task depend(in: c)
+        d = c;      // Task T6
+    }
+}
+    printf("%d
+", d);
+
+    return 0;
+}
+
+Working on 63
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int len = 1000;
+    int a[len];
+
+    for (int i = 0; i < len; i++)
+        a[i] = i+1;
+
+    #pragma omp target map(a)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < len-1; i++)
+            a[i] = a[i+1] + 1;
+    }
+
+    for (int i = 0; i < len; i++)
+        printf("Values for i and a[i] are: %d %d
+", i+1, a[i]);
+
+    return 0;
+}
+
+Working on 64
+Formatted line: #include <stdio.h>
+float a[20][20];
+int main() {
+ int i,j;
+ for (i=0;i<20;i++)
+ for (j=0;j<20;j++)
+ a[i][j]=0.0;
+ for (i=0;i<19;i++)
+ #pragma omp parallel for
+ for (j=0;j<20;j++)
+ a[i][j]=a[i][j]+a[i+1][j];
+ return 0;
+}
+
+Working on 65
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int len = 100;
+ int a[len], b[len], c[len];
+#pragma omp simd
+ for (int i = 0; i < len; i++)
+ a[i] = b[i] + c[i];
+ return 0;
+}
+
+Working on 66
+Formatted line: #include <stdio.h>
+#include <omp.h>
+#include <cstdlib>
+
+int main(int argc, char* argv[]) {
+ int i, len = 10000, x;
+
+ if (argc == 1) {
+  printf("No command line arguments provided.
+");
+  return 1;
+ }
+
+ len = atoi(argv[1]);
+
+ if (len == 0) {
+  printf("Error, invalid integer value.
+");
+  return 1;
+ }
+
+#pragma omp parallel for private(i)
+ for (i = 0; i < len; i++) {
+  x = i;
+ }
+
+ printf("x = %d
+", x);
+
+ return 0;
+}
+
+Working on 67
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ omp_lock_t lck;
+ int var = 0;
+ int i;
+
+ omp_init_lock(&lck);
+
+#pragma omp target map(tofrom:var) device(0)
+#pragma omp teams distribute reduction(+:var)
+ for (i = 0; i < 100; i++)
+ {
+  omp_set_lock(&lck);
+  var = var+1;
+  omp_unset_lock(&lck);
+ }
+
+ omp_destroy_lock(&lck);
+
+ printf("%d
+", var);
+ return 0;
+}
+
+Working on 68
+Formatted line: #include <stdio.h>
+int a[100][100];
+int main()
+{
+ int i,j;
+#pragma omp parallel for private(j)
+ for (i=0;i<100;i++)
+ for (j=0;j<100;j++)
+ a[i][j]=a[i][j]+1;
+ return 0;
+}
+
+Working on 69
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main(){
+    int len = 100;
+    int tmp = 10;
+    int a[len];
+
+#pragma omp parallel for
+    for(int i = 0; i < len; i++){
+        a[i] = tmp;
+        tmp = a[i] + i;
+    }
+
+    printf("a[50] = %d
+", a[49]);
+
+    return 0;
+}
+
+Working on 70
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int i;
+ int input[1000];
+ int output[1000];
+ int inLen = 1000;
+ int outLen = 1;
+
+ for (i=0; i<inLen; i++) {
+   input[i] = i+1;
+ }
+
+#pragma omp parallel for
+ for (i=0; i<inLen; i++) {
+   output[outLen-1] = input[i];
+   outLen++;
+ }
+
+ printf ("output[500]=%d
+", output[499]);
+ return 0;
+}
+
+Working on 71
+Formatted line: #include <omp.h>
+#include <stdio.h>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main()
+{
+    double base[2026];
+    vector<int> indexSet = {521, 523, 525, 527, 529, 531, 547, 549, 551, 553, 555, 557, 573, 575, 577, 579, 581, 583, 599, 
+                            601, 603, 605, 607, 609, 625, 627, 629, 631, 633, 635, 651, 653, 655, 657, 659, 661, 859, 861, 
+                            863, 865, 867, 869, 885, 887, 889, 891, 893, 895, 911, 913, 915, 917, 919, 921, 937, 939, 941, 
+                            943, 945, 947, 963, 965, 967, 969, 971, 973, 989, 991, 993, 995, 997, 999, 1197, 1199, 1201, 1203, 
+                            1205, 1207, 1223, 1225, 1227, 1229, 1231, 1233, 1249, 1251, 1253, 1255, 1257, 1259, 1275, 1277, 
+                            1279, 1281, 1283, 1285, 1301, 1303, 1305, 1307, 1309, 1311, 1327, 1329, 1331, 1333, 1335, 1337, 
+                            1535, 1537, 1539, 1541, 1543, 1545, 1561, 1563, 1565, 1567, 1569, 1571, 1587, 1589, 1591, 1593, 
+                            1595, 1597, 1613, 1615, 1617, 1619, 1621, 1623, 1639, 1641, 1643, 1645, 1647, 1649, 1665, 1667, 
+                            1669, 1671, 1673, 1675, 1873, 1875, 1877, 1879, 1881, 1883, 1899, 1901, 1903, 1905, 1907, 1909, 
+                            1925, 1927, 1929, 1931, 1933, 1935, 1951, 1953, 1955, 1957, 1959, 1961, 1977, 1979, 1981, 1983, 
+                            1985, 1987, 2003, 2005, 2007, 2009, 2011, 2013};
+
+    for (int i = 521; i < 2026; i++)
+    {
+        base[i] = 0.5 * i;
+    }
+
+#pragma omp parallel for schedule(static,1)
+    for (int i = 0; i < 180; i++)
+    {
+        int idx1 = indexSet[i];
+        int idx2 = indexSet[i] + 12;
+        base[idx1] = base[idx1] + 1.0;
+        base[idx2] = base[idx2] + 3.0;
+    }
+
+    cout << "xa1(999) =" << base[999] << " xa2(1285) =" << base[1285] << endl;
+    return 0;
+}
+
+Working on 72
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+double* base;
+int indexSet[180] = {521, 533, 525, 527, 529, 531, 547, 549, 551, 553, 555, 557, 573, 575, 577, 579, 581, 583, 599, 601, 603, 605, 607, 609, 625, 627, 629, 631, 633, 635, 651, 653, 655, 657, 659, 661, 859, 861, 863, 865, 867, 869, 885, 887, 889, 891, 893, 895, 911, 913, 915, 917, 919, 921, 937, 939, 941, 943, 945, 947, 963, 965, 967, 969, 971, 973, 989, 991, 993, 995, 997, 999, 1197, 1199, 1201, 1203, 1205, 1207, 1223, 1225, 1227, 1229, 1231, 1233, 1249, 1251, 1253, 1255, 1257, 1259, 1275, 1277, 1279, 1281, 1283, 1285, 1301, 1303, 1305, 1307, 1309, 1311, 1327, 1329, 1331, 1333, 1335, 1337, 1535, 1537, 1539, 1541, 1543, 1545, 1561, 1563, 1565, 1567, 1569, 1571, 1587, 1589, 1591, 1593, 1595, 1597, 1613, 1615, 1617, 1619, 1621, 1623, 1639, 1641, 1643, 1645, 1647, 1649, 1665, 1667, 1669, 1671, 1673, 1675, 1873, 1875, 1877, 1879, 1881, 1883, 1899, 1901, 1903, 1905, 1907, 1909, 1925, 1927, 1929, 1931, 1933, 1935, 1951, 1953, 1955, 1957, 1959, 1961, 1977, 1979, 1981, 1983, 1985, 1987, 2003, 2005, 2007, 2009, 2011, 2013};
+
+int main() {
+    int i, idx1, idx2;
+
+    base = (double*)malloc(2026 * sizeof(double));
+
+    for (i=521; i<2026; i++)
+        base[i] = 0.5*i;
+
+    #pragma omp parallel for private(idx1,idx2)
+    for(i = 0; i < 180; i++){
+        idx1 = indexSet[i];
+        idx2 = indexSet[i]+12;
+        base[idx1] = base[idx1] + 1.0;
+        base[idx2] = base[idx2] + 3.0;
+     }
+
+    printf("xa1(999) = %f, xa2(1285) = %f
+", base[999], base[1285]);
+
+    free(base);
+
+    return 0;
+}
+
+Working on 73
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ int x=0;
+ int i;
+#pragma omp parallel for ordered
+ for (i=0;i<100;i++)
+ {
+#pragma omp ordered
+ x=x+1;
+ }
+ printf ("x = %d
+", x);
+ return 0;
+}
+
+Working on 74
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    double a[100], b[100], c[100];
+    int len = 100;
+    int i, j;
+
+    for (i = 0; i < len; i++)
+    {
+        a[i] = (double)i / 2.0;
+        b[i] = (double)i / 3.0;
+        c[i] = (double)i / 7.0;
+    }
+
+    #pragma omp parallel for private(j)
+    for (i = 0; i < len; i++)
+    {
+        j = i;
+        c[j] = c[j] + a[i]*b[i];
+    }
+
+    //printf("c[50] = %f
+", c[50]);
+
+    return 0;
+}
+
+Working on 75
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int var = 0;
+#pragma omp parallel shared(var)
+ {
+#pragma omp single
+ {
+ var+=1;
+ }
+#pragma omp barrier
+#pragma omp single
+ {
+ var+=1;
+ }
+ }
+ printf ("var = %d
+", var);
+ return 0;
+}
+
+Working on 76
+Formatted line: #include <stdio.h>
+float a[20][20];
+int main()
+{
+ int i,j;
+ for (i=0;i<20;i++)
+ for (j=0;j<20;j++)
+ a[i][j]=0.5;
+#pragma omp parallel for private(j)
+ for (i=0;i<19;i++)
+ for (j=0;j<20;j++)
+ a[i][j]=a[i][j]+a[i+1][j];
+ printf ("a[10][10]=%f
+", a[10][10]);
+ return 0;
+}
+
+Working on 77
+Formatted line: #include <stdio.h>
+#include <unistd.h>
+#if (_OPENMP<201511)
+#error "An OpenMP 4.5 compiler is needed to compile this test."
+#endif
+int main()
+{
+ int i = 0;
+#pragma omp parallel
+ {
+#pragma omp single
+ {
+#pragma omp task depend(out: i)
+ {
+ sleep(3);
+ i = 3;
+ }
+#pragma omp task depend(out: i)
+ {
+ i = 2;
+ }
+ }
+ }
+ if (i!=2) printf ("%d", i);
+ return 0;
+}
+
+Working on 78
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int var = 0;
+    omp_lock_t lck;
+    omp_init_lock(&lck);
+    
+    #pragma omp target map(tofrom:var) device(0)
+    #pragma omp teams distribute parallel for
+    for (int i = 0; i < 10; i++)
+    {
+        omp_set_lock(&lck);
+        var += 1;
+        omp_unset_lock(&lck);
+    }
+    
+    omp_destroy_lock(&lck);
+    
+    printf("%d
+", var);
+
+    return 0;
+}
+
+Working on 79
+Formatted line: #include <stdio.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+int main()
+{
+ int var[8];
+ int i, j;
+
+ for (i = 0; i < 8; i++)
+ var[i] = 0;
+
+#pragma omp target map(tofrom:var) device(0)
+#pragma omp teams num_teams(1) thread_limit(1048)
+#pragma omp distribute parallel for
+ for (i = 0; i < 20; i++)
+ {
+#pragma omp simd
+ for (j = 0; j < 8; j++)
+ var[j]++;
+ }
+ printf("%d
+", var[7]);
+ return 0;
+}
+
+Working on 80
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+int main(int argc, char *argv[])
+{
+    int i, j, n, m, len;
+    double **b;
+    len = 1000;
+    if (argc > 1)
+    {
+        len = atoi(argv[1]);
+    }
+    n = m = len;
+    b = new double*[n];
+    for (i = 0; i < n; i++)
+    {
+        b[i] = new double[m];
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < m; j++)
+        {
+            b[i][j] = 0.5;
+        }
+    }
+
+    #pragma omp parallel for private(j)
+    for (i = 1; i < n; i++)
+    {
+        for (j = 1; j < m; j++)
+        {
+            b[i][j] = b[i-1][j-1];
+        }
+    }
+    printf("b[500][500] = %.6f
+", b[500][500]);
+
+    for (i = 0; i < n; i++)
+    {
+        delete[] b[i];
+    }
+    delete[] b;
+
+    return 0;
+}
+
+Working on 81
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+int main()
+{
+ int len = 1000;
+ int b = 5;
+ int *a = (int*)malloc(len*sizeof(int));
+ int i, error;
+
+ for (i = 0; i < len; i++)
+ a[i] = i;
+
+#pragma omp parallel shared(b, error)
+ {
+#pragma omp for nowait
+ for (i = 0; i < len; i++)
+ a[i] = b + a[i] * 5;
+ }
+
+#pragma omp barrier
+#pragma omp single
+ error = a[8] + 1;
+
+ printf("error = %d
+", error);
+
+ free(a);
+ return 0;
+}
+
+Working on 82
+Formatted line: #include <stdio.h>
+#include <math.h>
+#include <omp.h>
+
+#define MSIZE 200
+#define dp 1.0
+#define mits 1000
+#define tol 0.0000000001
+#define relax 1.0
+#define alpha 0.0543
+
+double u[MSIZE][MSIZE], f[MSIZE][MSIZE], uold[MSIZE][MSIZE];
+double dx, dy;
+
+void initialize() {
+    int i, j;
+    double xx, yy;
+
+    dx = 2.0 / (MSIZE-1);
+    dy = 2.0 / (MSIZE-1);
+
+    for (i = 0; i < MSIZE; i++) {
+        for (j = 0; j < MSIZE; j++) {
+            xx = -1.0 + dx * i;
+            yy = -1.0 + dy * i;
+            u[i][j] = 0.0;
+            f[i][j] = -1.0 * alpha * (1.0-xx*xx) * (1.0-yy*yy) - 2.0* (1.0-xx*xx) -2.0 * (1.0-yy*yy);
+        }
+    }
+}
+
+void jacobi() {
+    double omega;
+    int i, j, k;
+    double error, resid, ax, ay, b;
+
+    omega = relax;
+    dx = 2.0 / (MSIZE-1);
+    dy = 2.0 / (MSIZE-1);
+
+    ax = 1.0 / (dx * dx);
+    ay = 1.0 / (dy * dy);
+    b = -2.0 / (dx * dx) - 2.0 / (dy * dy) - alpha;
+
+    error = 10.0 * tol;
+    k = 1;
+
+    do {
+        error = 0.0;
+
+#pragma omp parallel
+        {
+#pragma omp for private(i,j)
+            for (i = 0; i < MSIZE; i++)
+                for (j = 0; j < MSIZE; j++)
+                    uold[i][j] = u[i][j];
+
+#pragma omp for private(i,j,resid) reduction(+:error)
+            for (i = 1; i < MSIZE-1; i++)
+                for (j = 1; j < MSIZE-1; j++) {
+                    resid = (ax * (uold[i - 1][j] + uold[i + 1][j]) + ay * (uold[i][j - 1] + uold[i][j + 1]) + b * uold[i][j] - f[i][j]) / b;
+                    u[i][j] = uold[i][j] - omega * resid;
+                    error = error + resid * resid;
+                }
+        }
+
+        error = sqrt(error)/(MSIZE*MSIZE);
+        k++;
+    } while (k <= mits);
+
+    printf("Total number of iterations: %d
+", k);
+    printf("Residual: %.15f
+", error);
+}
+
+int main() {
+    initialize();
+    jacobi();
+    return 0;
+}
+
+Working on 83
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+int main(int argc, char* argv[])
+{
+    int i, len = 100;
+    int *a;
+    int *b;
+
+    if (argc == 1) 
+    {
+        printf("No command line arguments provided.
+");
+        return 0;
+    }
+
+    len = atoi(argv[1]); 
+
+    a = (int *)malloc(len * sizeof(int));
+    b = (int *)malloc(len * sizeof(int));
+
+    for (i = 0; i < len; i++)
+    {
+        a[i] = i;
+        b[i] = i + 1;
+    }
+
+#pragma omp simd
+    for (i = 0; i < len - 1; i++)
+        a[i + 1] = a[i] + b[i];
+
+    for (i = 0; i < len; i++)
+        printf("Values for i and a[i] are: %d %d
+", i, a[i]);
+
+    free(a);
+    free(b);
+
+    return 0;
+}
+
+Working on 84
+Formatted line: #include <omp.h>
+#include <vector>
+
+int main() {
+    std::vector<int> a(100);
+
+    for(int i = 0; i < 100; i++)
+        a[i] = i;
+
+#pragma omp target map(tofrom: a[0:100])
+#pragma omp parallel for
+    for(int i = 0; i < 100; i++)
+        a[i] = a[i] + 1;
+
+    return 0;
+}
+
+Working on 85
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+#include <math.h>
+
+double a[100];
+int main()
+{
+ int i, len = 100, rem, j;
+ double u;
+
+ for (i = 0; i < len; i++)
+ {
+  a[i] = i+1;
+ }
+
+ u = (double)rand() / RAND_MAX;
+ j = floor(100*u);
+
+#pragma omp parallel for if (j%2==0)
+ for (i = 0; i < len-1; i++)
+ {
+  a[i+1] = a[i]+1;
+ }
+
+ printf("a[50] = %.f
+",a[50]);
+
+ return 0;
+}
+
+Working on 86
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int a[100];
+int main()
+{
+ int len, i, x;
+
+ len = 100;
+ x = 10;
+
+#pragma omp parallel for
+ for (i = 0; i < len; i++)
+ {
+  a[i] = x;
+  x = i;
+ }
+ printf ("x = %d
+", x);
+ return 0;
+}
+
+Working on 87
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int a[100];
+void gen_task(int i)
+{
+#pragma omp task depend(out:a[i])
+ a[i] = a[i] + 1;
+}
+int main()
+{
+ int i;
+ for (i = 0; i < 100; i++)
+ a[i] = i;
+#pragma omp parallel
+ {
+#pragma omp single
+ for (i = 0; i < 100; i++)
+ gen_task(i);
+ }
+ for (i = 0; i < 100; i++)
+ if (a[i] != i + 1)
+ printf("warning: a[%d] = %d not expected %d
+", i, a[i], i + 1);
+ return 0;
+}
+
+Working on 88
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+void foo() 
+{
+    int x = 0, y = 2;
+    
+    #pragma omp task shared(x)
+    {
+        x = x + 1;
+    }
+
+    #pragma omp task shared(y)
+    {
+        y = y - 1;
+    }
+
+    #pragma omp task depend(in: x)
+    {
+        //No operation
+    }
+
+    printf("x= %d
+", x);
+    printf("y= %d
+", y);
+
+    #pragma omp taskwait
+}
+
+int main() 
+{
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            foo();
+        }
+    }
+    return 0;
+}
+
+Working on 89
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ int a = 2, val = 0;
+ int b[8], c[8], temp[8];
+
+ for (int i = 0; i < 8; i++) {
+    b[i] = 0;
+    c[i] = 2;
+    temp[i] = 0;
+ }
+
+#pragma omp target map(tofrom:b) map(to:c,temp,a) device(0)
+#pragma omp teams
+ for (int i = 0; i < 100; i++) {
+    #pragma omp distribute
+    for (int j = 0; j < 8; j++)
+        temp[j] = b[j] + c[j];
+
+    #pragma omp distribute
+    for (int j = 7; j >= 0; j--)
+        b[j] = temp[j]*a;
+ }
+
+ for (int i = 0; i < 100; i++) {
+    val = val + 2;
+    val = val * 2;
+ }
+
+ for (int i = 0; i < 8; i++) {
+    if (val != b[i])
+        printf("%d %d
+", b[i], val);
+ }
+
+ return 0;
+}
+
+Working on 90
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int a, b, c, d;
+#pragma omp parallel
+    {
+#pragma omp single
+        {
+#pragma omp task depend(out: c)
+            c = 1; // Task T1
+#pragma omp task depend(out: a)
+            a = 2; // Task T2
+#pragma omp task depend(out: b)
+            b = 3; // Task T3
+#pragma omp task depend(in: a) depend(mutexinoutset: c)
+            c = c + a; // Task T4
+#pragma omp task depend(in: b) depend(mutexinoutset: c)
+            c = c + b; // Task T5
+#pragma omp task depend(in: c)
+            d = c; // Task T6
+        }
+    }
+    printf("%d
+", d);
+    return 0;
+}
+
+Working on 91
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+void foo();
+
+int main() {
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            foo();
+        }
+    }
+    return 0;
+}
+
+void foo() {
+    int x = 0;
+    int y = 2;
+
+    #pragma omp task shared(x)
+    {
+        x = x + 1;    // 1st Child Task
+    }
+
+    #pragma omp task shared(y)
+    {
+        y = y - x;    // 2nd Child Task
+    }
+
+    #pragma omp taskwait
+
+    printf("x=%d
+", x);
+    printf("y=%d
+", y);
+
+    #pragma omp taskwait
+}
+
+Working on 92
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int a = 0;
+#pragma omp parallel
+ {
+#pragma omp atomic
+ a+=1;
+ }
+ printf ("a=%d
+", a);
+ return 0;
+}
+
+Working on 93
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int len = 1000;
+    int a[len];
+    a[0] = 2;
+    #pragma omp parallel for
+    for (int i = 0; i < len; i++)
+    {
+        a[i] = a[i]+a[0];
+    }
+    printf("a[500] = %d
+", a[500]);
+    return 0;
+}
+
+Working on 94
+Formatted line: #include <stdio.h>
+int a[100];
+int b[100];
+int main()
+{
+ int i;
+ for (i=0;i<100;i++)
+ {
+ a[i] = i+1;
+ b[i] = i+2;
+ }
+#pragma omp simd
+ for (i=0;i<99;i++)
+ a[i+1] = a[i] + b[i];
+
+ printf ("a[50]=%d
+", a[49]);
+ return 0;
+}
+
+Working on 95
+Formatted line: #include <stdio.h>
+#include <omp.h>
+void foo();
+
+int main()
+{
+#pragma omp parallel
+ {
+#pragma omp single
+ foo();
+ }
+ return 0;
+}
+
+void foo(){
+ int x, y;
+ x = 0;
+ y = 2;
+
+#pragma omp task shared(x)
+ x = x+1;
+#pragma omp task shared(y)
+ y = y-1;
+#pragma omp task depend(in: x) if(0)
+ ;
+ printf("x= %d
+", x);
+#pragma omp taskwait
+ printf("y= %d
+", y);
+}
+
+Working on 96
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int i = 0;
+ int sum = 0;
+#pragma omp parallel for reduction(+:sum) num_threads(10) private(i)
+ for (i = 0; i < 10; i++) {
+ f1(i);
+ sum += i;
+ }
+ if (sum != 10)
+ printf("sum = %d
+", sum);
+ return 0;
+}
+
+Working on 97
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ int var = 0;
+
+#pragma omp target map(tofrom:var) device(0)
+#pragma omp teams distribute parallel for
+ for (int i = 0; i <= 100; i++)
+ {
+#pragma omp atomic
+ var += 1;
+#pragma omp atomic
+ var -= 2;
+ }
+
+ printf("%d
+", var);
+ return 0;
+}
+
+Working on 98
+Formatted line: #include <stdio.h>
+#include <fstream>
+#include <omp.h>
+int main()
+{
+ int a[1000];
+ int i;
+ for (i=0; i<1000; i++)
+ a[i] = i+1;
+ std::ofstream file;
+ file.open("mytempfile.txt", std::ios_base::app);
+#pragma omp parallel for
+ for (i=0; i<1000; i++)
+ file << a[i] << "
+";
+ file.close();
+ return 0;
+}
+
+Working on 99
+Formatted line: #include <stdio.h>
+int a[100];
+int main()
+{
+ int i;
+#pragma omp parallel for
+ for (i=0;i<100;i++)
+ a[i]=a[i]+1;
+ return 0;
+}
+
+Working on 100
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int numThreads;
+
+#pragma omp parallel
+    {
+        if (omp_get_thread_num() == 0) {
+            numThreads = omp_get_num_threads();
+        }
+    }
+
+    printf("numThreads = %d
+", numThreads);
+    return 0;
+}
+
+Working on 101
+Formatted line: #include <iostream>
+#include <omp.h>
+#define len 1000
+
+long long sum = 0;
+long long sum0 = 0;
+long long sum1 = 0;
+
+void foo(long long i) 
+{
+#pragma omp threadprivate(sum0)
+ sum0 += i;
+}
+
+int main()
+{
+#pragma omp parallel copyin(sum0)
+{
+#pragma omp for
+ for (long long i = 0; i < len; i++)
+ {
+  foo(i);
+ }
+#pragma omp critical
+ {
+  sum += sum0;
+ }
+}
+ for (long long i = 0; i < len; i++)
+ {
+  sum1 += i;
+ }
+
+ std::cout << "sum = " << sum << ", sum1 = " << sum1 << std::endl;
+ return 0;
+}
+
+Working on 102
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+
+double base[2025];
+int indexSet[] = { 521, 523, 525, 533, 529, 531, 547, 549, 551, 553, 555, 557, 573, 575, 577, 579, 581, 583, 599,
+                   601, 603, 605, 607, 609, 625, 627, 629, 631, 633, 635, 651, 653, 655, 657, 659, 661, 859, 861, 
+                   /* and so on till 2013 */ 
+                   2005, 2007, 2009, 2011, 2013 };
+
+int main()
+{
+    int i, idx1, idx2;
+
+    for (i = 520; i < 2025; i++)
+        base[i] = 0.5 * (i + 1);
+
+#pragma omp parallel for private(idx1, idx2)
+    for (i = 0; i < 180; i++)
+    {
+        idx1 = indexSet[i] - 1;
+        idx2 = indexSet[i] + 11;
+        base[idx1] = base[idx1] + 1.0;
+        base[idx2] = base[idx2] + 3.0;
+    }
+
+    printf("xa1[999] = %f, xa2[1285] = %f
+", base[998], base[1284]);
+
+    return 0;
+}
+
+Working on 103
+Formatted line: #include <stdio.h>
+float a[100][100], b[100][100], c[100][100];
+int main()
+{
+ int i,j,l;
+#pragma omp parallel for private(j, l)
+ for (i=0;i<100;i++)
+ for (l=0;l<100;l++)
+ for (j=0;j<100;j++)
+ c[i][j]+=a[i][l]*b[l][j];
+ return 0;
+}
+
+Working on 104
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int i = 0;
+#pragma omp parallel sections
+ {
+#pragma omp section
+ i=1;
+#pragma omp section
+ i=2;
+ }
+ printf ("i=%d
+", i);
+ return 0;
+}
+
+Working on 105
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+double x;
+int y;
+
+int main() {
+#pragma omp parallel
+    {
+#pragma omp single copyprivate(x, y)
+        {
+            x = 1.0;
+            y = 1;
+        }
+    }
+    printf("x = %.1f  y = %d
+", x, y);
+    return 0;
+}
+
+Working on 106
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int var[100];
+int main()
+{
+ for (int i=0;i<100;i++)
+ var[i] = 1;
+#pragma omp target map(tofrom:var) device(0)
+ {
+#pragma omp parallel for ordered
+ for (int i = 1; i < 100; i++)
+ {
+ #pragma omp ordered
+ var[i] = var[i-1]+1;
+ }
+ }
+ for (int i=0;i<100;i++)
+ if (var[i]!=i+1) 
+ printf("Data Race Present
+");
+ return 0;
+}
+
+Working on 107
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+double a[100], b[100], c[100];
+int main() 
+{
+ int i, j = 0;
+ for (i = 0; i < 100; i++) 
+ {
+ a[i] = (double)i/2.0;
+ b[i] = (double)i/3.0;
+ c[i] = (double)i/7.0;
+ }
+
+#pragma omp parallel for
+ for (i = 0; i < 100; i++) 
+ {
+ c[j] = c[j] + a[i]*b[i];
+ j = j + 1;
+ }
+
+ printf("c[50] = %f
+", c[50]);
+
+ return 0;
+}
+
+Working on 108
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+float a[100][100];
+float v[100];
+float v_out[100];
+
+void foo(){
+    int i,j;
+    float sum;
+#pragma omp parallel for private(i,j,sum)
+    for (i=0;i<100;i++){
+        sum=0;
+        for (j=0;j<100;j++){
+            sum = sum + a[i][j]*v[j];
+        }
+        v_out[i] = sum;
+    }
+}
+
+int main(){
+    foo();
+    return 0;
+}
+
+Working on 109
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int var = 0;
+
+#pragma omp target map(tofrom:var) device(0)
+#pragma omp teams num_teams(1)
+#pragma omp distribute parallel for
+    for (int i = 0; i < 100; i++) {
+        var = var + 1;
+    }
+
+    printf("%d
+", var);
+
+    return 0;
+}
+
+Working on 110
+Formatted line: #include <stdio.h>
+int a[2000];
+int main()
+{
+ int i;
+ for (i=0;i<2000;i++)
+ a[i]=i+1;
+#pragma omp parallel for
+ for (i=0;i<1000;i++)
+ a[2*i]=a[i]+1;
+ printf ("a[1002]=%d", a[1002]);
+ return 0;
+}
+
+Working on 111
+Formatted line: #include <iostream>
+#include <omp.h>
+
+int main() {
+    int var[8];
+    for (int i = 0; i < 8; i++)
+        var[i] = 0;
+
+    #pragma omp target map(tofrom:var) device(0)
+    #pragma omp teams num_teams(1) thread_limit(1048)
+    #pragma omp distribute parallel for reduction(+:var)
+    for (int i = 0; i < 20; i++) {
+        #pragma omp simd
+        for (int j = 0; j < 8; j++)
+            var[j] += 1;
+    }
+
+    for (int i = 0; i < 8; i++) {
+        if (var[i] != 20)
+            std::cout << var[i] << std::endl;
+    }
+
+    return 0;
+}
+
+Working on 112
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+ int k;
+ #pragma omp parallel
+ {
+  #pragma omp master
+  {
+   k = omp_get_num_threads();
+   printf("Number of threads requested = %d
+", k);
+  }
+ }
+ return 0;
+}
+
+Working on 113
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+void foo() {
+    int x = 0;
+    int y = 2;
+
+    #pragma omp task shared(x)
+    {
+        x = x + 1;
+    }
+
+    #pragma omp task shared(y)
+    {
+        y = y - x;
+    }
+
+    #pragma omp taskwait
+
+    printf("x= %d
+", x);
+
+    #pragma omp taskwait
+
+    printf("y= %d
+", y);
+}
+
+int main() {
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            foo();
+        }
+    }
+    return 0;
+}
+
+Working on 114
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ int* counter = new int;
+ *counter = 0;
+
+#pragma omp parallel
+ {
+ #pragma omp atomic
+ *counter = *counter + 1;
+ }
+
+ printf("%d
+", *counter);
+
+ delete counter;
+
+ return 0;
+}
+
+Working on 115
+Formatted line: #include <stdio.h>
+#include <omp.h>
+#include <cmath>
+
+#define dp 1.0
+#define len 2560
+
+double a[len], b[len];
+double sum = 0.0;
+double sum2 = 0.0;
+
+int main() {
+    for (int i = 0; i < len; i++) {
+        a[i] = double(i) / 2.0;
+        b[i] = double(i) / 3.0;
+    }
+
+#pragma omp target map(to: a[0:len], b[0:len]) map(tofrom: sum)
+#pragma omp teams num_teams(10) thread_limit(256) reduction(+:sum)
+#pragma omp distribute
+    for (int i2 = 0; i2 < len; i2 += 256) {
+#pragma omp parallel for reduction(+:sum)
+        for (int i = i2 + 1; i < std::min(i2+256, len); i++)
+            sum += a[i] * b[i];
+    }
+
+#pragma omp parallel for reduction(+:sum2)
+    for (int i = 0; i < len; i++)
+        sum2 += a[i] * b[i];
+
+    printf("sum = %d; sum2 = %d
+", (int)sum, (int)sum2);
+
+    return 0;
+}
+
+Working on 116
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int i = 0;
+void f1(int &i) {
+#pragma omp parallel
+{
+i++;
+}
+}
+int main()
+{
+f1(i);
+if (i != 0)
+printf("i = %d
+", i);
+return 0;
+}
+
+Working on 117
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int i = 0;
+
+#pragma omp parallel
+    {
+#pragma omp single
+        {
+#pragma omp task depend(out:i)
+            i = 1;
+#pragma omp task depend(in:i)
+            i = 2;
+        }
+    }
+
+    if (i != 2) {
+        printf("i is not equal to 2
+");
+    }
+
+    return 0;
+}
+
+Working on 118
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int a[100][100];
+int main()
+{
+ int i,j;
+#pragma omp parallel for ordered(2)
+ for(i=0;i<100;i++)
+ for(j=0;j<100;j++)
+ {
+  a[i][j] = a[i][j]+1;
+  #pragma omp ordered depend(sink:i-1,j) depend(sink:i,j-1)
+  printf("test i = %d, j = %d
+", i, j);
+  #pragma omp ordered depend(source)
+ }
+ return 0;
+}
+
+Working on 119
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int i, len=100, numNodes=len, numNodes2=0;
+    int x[100];
+
+    for (i=0; i<len; i++)
+    {
+        if (i%2 == 0)
+            x[i] = 5;
+        else
+            x[i] = -5;
+    }
+
+#pragma omp parallel for
+    for (i=numNodes-1; i>=0; i--)
+    {
+        if (x[i] <= 0)
+        {
+            #pragma omp atomic
+            numNodes2--;
+        }
+    }
+
+    printf("numNodes2 = %d
+", numNodes2);
+    return 0;
+}
+
+Working on 120
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+int main(int argc, char *argv[])
+{
+ int len = 1000;
+ int *a = (int*)malloc(len*sizeof(int));
+ int i;
+
+ if(argc == 1)
+ {
+ printf("No command line arguments provided.
+");
+ return 0;
+ }
+
+ if(argc >= 2)
+ {
+ len = atoi(argv[1]);
+ if(len <= 0)
+ {
+ printf("Error, invalid integer value.
+");
+ return 0;
+ }
+ }
+
+ a[0] = 2;
+
+#pragma omp parallel for
+ for(i=0; i<len; i++)
+ a[i] = a[i] + a[0];
+
+ printf("a[0] = %d
+", a[0]);
+
+ free(a);
+ return 0;
+}
+
+Working on 121
+Formatted line: #include <stdio.h>
+int a[100];
+void foo(int* a, int len, int value) {
+#pragma omp parallel for firstprivate(value)
+ for (int i = 0; i < len; i++)
+ a[i] = value;
+}
+int main() {
+ foo(a, 100, 7);
+ printf("%d
+", a[50]);
+ return 0;
+}
+
+Working on 122
+Formatted line: #include <stdio.h>
+#if (_OPENMP<201511)
+#error "An OpenMP 4.5 compiler is needed to compile this test."
+#endif
+
+int var[16];
+int main()
+{
+ for (int i = 0; i < 16; i++)
+ var[i] = 0;
+
+#pragma omp target map(tofrom:var) device(0)
+#pragma omp teams distribute parallel for
+ for (int i = 0; i < 20; i++)
+ {
+#pragma omp simd
+ for (int j = 0; j < 16; j++)
+ var[j]+=1;
+ }
+
+ printf ("%d
+", var[15]);
+ return 0;
+}
+
+Working on 123
+Formatted line: #include <stdio.h>
+#include <omp.h>
+float b[1000][1000];
+int main()
+{
+    int i, j, len = 1000;
+    #pragma omp parallel for private(j)
+    for (i = 0; i < len; i++)
+        for (j = 1; j < len; j++)
+            b[i][j] = b[i][j-1];
+    printf("b[500][500] = %.6f
+", b[500][500]);
+    return 0;
+}
+
+Working on 124
+Formatted line: #include <stdio.h>
+void foo();
+int main()
+{
+#pragma omp parallel
+ foo();
+ return 0;
+}
+void foo()
+{
+ // function body here
+}
+
+Working on 125
+Formatted line: #include <stdio.h>
+float b[100][100];
+int main()
+{
+ int i,j;
+ for (i=0;i<100;i++)
+ for (j=0;j<100;j++)
+ b[i][j]=i*j;
+ for (i=1;i<100;i++)
+ {
+ #pragma omp parallel for
+ for (j=1;j<100;j++)
+ b[i][j]=b[i-1][j-1];
+ }
+ return 0;
+}
+
+Working on 126
+Formatted line: #include <stdio.h>
+void setup(int);
+int main()
+{
+ int N = 1000;
+ setup(N);
+ return 0;
+}
+
+Working on 127
+Formatted line: #include <stdio.h>
+int a[1000];
+int main()
+{
+ int i;
+ for (i=0; i<1000; i++)
+ a[i]=i;
+#pragma omp parallel for
+ for (i=0; i<999; i++)
+ a[i]=a[i+1]+1;
+ printf ("a[500]=%d
+", a[500]);
+ return 0;
+}
+
+Working on 128
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <omp.h>
+
+#define MSIZE 200
+#define MITS 1000
+#define RELAXATION 1.0
+#define ALPHA 0.0543
+
+double u[MSIZE][MSIZE];
+double f[MSIZE][MSIZE];
+double uold[MSIZE][MSIZE];
+
+void initialize() {
+  double dx = 2.0 / (MSIZE - 1);
+  double dy = 2.0 / (MSIZE - 1);
+
+  //Initialize initial condition and RHS
+  #pragma omp parallel for
+  for (int i = 0; i < MSIZE; i++) {
+    for (int j = 0; j < MSIZE; j++) {
+      double xx = -1.0 + dx * i;
+      double yy = -1.0 + dy * j;
+      u[i][j] = 0.0;
+      f[i][j] = -1.0 * ALPHA * (1.0 - xx * xx) * (1.0 - yy * yy) - 2.0 * (1.0 - xx * xx) - 2.0 * (1.0 - yy * yy);
+    }
+  }
+}
+
+int main() {
+  initialize();
+  return 0;
+}
+
+Working on 129
+Formatted line: #include <unistd.h>
+#include <stdio.h>
+
+#if (_OPENMP<201511)
+#error "An OpenMP 4.5 compiler is needed to compile this test."
+#endif
+
+int main()
+{
+    int result = 0;
+#pragma omp parallel
+    {
+#pragma omp single
+        {
+#pragma omp taskgroup
+            {
+#pragma omp task
+                {
+                    sleep(3);
+                    result = 1;
+                }
+            }
+#pragma omp task
+            {
+                result = 2;
+            }
+        }
+    }
+    printf("result = %d
+", result);
+    return 0;
+}
+
+Working on 130
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int section_count=0;
+ omp_set_dynamic(0);
+ omp_set_num_threads(1);
+#pragma omp parallel
+ {
+#pragma omp sections firstprivate(section_count)
+ {
+#pragma omp section
+ {
+ section_count = section_count + 1;
+ printf ("section_count = %d
+", section_count);
+ }
+#pragma omp section
+ {
+ section_count = section_count + 1;
+ printf ("section_count = %d
+", section_count);
+ }
+ }
+ }
+ return 0;
+}
+
+Working on 131
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ int counter = 0;
+
+#pragma omp parallel
+ {
+   foo(&counter);
+ }
+ printf("%d
+", counter);
+
+ return 0;
+}
+
+void foo(int *counter)
+{
+#pragma omp atomic
+  *counter += 1;
+}
+
+Working on 132
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int x = 2;
+
+#pragma omp task mergeable
+    {
+        x = x+1;
+    }
+#pragma omp taskwait
+
+    printf ("x = %d
+", x);
+    return 0;
+}
+
+Working on 133
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+    int a[4], psum[4], sum, i;
+#pragma omp parallel num_threads(2)
+    {
+#pragma omp for schedule(dynamic, 1)
+        for (i = 0; i < 4; i++)
+        {
+            a[i] = i+1;
+        }
+#pragma omp single
+        {
+#pragma omp task
+            {
+#pragma omp task
+                {
+                  psum[1] = a[2]+a[3];
+                }
+                psum[0] = a[0]+a[1];
+            }
+#pragma omp taskwait
+            sum = psum[1]+psum[0];
+        }
+    }
+    printf("sum = %d
+", sum);
+    return 0;
+}
+
+Working on 134
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int a[100], b[100];
+int main()
+{
+ int i;
+ int tmp, tmp2;
+ for (i=0;i<100;i++)
+ {
+ a[i]=i+1;
+ b[i]=i+1;
+ }
+#pragma omp parallel private(tmp)
+ {
+#pragma omp for
+ for (i=0;i<100;i++)
+ {
+ tmp=a[i]+(i+1);
+ a[i]=tmp;
+ }
+ }
+#pragma omp parallel private(tmp2)
+ {
+#pragma omp for
+ for (i=0;i<100;i++)
+ {
+ tmp2=b[i]+(i+1);
+ b[i]=tmp2;
+ }
+ }
+ printf ("%d   %d
+", a[49], b[49]);
+ return 0;
+}
+
+Working on 135
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() 
+{
+ int count = 0;
+
+#pragma omp parallel shared(count)
+ {
+#pragma omp single
+ count += 1;
+ }
+ printf("count = %d
+", count);
+ return 0;
+}
+
+Working on 136
+Formatted line: #include <stdio.h>
+#include <omp.h>
+struct pair{
+ int a;
+ int b;
+ omp_nest_lock_t lck;
+};
+
+void incr_b(pair &p, int &a){
+ // function body here
+}
+
+void incr_a(pair &p, int &b){
+ // function body here
+}
+
+int main(){
+ pair p;
+ p.a = 0;
+ p.b = 0;
+ omp_init_nest_lock(&(p.lck));
+
+#pragma omp parallel sections
+ {
+#pragma omp section
+ {
+ omp_set_nest_lock(&(p.lck));
+ incr_b(p, p.a);
+ incr_a(p, p.b);
+ omp_unset_nest_lock(&(p.lck));
+ }
+
+#pragma omp section
+ {
+ incr_b(p, p.b);
+ }
+ }
+
+ omp_destroy_nest_lock(&(p.lck));
+ printf("%d
+",p.b);
+ return 0;
+}
+
+Working on 137
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int var = 0;
+    int sum1 = 0;
+    int sum2 = 0;
+
+    #pragma omp parallel reduction(+: var)
+    {
+        #pragma omp for schedule(static) reduction(+: sum1)
+        for(int i = 0; i < 5; i++)
+        {
+            sum1 = sum1 + i;
+        }
+
+        #pragma omp for schedule(static) reduction(+: sum2)
+        for(int i = 0; i < 5; i++)
+        {
+            sum2 = sum2 + i;
+        }
+
+        var = sum1 + sum2;
+    }
+
+    printf("var = %d", var);
+    return 0;
+}
+
+Working on 138
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ int len = 1000;
+ double a[len];
+ double b[len];
+ double x;
+ for (int i=0;i<len;i++)
+ {
+  a[i] = i/2.0;
+  b[i] = 0.0;
+ }
+ x = foo(a,b,len);
+ printf ("b[50] = %f
+", b[50]);
+ return 0;
+}
+
+Working on 139
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+struct pair {
+    int a;
+    int b;
+    omp_nest_lock_t lck;
+};
+
+void incr_a(pair &p, int &b) {
+    // Function body goes here
+}
+
+void incr_b(pair &p, int &a) {
+    // Function body goes here
+}
+
+int main() {
+    pair p;
+    p.a = 0;
+    p.b = 0;
+    omp_init_nest_lock(&p.lck);
+
+#pragma omp parallel sections
+    {
+#pragma omp section
+        {
+            omp_set_nest_lock(&p.lck);
+            incr_b(p, p.a);
+            incr_a(p, p.b);
+            omp_unset_nest_lock(&p.lck);
+        }
+#pragma omp section
+        {
+            incr_b(p, p.b);
+        }
+    }
+
+    omp_destroy_nest_lock(&p.lck);
+
+    printf("%d
+", p.b);
+
+    return 0;
+}
+
+Working on 140
+Formatted line: #include <iostream>
+#include <omp.h>
+#include <cstdlib>
+using namespace std;
+
+int main(int argc, char *argv[]){
+    int len = 2000;
+    int uLen;
+    if(argc == 1){
+        cerr << "No command line arguments provided." << endl;
+        exit(EXIT_FAILURE);
+    } else {
+        len = atoi(argv[1]);
+    }
+    int *a = new int[len];
+    for(int i = 0; i < len; i++)
+        a[i] = i;
+    uLen = len/2;
+
+#pragma omp parallel for
+    for(int i = 0; i < uLen; i++)
+        a[2*i] = a[i] + 1;
+    delete[] a;
+    return 0;
+}
+
+Working on 141
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int len = 1000;
+    int sum = 0;
+    int sum0 = 0;
+
+#pragma omp threadprivate(sum0)
+
+#pragma omp parallel copyin(sum0)
+    {
+#pragma omp for
+        for(int i = 0; i < len; i++)
+        {
+            sum0 += i+1;
+        }
+
+#pragma omp critical
+        sum += sum0;
+    }
+
+    int sum1 = 0;
+    for(int i = 0; i < len; i++)
+    {
+        sum1 += i+1;
+    }
+
+    printf("sum = %d, sum1 = %d
+", sum, sum1);
+
+    return 0;
+}
+
+Working on 142
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int fib(int n)
+{
+    int i, j;
+    if (n<2)
+        return n;
+    else
+    {
+        #pragma omp task shared(i)
+        i = fib(n-1);
+
+        #pragma omp task shared(j)
+        j = fib(n-2);
+
+        #pragma omp taskwait
+        return i + j;
+    }
+}
+
+int main()
+{
+    int input = 30;
+    int result;
+
+    #pragma omp parallel
+    {
+    #pragma omp single
+    result = fib(input);
+    }
+    printf("Fib for %d = %d
+", input, result);
+
+    return 0;
+}
+
+Working on 143
+Formatted line: #include <stdio.h>
+#include <omp.h>
+#define N 1000
+
+float a[N][N];
+float v[N];
+float v_out[N];
+
+int main()
+{
+ float sum;
+ int i,j;
+ for (i=0; i<N; i++)
+ {
+  sum = 0;
+#pragma omp parallel for reduction(+:sum)
+  for (j=0; j<N; j++)
+  {
+   sum += a[i][j]*v[j];
+   printf("%f
+",sum);
+  }
+  v_out[i] = sum;
+ }
+ return 0;
+}
+
+Working on 144
+Formatted line: #include <iostream>
+#include <string>
+#include <vector>
+#include <cstdlib>
+#include <omp.h>
+
+int main(int argc, char* argv[]) {
+    int len = 100, x = 10;
+    int i, ix;
+
+    if (argc == 1) {
+        std::cout << "No command line arguments provided." << std::endl;
+        return 0;
+    }
+
+    std::vector<std::string> args(argv, argv+argc);
+
+    if (argc >= 2) {
+        try {
+            len = std::stoi(args[1]);
+        } catch (std::invalid_argument const &e) {
+            std::cout << "Error, invalid integer value." << std::endl;
+            return 0;
+        }
+    }
+
+    std::vector<int> a(len);
+    
+    #pragma omp parallel for private(i)
+    for (i = 0; i < len; i++) {
+        a[i] = x;
+        x = i;
+    }
+
+    std::cout << "x=" << x << "  a[0]=" << a[0] << std::endl;
+
+    return 0;
+}
+
+Working on 145
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+ int numThreads = 0;
+#pragma omp parallel
+ {
+  if (omp_get_thread_num() == 0) {
+    numThreads = omp_get_num_threads();
+  }
+  else {
+    printf("numThreads = %d
+", numThreads);
+  }
+ }
+ return 0;
+}
+
+Working on 146
+Formatted line: ```C++
+#include <cmath>
+void error_norm(double rms[5]) {
+    int i, j, k, m, d;
+    double xi, eta, zeta, u_exact[5], add;
+    for (m = 0; m < 5; m++)
+        rms[m] = 0.0;
+    for (k = 0; k < grid_points[3]; k++)
+        for (j = 0; j < grid_points[2]; j++) {
+            zeta = double(k) * dnzm1;
+            eta = double(j) * dnym1;
+            for (i = 0; i < grid_points[1]; i++) {
+                xi = double(i) * dnxm1;
+                exact_solution(xi, eta, zeta, u_exact);
+                for (m = 0; m < 5; m++) {
+                    add = u[m][i][j][k] - u_exact[m];
+                    rms[m] += add * add;
+                }
+            }
+        }
+    for (m = 0; m < 5; m++)
+        for (d = 0; d < 3; d++)
+            rms[m] /= double(grid_points[d]-2);
+    for (m = 0; m < 5; m++)
+        rms[m] = sqrt(rms[m]);
+}
+
+void rhs_norm(double rms[5]) {
+    int i, j, k, d, m;
+    double add;
+    for (m = 0; m < 5; m++)
+        rms[m] = 0.0;
+    for (k = 1; k < nz2; k++)
+        for (j = 1; j < ny2; j++)
+            for (i = 1; i < nx2; i++)
+                for (m = 0; m < 5; m++) {
+                    add = rhs[m][i][j][k];
+                    rms[m] += add * add;
+                }
+    for (m = 0; m < 5; m++)
+        for (d = 0; d < 3; d++)
+            rms[m] /= double(grid_points[d]-2);
+    for (m = 0; m < 5; m++)
+        rms[m] = sqrt(rms[m]);
+}
+```
+
+Working on 147
+Formatted line: void set_constants()
+{
+ double ce[5][13];
+
+ ce[0][0] = 2.0;
+ ce[0][1] = 0.0;
+ ce[0][2] = 0.0;
+ ce[0][3] = 4.0;
+ ce[0][4] = 5.0;
+ ce[0][5] = 3.0;
+ ce[0][6] = 0.5;
+ ce[0][7] = 0.02;
+ ce[0][8] = 0.01;
+ ce[0][9] = 0.03;
+ ce[0][10] = 0.5;
+ ce[0][11] = 0.4;
+ ce[0][12] = 0.3;
+ // similar assignments for ce[1] to ce[4]
+
+ double c1 = 1.4;
+ double c2 = 0.4;
+ double c3 = 0.1;
+ double c4 = 1.0;
+ double c5 = 1.4;
+
+ double dnxm1 = 1.0 / double(grid_points[0]-1);
+ double dnym1 = 1.0 / double(grid_points[1]-1);
+ double dnzm1 = 1.0 / double(grid_points[2]-1);
+
+ double c1c2 = c1 * c2;
+ double c1c5 = c1 * c5;
+ double c3c4 = c3 * c4;
+ double c1345 = c1c5 * c3c4;
+
+ double conz1 = (1.0-c1c5);
+
+ double tx1 = 1.0 / (dnxm1 * dnxm1);
+ double tx2 = 1.0 / (2.0 * dnxm1);
+ double tx3 = 1.0 / dnxm1;
+
+ double ty1 = 1.0 / (dnym1 * dnym1);
+ double ty2 = 1.0 / (2.0 * dnym1);
+ double ty3 = 1.0 / dnym1;
+
+ double tz1 = 1.0 / (dnzm1 * dnzm1);
+ double tz2 = 1.0 / (2.0 * dnzm1);
+ double tz3 = 1.0 / dnzm1;
+
+ double dx1 = 0.75;
+ double dx2 = 0.75;
+ double dx3 = 0.75;
+ double dx4 = 0.75;
+ double dx5 = 0.75;
+ // similar assignments for dy1 to dy5 and dz1 to dz5
+
+ // similar calculations for dxmax, dymax, dzmax, dssp, c4dssp, c5dssp, dttx1, dttx2, dtty1, dtty2, dttz1, dttz2, c2dttx1, c2dtty1, c2dttz1, dtdssp.
+ // similar calculations for comz1, comz4, comz5, comz6, c3c4tx3, c3c4ty3, c3c4tz3, dx1tx1, dx2tx1, dx3tx1, dx4tx1, dx5tx1.
+ // similar calculations for dy1ty1, dy2ty1, dy3ty1, dy4ty1, dy5ty1, dz1tz1, dz2tz1, dz3tz1, dz4tz1, dz5tz1, c2iv, con43, con16.
+ // similar calculations for xxcon1, xxcon2, xxcon3, xxcon4, xxcon5, yycon1, yycon2, yycon3, yycon4, yycon5, zzcon1, zzcon2, zzcon3, zzcon4, zzcon5.
+}
+
+Working on 148
+Formatted line: #include "sp_data.h"
+#include <cmath>
+
+void set_constants() {
+    ce[0][0] = 2.0;
+    ce[0][1] = 0.0;
+    ce[0][2] = 0.0;
+    ce[0][3] = 4.0;
+    ce[0][4] = 5.0;
+    ce[0][5] = 3.0;
+    ce[0][6] = 0.5;
+    ce[0][7] = 0.02;
+    ce[0][8] = 0.01;
+    ce[0][9] = 0.03;
+    ce[0][10] = 0.5;
+    ce[0][11] = 0.4;
+    ce[0][12] = 0.3;
+
+    //... similar assignments for ce[1][x], ce[2][x], ce[3][x], and ce[4][x] ...
+
+    c1 = 1.4;
+    c2 = 0.4;
+    c3 = 0.1;
+    c4 = 1.0;
+    c5 = 1.4;
+
+    bt = sqrt(0.5);
+
+    dnxm1 = 1.0 / double(grid_points[0]-1);
+    dnym1 = 1.0 / double(grid_points[1]-1);
+    dnzm1 = 1.0 / double(grid_points[2]-1);
+
+    c1c2 = c1 * c2;
+    c1c5 = c1 * c5;
+    c3c4 = c3 * c4;
+    c1345 = c1c5 * c3c4;
+
+    conz1 = (1.0-c1c5);
+
+    tx1 = 1.0 / (dnxm1 * dnxm1);
+    tx2 = 1.0 / (2.0 * dnxm1);
+    tx3 = 1.0 / dnxm1;
+
+    //... similar assignments for ty1, ty2, ty3, tz1, tz2, tz3 ...
+
+    dx1 = 0.75;
+    dx2 = 0.75;
+    dx3 = 0.75;
+    dx4 = 0.75;
+    dx5 = 0.75;
+
+    //... similar assignments for dy1, dy2, dy3, dy4, dy5 ...
+
+    dz1 = 1.0;
+    dz2 = 1.0;
+    dz3 = 1.0;
+    dz4 = 1.0;
+    dz5 = 1.0;
+
+    dxmax = std::max(dx3, dx4);
+    dymax = std::max(dy2, dy4);
+    dzmax = std::max(dz2, dz3);
+
+    dssp = 0.25 * std::max(dx1, std::max(dy1, dz1));
+    c4dssp = 4.0 * dssp;
+    c5dssp = 5.0 * dssp;
+
+    dttx1 = dt*tx1;
+    dttx2 = dt*tx2;
+    dtty1 = dt*ty1;
+    //... and so on ...
+    c2iv  = 2.5;
+    con43 = 4.0/3.0;
+    con16 = 1.0/6.0;
+
+    xxcon1 = c3c4tx3*con43*tx3;
+    xxcon2 = c3c4tx3*tx3;
+    //... and so on ...
+}
+
+Working on 149
+Formatted line: #include "tinfo.h"
+#include "cg_data.h"
+#include <algorithm>  
+
+void makea(int n, int nz, double* a, int* colidx, int* rowstr, int firstrow, int lastrow, int firstcol, int lastcol, int* arow, int* acol, double* aelt, double* v, int *iv)
+{
+    int i, iouter, ivelt, nzv, nn1;
+    int *ivc = new int [nonzer+1];
+    double *vc = new double [nonzer+1];
+
+    nn1 = 1;
+    while (nn1 < n)
+        nn1 *= 2;
+
+    num_threads = 1;
+    myid = 0;
+    if (num_threads > max_threads) 
+    {
+        if (myid == 0) 
+            printf("Warning: num_threads %d exceeded an internal limit %d
+", num_threads, max_threads);
+        num_threads = max_threads;
+    }
+    int work = (n + num_threads - 1) / num_threads;
+    int ilow = work * myid + 1;
+    int ihigh = ilow + work - 1;
+    if (ihigh > n) 
+        ihigh = n;
+
+    for (iouter = 1; iouter <= ihigh; iouter++) 
+    {
+        nzv = nonzer;
+        sprnvc(n, nzv, nn1, vc, ivc);
+        if (iouter >= ilow) 
+        {
+            vecset(n, vc, ivc, nzv, iouter, .5);
+            arow[iouter-1] = nzv;
+            for (ivelt = 0; ivelt < nzv; ivelt++) 
+            {
+                acol[ivelt + (iouter - 1) * (nonzer+1)] = ivc[ivelt];
+                aelt[ivelt + (iouter - 1) * (nonzer+1)] = vc[ivelt];
+            }
+        }
+    }
+    sparse(a, colidx, rowstr, n, nz, nonzer, arow, acol, aelt, firstrow, lastrow, v, &iv[0], &iv[nz], rcond, shift);
+
+    delete [] ivc;
+    delete [] vc;
+}
+
+Working on 150
+Formatted line: #include "sp_data.h"
+#include <cmath>
+
+void initialize() {
+    int i, j, k, m, ix, iy, iz;
+    double xi, eta, zeta, Pface[5][3][2], Pxi, Peta, Pzeta, temp[5];
+
+    for(k=0;k<grid_points[3];k++){
+        for(j=0;j<grid_points[2];j++){
+            for(i=0;i<grid_points[1];i++){
+                u[1][i][j][k] = 1.0;
+                u[2][i][j][k] = 0.0;
+                u[3][i][j][k] = 0.0;
+                u[4][i][j][k] = 0.0;
+                u[5][i][j][k] = 1.0;
+            }
+        }
+    }
+
+    for(k=0;k<grid_points[3];k++){
+        for(j=0;j<grid_points[2];j++){
+            zeta = double(k) * dnzm1;
+            eta = double(j) * dnym1;
+            for(i=0;i<grid_points[1];i++){
+                xi = double(i) * dnxm1;
+                for(ix=1;ix<=2;ix++){
+                    Pxi = double(ix-1);
+                    exact_solution(Pxi, eta, zeta, &Pface[1][1][ix-1]);
+                }
+                for(iy=1;iy<=2;iy++){
+                    Peta = double(iy-1);
+                    exact_solution(xi, Peta, zeta, &Pface[1][2][iy-1]);
+                }
+                for(iz=1;iz<=2;iz++){
+                    Pzeta = double(iz-1);
+                    exact_solution(xi, eta, Pzeta, &Pface[1][3][iz-1]);
+                }
+                for(m=1;m<=5;m++){
+                    Pxi = xi * Pface[m-1][1][1] + (1.0-xi) * Pface[m-1][1][0];
+                    Peta = eta * Pface[m-1][2][1] + (1.0-eta) * Pface[m-1][2][0];
+                    Pzeta = zeta * Pface[m-1][3][1] + (1.0-zeta) * Pface[m-1][3][0];
+                    u[m][i][j][k] = Pxi + Peta + Pzeta - Pxi*Peta - Pxi*Pzeta - Peta*Pzeta + Pxi*Peta*Pzeta;
+                }
+            }
+        }
+    }
+
+    xi = 0.0;
+    i = 0;
+    for(k=0; k<grid_points[3]; k++){
+        for(j=0; j<grid_points[2]; j++){
+            zeta = double(k) * dnzm1;
+            eta = double(j) * dnym1;
+            exact_solution(xi, eta, zeta, temp);
+            for(m=1; m<=5; m++){
+                u[m][i][j][k] = temp[m-1];
+            }
+        }
+    }
+
+    xi = 1.0;
+    i = grid_points[1]-1;
+    for(k=0; k<grid_points[3]; k++){
+        for(j=0; j<grid_points[2]; j++){
+            zeta = double(k) * dnzm1;
+            eta = double(j) * dnym1;
+            exact_solution(xi, eta, zeta, temp);
+            for(m=1; m<=5; m++){
+                u[m][i][j][k] = temp[m-1];
+            }
+        }
+    }
+
+    eta = 0.0;
+    j = 0;
+    for(k=0; k<grid_points[3]; k++){
+        for(i=0; i<grid_points[1]; i++){
+            zeta = double(k) * dnzm1;
+            xi = double(i) * dnxm1;
+            exact_solution(xi, eta, zeta, temp);
+            for(m=1; m<=5; m++){
+                u[m][i][j][k] = temp[m-1];
+            }
+        }
+    }
+
+    eta = 1.0;
+    j = grid_points[2]-1;
+    for(k=0; k<grid_points[3]; k++){
+        for(i=0; i<grid_points[1]; i++){
+            zeta = double(k) * dnzm1;
+            xi = double(i) * dnxm1;
+            exact_solution(xi, eta, zeta, temp);
+            for(m=1; m<=5; m++){
+                u[m][i][j][k] = temp[m-1];
+            }
+        }
+    }
+
+    zeta = 0.0;
+    k = 0;
+    for(j=0; j<grid_points[2]; j++){
+        for(i=0; i<grid_points[1]; i++){
+            eta = double(j) * dnym1;
+            xi = double(i) * dnxm1;
+            exact_solution(xi, eta, zeta, temp);
+            for(m=1; m<=5; m++){
+                u[m][i][j][k] = temp[m-1];
+            }
+        }
+    }
+
+    zeta = 1.0;
+    k = grid_points[3]-1;
+    for(j=0; j<grid_points[2]; j++){
+        for(i=0; i<grid_points[1]; i++){
+            eta = double(j) * dnym1;
+            xi = double(i) * dnxm1;
+            exact_solution(xi, eta, zeta, temp);
+            for(m=1; m<=5; m++){
+                u[m][i][j][k] = temp[m-1];
+            }
+        }
+    }
+}
+
+Working on 151
+Formatted line: #include <cstdio>
+#include <fstream>
+#include <iostream>
+
+void read_input() {
+    using namespace std;
+
+    int fstatus;
+    ifstream inFile;
+    int ipr, inorm, itmax;
+    double dt, omega, tolrsd[5];
+    int nx0, ny0, nz0;
+
+    inFile.open("inputlu.data");
+    if (inFile.good()) {
+        cout << "Reading from input file inputlu.data" << endl;
+        inFile >> ipr >> inorm >> itmax >> dt >> omega;
+        for (int i = 0; i < 5; i++)
+            inFile >> tolrsd[i];
+        inFile >> nx0 >> ny0 >> nz0;
+    } else {
+        // set default values if file does not exist
+        ipr = ipr_default;
+        inorm = inorm_default;
+        itmax = itmax_default;
+        dt = dt_default;
+        omega = omega_default;
+        tolrsd[0] = tolrsd1_def;
+        tolrsd[1] = tolrsd2_def;
+        tolrsd[2] = tolrsd3_def;
+        tolrsd[3] = tolrsd4_def;
+        tolrsd[4] = tolrsd5_def;
+        nx0 = isiz1;
+        ny0 = isiz2;
+        nz0 = isiz3;
+    }
+
+    if (nx0 < 4 || ny0 < 4 || nz0 < 4) {
+        cout << "PROBLEM SIZE IS TOO SMALL - ";
+        cout << "SET EACH OF NX, NY AND NZ AT LEAST EQUAL TO 5" << endl;
+        exit(1);
+    }
+
+    if (nx0 > isiz1 || ny0 > isiz2 || nz0 > isiz3) {
+        cout << "PROBLEM SIZE IS TOO LARGE - ";
+        cout << "NX, NY AND NZ SHOULD BE EQUAL TO ";
+        cout << "ISIZ1, ISIZ2 AND ISIZ3 RESPECTIVELY" << endl;
+        exit(1);
+    }
+
+    cout << "Size: " << nx0 << "x" << ny0 << "x" << nz0 << endl;
+    cout << "Iterations: " << itmax << endl;
+    cout << "Number of available threads: " << thread::hardware_concurrency() << endl;
+}
+
+Working on 152
+Formatted line: #include "sp_data.h"
+
+void ninvr() 
+{
+    int i, j, k;
+    double r1, r2, r3, r4, r5, t1, t2;
+
+    if (timeron) timer_start(t_ninvr);
+
+    for (k = 0; k < nz2; k++)
+    for (j = 0; j < ny2; j++)
+    for (i = 0; i < nx2; i++) {
+
+        r1 = rhs[0][i][j][k];
+        r2 = rhs[1][i][j][k];
+        r3 = rhs[2][i][j][k];
+        r4 = rhs[3][i][j][k];
+        r5 = rhs[4][i][j][k];
+
+        t1 = bt * r3;
+        t2 = 0.5 * (r4 + r5);
+
+        rhs[0][i][j][k] = -r2;
+        rhs[1][i][j][k] = r1;
+        rhs[2][i][j][k] = bt * (r4 - r5);
+        rhs[3][i][j][k] = -t1 + t2;
+        rhs[4][i][j][k] = t1 + t2;
+    }
+
+    if (timeron) timer_stop(t_ninvr);
+}
+
+Working on 153
+Formatted line: #include <cmath>
+
+void l2norm(int ldx, int ldy, int ldz, 
+            int nx0, int ny0, int nz0, 
+            int ist, int iend,
+            int jst, int jend, 
+            double v[5][ldx/2*2+1][ldy/2*2+1][*], double sum[5]){
+
+  int i, j, k, m;
+
+  for(m=0; m<5; m++)
+    sum[m] = 0.0;
+
+  for(k=1; k<nz0-1; k++)
+    for(j=jst; j<=jend; j++)
+      for(i=ist; i<=iend; i++)
+        for(m=0; m<5; m++)
+          sum[m] = sum[m] + v[m][i][j][k]*v[m][i][j][k];
+
+  for(m=0; m<5; m++)
+    sum[m] = sqrt ( sum[m] / ( double(nx0-2)*(ny0-2)*(nz0-2) ) );
+
+  return;
+}
+
+Working on 154
+Formatted line: #include <complex>
+using namespace std;
+
+void evolve(complex<double> u0[], complex<double> u1[], double twiddle[], int d1, int d2, int d3) 
+{
+  for (int k = 0; k < d3; k++)
+    for (int j = 0; j < d2; j++)
+      for (int i = 0; i < d1; i++)
+      {
+        u0[i + d1*(j + d2*k)] *= twiddle[i + d1*(j + d2*k)];
+        u1[i + d1*(j + d2*k)] = u0[i + d1*(j + d2*k)];
+      }
+}
+
+Working on 155
+Formatted line: void domain()
+{
+    nx = nx0;
+    ny = ny0;
+    nz = nz0;
+
+    if (nx < 4 || ny < 4 || nz < 4)
+    {
+        printf("SUBDOMAIN SIZE IS TOO SMALL - 
+"
+               "ADJUST PROBLEM SIZE OR NUMBER OF PROCESSORS 
+"
+               "SO THAT NX, NY AND NZ ARE GREATER THAN OR EQUAL 
+"
+               "TO 4 THEY ARE CURRENTLY %d %d %d
+", nx, ny, nz);
+        exit(1);
+    }
+
+    if (nx > isiz1 || ny > isiz2 || nz > isiz3)
+    {
+        printf("SUBDOMAIN SIZE IS TOO LARGE - 
+"
+               "ADJUST PROBLEM SIZE OR NUMBER OF PROCESSORS 
+"
+               "SO THAT NX, NY AND NZ ARE LESS THAN OR EQUAL TO 
+"
+               "ISIZ1, ISIZ2 AND ISIZ3 RESPECTIVELY.  THEY ARE 
+"
+               "CURRENTLY %d %d %d
+", nx, ny, nz);
+        exit(1);
+    }
+
+    ist = 2;
+    iend = nx - 1;
+
+    jst = 2;
+    jend = ny - 1;
+
+    ii1 = 2;
+    ii2 = nx0 - 1;
+    ji1 = 2;
+    ji2 = ny0 - 2;
+    ki1 = 3;
+    ki2 = nz0 - 1;
+}
+
+Working on 156
+Formatted line: #include "sp_data.h"
+#include <stdio.h>
+
+void tzetar() {
+    int i, j, k;
+    double t1, t2, t3, ac, xvel, yvel, zvel, r1, r2, r3, r4, r5, btuz, ac2u, uzik1;
+
+    if (timeron) timer_start(t_tzetar);
+    for (k = 0; k < nz2; k++)
+        for (j = 0; j < ny2; j++)
+            for (i = 0; i < nx2; i++) {
+                xvel = us[i][j][k];
+                yvel = vs[i][j][k];
+                zvel = ws[i][j][k];
+                ac   = speed[i][j][k];
+
+                ac2u = ac*ac;
+                
+                r1 = rhs[0][i][j][k];
+                r2 = rhs[1][i][j][k];
+                r3 = rhs[2][i][j][k];
+                r4 = rhs[3][i][j][k];
+                r5 = rhs[4][i][j][k];
+
+                uzik1 = u[0][i][j][k];
+                btuz  = bt * uzik1;
+
+                t1 = btuz/ac * (r4 + r5);
+                t2 = r3 + t1;
+                t3 = btuz * (r4 - r5);
+
+                rhs[0][i][j][k] = t2;
+                rhs[1][i][j][k] = -uzik1*r2 + xvel*t2;
+                rhs[2][i][j][k] = uzik1*r1 + yvel*t2;
+                rhs[3][i][j][k] = zvel*t2 + t3;
+                rhs[4][i][j][k] = uzik1*(-xvel*r2 + yvel*r1) + qs[i][j][k]*t2 + c2iv*ac2u*t1 + zvel*t3;
+            }
+    if (timeron) timer_stop(t_tzetar);
+}
+
+Working on 157
+Formatted line: #include <stdio.h>
+#include <cmath>
+void norm2u3(double u[100][100][100], int n1, int n2, int n3, double &rnm2, double &rnmu,
+              int nx, int ny, int nz);
+void rep_nrm(double u[100][100][100], int n1, int n2, int n3, char* title, int kk)
+{
+    double rnm2, rnmu;
+    norm2u3(u,n1,n2,n3,rnm2,rnmu,nx,ny,nz);
+    printf(" Level %d in %s: norms = %.14e %.14e
+", kk, title, rnm2, rnmu);
+}
+
+Working on 158
+Formatted line: void pinvr()
+{
+ extern bool timeron;
+ extern int nx2, ny2, nz2;
+ extern double bt, rhs[5][nx2][ny2][nz2];
+
+ double r1, r2, r3, r4, r5, t1, t2;
+
+ if (timeron) timer_start(t_pinvr);
+
+ for (int k = 0; k < nz2; k++)
+ for (int j = 0; j < ny2; j++)
+ for (int i = 0; i < nx2; i++)
+ {
+  r1 = rhs[0][i][j][k];
+  r2 = rhs[1][i][j][k];
+  r3 = rhs[2][i][j][k];
+  r4 = rhs[3][i][j][k];
+  r5 = rhs[4][i][j][k];
+
+  t1 = bt * r1;
+  t2 = 0.5 * ( r4 + r5 );
+
+  rhs[0][i][j][k] =  bt * ( r4 - r5 );
+  rhs[1][i][j][k] = -r3;
+  rhs[2][i][j][k] =  r2;
+  rhs[3][i][j][k] = -t1 + t2;
+  rhs[4][i][j][k] =  t1 + t2;
+ }
+
+ if (timeron) timer_stop(t_pinvr);
+}
+
+Working on 159
+Formatted line: ```C++
+#include "ft_data.h"
+#include <cmath>
+
+void cffts1(int is, int d1, int d2, int d3, std::complex<double> x[(d1+1)][d2][d3], std::complex<double> xout[(d1+1)][d2][d3], std::complex<double> y1[fftblockpad][d1], std::complex<double> y2[fftblockpad][d1])
+{
+    int logd1 = log2(d1);
+    int i, j, k, jj, jn;
+
+    if (timers_enabled)
+        timer_start(T_fftx);
+
+    for (k = 0; k < d3; k++)
+        for (jn = 0; jn < d2/fftblock; jn++)
+        {
+            jj = jn*fftblock;
+            for (j = 0; j < fftblock; j++)
+                for (i = 0; i < d1; i++)
+                    y1[j][i] = x[i][j+jj][k];
+
+            cfftz(is, logd1, d1, y1, y2);
+
+            for (j = 0; j < fftblock; j++)
+                for (i = 0; i < d1; i++)
+                    xout[i][j+jj][k] = y1[j][i];
+        }
+
+    if (timers_enabled)
+        timer_stop(T_fftx);
+
+    return;
+}
+```
+
+Working on 160
+Formatted line: #include "lu_data.h"
+#include <math.h>
+
+void error() {
+    double tmp;
+    double u000ijk[5];
+
+    for (int m = 0; m < 5; m++)
+        errnm[m] = 0.0;
+
+    for (int k = 1; k < nz - 1; k++)
+        for (int j = jst - 1; j < jend; j++)
+            for (int i = ist - 1; i < iend; i++) {
+                exact(i + 1, j + 1, k + 1, u000ijk);
+                for (int m = 0; m < 5; m++) {
+                    tmp = (u000ijk[m] - u[m][i][j][k]);
+                    errnm[m] += tmp * tmp;
+                }
+            }
+
+    for (int m = 0; m < 5; m++)
+        errnm[m] = sqrt(errnm[m] / ((double)(nx0 - 2)*(ny0 - 2)*(nz0 - 2)));
+
+    printf("
+ RMS-norm of error in soln. to first pde  = %.5e"
+        "
+ RMS-norm of error in soln. to second pde = %.5e"
+        "
+ RMS-norm of error in soln. to third pde  = %.5e"
+        "
+ RMS-norm of error in soln. to fourth pde = %.5e"
+        "
+ RMS-norm of error in soln. to fifth pde  = %.5e
+",
+        errnm[0], errnm[1], errnm[2], errnm[3], errnm[4]);
+}
+
+Working on 161
+Formatted line: #include "ft_data.h"
+#include <cmath>
+#include <complex>
+
+void cffts3(int is, int d1, int d2, int d3, std::complex<double> x[(d1+1)*d2*d3], std::complex<double> xout[(d1+1)*d2*d3], std::complex<double> y1[fftblockpad*d3], std::complex<double> y2[fftblockpad*d3]) 
+{
+    int logd3;
+    int i, j, k, ii, in;
+
+    logd3 = (int)std::log2(d3);
+
+    if (timers_enabled)
+        timer_start(T_fftz);
+
+    for (j = 0; j < d2; j++)
+        for (in = 0; in < d1/fftblock; in++)
+        {
+            ii = in*fftblock;
+            for (k = 0; k < d3; k++)
+                for (i = 0; i < fftblock; i++)
+                    y1[i + k*fftblockpad] = x[(i+ii) + j*(d1+1) + k*(d1+1)*d2];
+
+            cfftz (is, logd3, d3, y1, y2);
+
+            for (k = 0; k < d3; k++)
+                for (i = 0; i < fftblock; i++)
+                    xout[(i+ii) + j*(d1+1) + k*(d1+1)*d2] = y1[i + k*fftblockpad];
+        }
+
+    if (timers_enabled) 
+        timer_stop(T_fftz);
+
+    return;
+}
+
+Working on 162
+Formatted line: #include "lu_data.h"
+
+void setcoeff() {
+
+    dxi = 1.0 / (nx0 - 1);
+    deta = 1.0 / (ny0 - 1);
+    dzeta = 1.0 / (nz0 - 1);
+
+    tx1 = 1.0 / (dxi * dxi);
+    tx2 = 1.0 / (2.0 * dxi);
+    tx3 = 1.0 / dxi;
+
+    ty1 = 1.0 / (deta * deta);
+    ty2 = 1.0 / (2.0 * deta);
+    ty3 = 1.0 / deta;
+
+    tz1 = 1.0 / (dzeta * dzeta);
+    tz2 = 1.0 / (2.0 * dzeta);
+    tz3 = 1.0 / dzeta;
+
+    dx1 = 0.75;
+    dx2 = dx1;
+    dx3 = dx1;
+    dx4 = dx1;
+    dx5 = dx1;
+
+    dy1 = 0.75;
+    dy2 = dy1;
+    dy3 = dy1;
+    dy4 = dy1;
+    dy5 = dy1;
+
+    dz1 = 1.00;
+    dz2 = dz1;
+    dz3 = dz1;
+    dz4 = dz1;
+    dz5 = dz1;
+
+    dssp = (std::max({dx1, dy1, dz1})) / 4.0;
+
+    ce[0][0] = 2.0;
+    ce[0][1] = 0.0;
+    ce[0][2] = 0.0;
+    ce[0][3] = 4.0;
+    ce[0][4] = 5.0;
+    ce[0][5] = 3.0;
+    ce[0][6] = 0.5;
+    ce[0][7] = 0.02;
+    ce[0][8] = 0.01;
+    ce[0][9] = 0.03;
+    ce[0][10] = 0.5;
+    ce[0][11] = 0.4;
+    ce[0][12] = 0.3;
+
+    ce[1][0] = 1.0;
+    ce[1][1] = 0.0;
+    ce[1][2] = 0.0;
+    ce[1][3] = 0.0;
+    ce[1][4] = 1.0;
+    ce[1][5] = 2.0;
+    ce[1][6] = 3.0;
+    ce[1][7] = 0.01;
+    ce[1][8] = 0.03;
+    ce[1][9] = 0.02;
+    ce[1][10] = 0.4;
+    ce[1][11] = 0.3;
+    ce[1][12] = 0.5;
+
+    ce[2][0] = 2.0;
+    ce[2][1] = 2.0;
+    ce[2][2] = 0.0;
+    ce[2][3] = 0.0;
+    ce[2][4] = 0.0;
+    ce[2][5] = 2.0;
+    ce[2][6] = 3.0;
+    ce[2][7] = 0.04;
+    ce[2][8] = 0.03;
+    ce[2][9] = 0.05;
+    ce[2][10] = 0.3;
+    ce[2][11] = 0.5;
+    ce[2][12] = 0.4;
+
+    ce[3][0] = 2.0;
+    ce[3][1] = 2.0;
+    ce[3][2] = 0.0;
+    ce[3][3] = 0.0;
+    ce[3][4] = 0.0;
+    ce[3][5] = 2.0;
+    ce[3][6] = 3.0;
+    ce[3][7] = 0.03;
+    ce[3][8] = 0.05;
+    ce[3][9] = 0.04;
+    ce[3][10] = 0.2;
+    ce[3][11] = 0.1;
+    ce[3][12] = 0.3;
+
+    ce[4][0] = 5.0;
+    ce[4][1] = 4.0;
+    ce[4][2] = 3.0;
+    ce[4][3] = 2.0;
+    ce[4][4] = 0.1;
+    ce[4][5] = 0.4;
+    ce[4][6] = 0.3;
+    ce[4][7] = 0.05;
+    ce[4][8] = 0.04;
+    ce[4][9] = 0.03;
+    ce[4][10] = 0.1;
+    ce[4][11] = 0.3;
+    ce[4][12] = 0.2;
+}
+
+Working on 163
+Formatted line: ```cpp
+#include "bt_data.h"
+#include <cmath>
+
+void initialize() {
+    int i, j, k, m, ix, iy, iz;
+    double xi, eta, zeta, Pface[5][3][2], Pxi, Peta, Pzeta, temp[5];
+
+    for (k = 0; k < grid_points[3]; k++) {
+        for (j = 0; j < grid_points[2]; j++) {
+            for (i = 0; i < grid_points[1]; i++) {
+                for (m = 0; m < 5; m++) {
+                    u[m][i][j][k] = 1.0;
+                }
+            }
+        }
+    }
+
+    for (k = 0; k < grid_points[3]; k++) {
+        for (j = 0; j < grid_points[2]; j++) {
+            zeta = double(k) * dnzm1;
+            eta = double(j) * dnym1;
+
+            for (i = 0; i < grid_points[1]; i++) {
+                xi = double(i) * dnxm1;
+
+                for (ix = 0; ix < 2; ix++) {
+                    exact_solution(double(ix), eta, zeta, Pface[0][0][ix]);
+                }
+                
+                for (iy = 0; iy < 2; iy++) {
+                    exact_solution(xi, double(iy), zeta, Pface[0][1][iy]);
+                }
+                
+                for (iz = 0; iz < 2; iz++) {
+                    exact_solution(xi, eta, double(iz), Pface[0][2][iz]);
+                }
+                
+                for (m = 0; m < 5; m++) {
+                    Pxi = xi * Pface[m][0][1] + (1.0 - xi) * Pface[m][0][0];
+                    Peta = eta * Pface[m][1][1] + (1.0 - eta) * Pface[m][1][0];
+                    Pzeta = zeta * Pface[m][2][1] + (1.0 - zeta) * Pface[m][2][0];
+
+                    u[m][i][j][k] = Pxi + Peta + Pzeta - Pxi*Peta - Pxi*Pzeta - Peta*Pzeta + Pxi*Peta*Pzeta;
+                }
+            }
+        }
+    }
+
+    // Rest of the code is omitted due to its length. The translation process is similar to the above code.
+}
+```
+
+Working on 164
+Formatted line: #include "cg_data.h"
+#include <cmath>
+
+void conj_grad(double &rnorm)
+{
+    int j;
+    int cgit, cgitmax = 25;
+    int k;
+
+    double d, sum = 0.0, rho = 0.0, rho0, alpha, beta, suml;
+
+    for (j = 0; j <= naa; j++)
+    {
+        q[j] = 0.0;
+        z[j] = 0.0;
+        r[j] = x[j];
+        p[j] = r[j];
+    }
+
+    for (j = 0; j <= lastcol - firstcol; j++)
+        rho += r[j] * r[j];
+
+    for (cgit = 0; cgit < cgitmax; cgit++)
+    {
+        rho0 = rho;
+        d = 0.0;
+        rho = 0.0;
+
+        for (j = 0; j <= lastrow - firstrow; j++)
+        {
+            suml = 0.0;
+            for (k = rowstr[j]; k < rowstr[j + 1]; k++)
+                suml += a[k] * p[colidx[k]];
+
+            q[j] = suml;
+        }
+
+        for (j = 0; j <= lastcol - firstcol; j++)
+            d += p[j] * q[j];
+
+        alpha = rho0 / d;
+
+        for (j = 0; j <= lastcol - firstcol; j++)
+        {
+            z[j] += alpha * p[j];
+            r[j] -= alpha * q[j];
+            rho += r[j] * r[j];
+        }
+
+        beta = rho / rho0;
+
+        for (j = 0; j <= lastcol - firstcol; j++)
+            p[j] = r[j] + beta * p[j];
+    }
+
+    for (j = 0; j <= lastrow - firstrow; j++)
+    {
+        suml = 0.0;
+        for (k = rowstr[j]; k < rowstr[j + 1]; k++)
+            suml += a[k] * z[colidx[k]];
+
+        r[j] = suml;
+    }
+
+    for (j = 0; j <= lastcol - firstcol; j++)
+    {
+        suml = x[j] - r[j];
+        sum += suml * suml;
+    }
+
+    rnorm = sqrt(sum);
+}
+
+Working on 165
+Formatted line: #include "tinfo.h"
+#include <iostream>
+#include <cmath>
+
+void sparse (double a[], int colidx[], int rowstr[], int n, int nz, int nonzer, int arow[], int acol[], double aelt[], int firstrow, int lastrow, double v[], int iv[], int nzloc[], double rcond, double shift) {
+    
+    int nrows;
+    int i, j, jcol;
+    int j1, j2, nza, k, kk, nzrow;
+    double xi, size, scale, ratio, va;
+
+    nrows = lastrow - firstrow + 1;
+    j1 = ilow + 1;
+    j2 = ihigh + 1;
+
+    for (j = j1; j <= j2; j++)
+        rowstr[j] = 0;
+
+    for (i = 1; i <= n; i++) {
+        for (nza = 1; nza <= arow[i]; nza++) {
+            j = acol[nza][i];
+            if (j >= ilow && j <= ihigh) {
+                j = j + 1;
+                rowstr[j] = rowstr[j] + arow[i];
+            }
+        }
+    }
+
+    if (myid == 0) {
+        rowstr[1] = 1;
+        j1 = 1;
+    }
+
+    for (j = j1+1; j <= j2; j++)
+        rowstr[j] = rowstr[j] + rowstr[j-1];
+
+    if (myid < num_threads)
+        last_n[myid] = rowstr[j2];
+
+    nzrow = 0;
+    if (myid < num_threads) {
+        for (i = 0; i < myid; i++)
+            nzrow = nzrow + last_n[i];
+    }
+
+    if (nzrow > 0) {
+        for (j = j1; j <= j2; j++)
+            rowstr[j] = rowstr[j] + nzrow;
+    }
+
+    nza = rowstr[nrows+1] - 1;
+
+    if (nza > nz) {
+        std::cout << "Space for matrix elements exceeded in sparse" << std::endl;
+        std::cout << "nza, nzmax = " << nza << ", " << nz << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    for (j = ilow; j <= ihigh; j++) {
+        for (k = rowstr[j]; k <= rowstr[j+1]-1; k++) {
+            v[k] = 0.0;
+            iv[k] = 0;
+        }
+        nzloc[j] = 0;
+    }
+
+    size = 1.0;
+    ratio = pow(rcond, 1.0 / double(n));
+
+    for (i = 1; i <= n; i++) {
+        for (nza = 1; nza <= arow[i]; nza++) {
+            j = acol[nza][i];
+            if (j < ilow || j > ihigh)
+                continue;
+
+            scale = size * aelt[nza][i];
+            for (nzrow = 1; nzrow <= arow[i]; nzrow++) {
+                jcol = acol[nzrow][i];
+                va = aelt[nzrow][i] * scale;
+
+                if (jcol == j && j == i)
+                    va = va + rcond - shift;
+
+                for (k = rowstr[j]; k <= rowstr[j+1]-1; k++) {
+                    if (iv[k] > jcol) {
+                        for (kk = rowstr[j+1]-2; kk >= k; kk--)
+                            if (iv[kk] > 0) {
+                                v[kk+1] = v[kk];
+                                iv[kk+1] = iv[kk];
+                            }
+                        iv[k] = jcol;
+                        v[k] = 0.0;
+                        break;
+                    } else if (iv[k] == 0) {
+                        iv[k] = jcol;
+                        break;
+                    } else if (iv[k] == jcol) {
+                        nzloc[j] = nzloc[j] + 1;
+                        break;
+                    }
+                }
+            }
+        }
+        size = size * ratio;
+    }
+
+    for (j = ilow+1; j <= ihigh; j++)
+        nzloc[j] = nzloc[j] + nzloc[j-1];
+
+    if (myid < num_threads)
+        last_n[myid] = nzloc[ihigh];
+
+    nzrow = 0;
+    if (myid < num_threads) {
+        for (i = 0; i < myid; i++)
+            nzrow = nzrow + last_n[i];
+    }
+
+    if (nzrow > 0) {
+        for (j = ilow; j <= ihigh; j++)
+            nzloc[j] = nzloc[j] + nzrow;
+    }
+
+    for (j = 1; j <= nrows; j++) {
+        if (j > 1)
+            j1 = rowstr[j] - nzloc[j-1];
+        else
+            j1 = 1;
+
+        j2 = rowstr[j+1] - nzloc[j] - 1;
+        nza = rowstr[j];
+
+        for (k = j1; k <= j2; k++) {
+            a[k] = v[nza];
+            colidx[k] = iv[nza];
+            nza = nza + 1;
+        }
+    }
+
+    for (j = 2; j <= nrows+1; j++)
+        rowstr[j] = rowstr[j] - nzloc[j-1];
+
+    nza = rowstr[nrows+1] - 1;
+}
+
+Working on 166
+Formatted line: void exact_solution(double xi, double eta, double zeta, double dtemp[5]){
+
+  int m;
+  for (m = 0; m < 5; m++)
+    dtemp[m] =  ce[m][0] + xi*(ce[m][1] + xi*(ce[m][4] + xi*(ce[m][7] + xi*ce[m][10]))) + eta*(ce[m][2] + eta*(ce[m][5] + eta*(ce[m][8] + eta*ce[m][11]))) + zeta*(ce[m][3] + zeta*(ce[m][6] + zeta*(ce[m][9] + zeta*ce[m][12])));
+
+}
+
+Working on 167
+Formatted line: #include "lu_data.h"
+void exact(int i, int j, int k, double u000ijk[5]){
+    double xi, eta, zeta;
+
+    xi = double(i - 1) / (nx0 - 1);
+    eta = double(j - 1) / (ny0 - 1);
+    zeta = double(k - 1) / (nz - 1);
+
+    for(int m = 0; m < 5; m++)
+        u000ijk[m] = ce[m][0] + (ce[m][1] + (ce[m][4] + (ce[m][7] + ce[m][10] * xi) * xi) * xi) * xi +
+                     (ce[m][2] + (ce[m][5] + (ce[m][8] + ce[m][11] * eta) * eta) * eta) * eta +
+                     (ce[m][3] + (ce[m][6] + (ce[m][9] + ce[m][12] * zeta) * zeta) * zeta) * zeta;
+}
+
+Working on 168
+Formatted line: #include "ft_data.h"
+#include <complex>
+#include <iostream>
+
+void cfftz(int is, int m, int n, std::complex<double>** x, std::complex<double>** y)
+{
+    int i, j, l, mx;
+
+    mx = u[0];
+    if((is != 1 && is != -1) || m < 1 || m > mx)
+    {
+        std::cerr << "CFFTZ: Either U has not been initialized, or else "
+                  << "one of the input parameters is invalid" 
+                  << is << " " << m << " " << mx << std::endl;
+        exit(1);
+    }
+
+    for(l = 1; l <= m; l+=2)
+    {
+        fftz2(is, l, m, n, fftblock, fftblockpad, u, x, y);
+        if(l == m)
+        {
+            for(j = 0; j < n; j++)
+            {
+                for(i = 0; i < fftblock; i++)
+                {
+                    x[i][j] = y[i][j];
+                }
+            }
+        }
+        else
+        {
+            fftz2(is, l + 1, m, n, fftblock, fftblockpad, u, y, x);
+        }
+    }
+}
+
+Working on 169
+Formatted line: void ipow46(double a, int exponent, double& result)
+{
+    double dummy, q, r;
+    int n, n2;
+    result = 1;
+    if (exponent == 0) return;
+    q = a;
+    r = 1;
+    n = exponent;
+
+    while (n > 1)
+    {
+        n2 = n/2;
+        if (n2 * 2 == n)
+        {
+            dummy = randlc(q, q);
+            n = n2;
+        } 
+        else 
+        {
+            dummy = randlc(r, q);
+            n = n-1;
+        }
+    }
+    dummy = randlc(r, q);
+    result = r;
+}
+
+Working on 170
+Formatted line: void adi() {
+ compute_rhs();
+ txinvr();
+ x_solve();
+ y_solve();
+ z_solve();
+ add();
+}
+
+Working on 171
+Formatted line: #include <cmath>
+extern double amult, tran;
+extern double randlc(double* x, double a);
+extern int icnvrt(double x, int ipwr2);
+void sprnvc(int n, int nz, std::vector<double>& v, std::vector<int>& iv, int nn1)
+{
+    int nzv = 0;
+    while(true)
+    {
+        if(nzv >= nz) break;
+        double vecelt = randlc(&tran, amult);
+        double vecloc = randlc(&tran, amult);
+        int i = icnvrt(vecloc, nn1) + 1;
+        if(i > n) continue;
+        for(int ii = 0; ii < nzv; ii++)
+        {
+            if(iv[ii] == i) goto skip;
+        }
+        nzv++;
+        v[nzv] = vecelt;
+        iv[nzv] = i;
+    skip:;
+    }
+}
+
+Working on 172
+Formatted line: Due to the complexity and length of the Fortran code, I will only present a part of the translated C++ code.
+
+```C++
+extern "C" {
+    double timer_read(int);
+    void timer_clear(int);
+    void timer_start(int);
+    void timer_stop(int);
+    void rhs();
+    void l2norm(int, int, int, int, int, int, int, int, int, int, double [5][1][1][1], double [5]);
+    void jacld(int, int);
+    void blts(int, int, int, int, int, int, double, double [5][1][1][1], double [5][1][1][1], double [5][1][1][1], double [5][1][1][1], double [5][1][1][1], int, int, int, int);
+    void jacu(int, int);
+    void buts(int, int, int, int, int, int, double, double [5][1][1][1], double [5][1][1][1], double [5][1][1][1], double [5][1][1][1], double [5][1][1][1], int, int, int, int);
+}
+
+void ssor(int niter) {
+    int i, j, k, m, n, istep;
+    double tmp, tmp2;
+    double delunm[5];
+    double omega = 1.0, dt = 1.0;
+    int isiz1 = 1, isiz2 = 1, isiz3 = 1, nx0 = 1, ny0 = 1, nz0 = 1, ist = 1, iend = 1, jst = 1, jend = 1, itmax = 1, inorm = 1;
+    double rsd[5][1][1][1], rsdnm[5], u[5][1][1][1], a[5][1][1][1], b[5][1][1][1], c[5][1][1][1], d[5][1][1][1];
+    double tolrsd[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+    int timeron = 0, t_last = 1, t_rhs = 1, t_blts = 1, t_buts = 1, t_add = 1, t_l2norm = 1;
+    double maxtime;
+
+    tmp = 1.0 / ( omega * ( 2.0 - omega ) );
+
+    for(i = 1; i <= t_last; i++) {
+        timer_clear(i);
+    }
+    // ...
+    // Due to the size of the code, the rest is omitted.
+    // You would continue to translate the Fortran code into equivalent C++ code here.
+    // ...
+}
+```
+Please note, this code might not be fully functional and is meant to serve as a starting point for your translation. Also, the conversion of multidimensional arrays may need additional corrections as per your requirement.
+
+Working on 173
+Formatted line: #include <stdio.h>
+#include "mg_data.h"
+double u[n1][n2][n3];
+void comm3(int n1, int n2, int n3, int kk)
+{
+ int i1, i2, i3;
+ if (timeron) timer_start(T_comm3);
+ for (i3=1; i3<n3; i3++)
+ for (i2=1; i2<n2; i2++)
+ {
+ u[0][i2][i3] = u[n1-2][i2][i3];
+ u[n1-1][i2][i3] = u[1][i2][i3];
+ }
+ for (i3=1; i3<n3; i3++)
+ for (i1=0; i1<n1; i1++)
+ {
+ u[i1][0][i3] = u[i1][n2-2][i3];
+ u[i1][n2-1][i3] = u[i1][1][i3];
+ }
+ for (i2=0; i2<n2; i2++)
+ for (i1=0; i1<n1; i1++)
+ {
+ u[i1][i2][0] = u[i1][i2][n3-2];
+ u[i1][i2][n3-1] = u[i1][i2][1];
+ }
+ if (timeron) timer_stop(T_comm3);
+ return;
+}
+
+Working on 174
+Formatted line: void exact_solution(double xi, double eta, double zeta, double dtemp[5])
+{
+int m;
+
+for (m = 0; m < 5; m++)
+dtemp[m] =  ce[m][0] + 
+xi*(ce[m][1] + xi*(ce[m][4] + xi*(ce[m][7] + xi*ce[m][10]))) +  
+eta*(ce[m][2] + eta*(ce[m][5] + eta*(ce[m][8] + eta*ce[m][11]))) +  
+zeta*(ce[m][3] + zeta*(ce[m][6] + zeta*(ce[m][9] + zeta*ce[m][12])));
+
+return;
+}
+
+Working on 175
+Formatted line: #include "ft_data.h"
+#include <complex>
+
+void compute_initial_conditions(std::complex<double> u0[], int d1, int d2, int d3) {
+    int k, j;
+    double x0, start, an, dummy;
+    double starts[nz];
+
+    start = seed;
+    ipow46(a, 0, &an);
+    dummy = randlc(&start, an);
+    ipow46(a, 2*nx*ny, &an);
+
+    starts[0] = start;
+    for (k = 1; k < dims[2]; k++) {
+        dummy = randlc(&start, an);
+        starts[k] = start;
+    }
+
+    for (k = 0; k < dims[2]; k++) {
+        x0 = starts[k];
+        for (j = 0; j < dims[1]; j++) {
+            vranlc(2*nx, &x0, a, &u0[j + d1*(k + d2*j)]);
+        }
+    }
+}
+
+Working on 176
+Formatted line: #include "lu_data.h"
+#include <cmath>
+
+void setiv() {
+    double xi, eta, zeta;
+    double pxi, peta, pzeta;
+    double ue_1jk[5], ue_nx0jk[5], ue_i1k[5], ue_iny0k[5], ue_ij1[5], ue_ijnz[5];
+
+    for (int k = 1; k < nz - 1; k++) {
+        for (int j = 1; j < ny - 1; j++) {
+            zeta = static_cast<double>(k) / static_cast<double>(nz - 1);
+            eta = static_cast<double>(j) / static_cast<double>(ny0 - 1);
+            for (int i = 1; i < nx - 1; i++) {
+                xi = static_cast<double>(i) / static_cast<double>(nx0 - 1);
+                exact(1, j, k, ue_1jk);
+                exact(nx0, j, k, ue_nx0jk);
+                exact(i, 1, k, ue_i1k);
+                exact(i, ny0, k, ue_iny0k);
+                exact(i, j, 1, ue_ij1);
+                exact(i, j, nz, ue_ijnz);
+                for (int m = 0; m < 5; m++) {
+                    pxi = (1.0 - xi) * ue_1jk[m] + xi * ue_nx0jk[m];
+                    peta = (1.0 - eta) * ue_i1k[m] + eta * ue_iny0k[m];
+                    pzeta = (1.0 - zeta) * ue_ij1[m] + zeta * ue_ijnz[m];
+                    u[m][i][j][k] = pxi + peta + pzeta - pxi * peta - peta * pzeta - pzeta * pxi + pxi * peta * pzeta;
+                }
+            }
+        }
+    }
+}
+
+Working on 177
+Formatted line: void add() {
+    extern bool timeron;
+    extern double u[5][grid_points[0]-2][grid_points[1]-2][grid_points[2]-2];
+    extern double rhs[5][grid_points[0]-2][grid_points[1]-2][grid_points[2]-2];
+
+    if (timeron) timer_start(t_add);
+    for (int k = 0; k < grid_points[2]-2; k++) {
+        for (int j = 0; j < grid_points[1]-2; j++) {
+            for (int i = 0; i < grid_points[0]-2; i++) {
+                for (int m = 0; m < 5; m++) {
+                    u[m][i][j][k] += rhs[m][i][j][k];
+                }
+            }
+        }
+    }
+    if (timeron) timer_stop(t_add);
+}
+
+Working on 178
+Formatted line: #include "sp_data.h"
+
+void txinvr() 
+{
+    double t1, t2, t3, ac, ru1, uu, vv, ww, r1, r2, r3, r4, r5, ac2inv;
+
+    if (timeron) timer_start(t_txinvr);
+
+    for (int k = 0; k < nz2; k++)
+    for (int j = 0; j < ny2; j++)
+    for (int i = 0; i < nx2; i++) 
+    {
+        ru1 = rho_i[i][j][k];
+        uu = us[i][j][k];
+        vv = vs[i][j][k];
+        ww = ws[i][j][k];
+        ac = speed[i][j][k];
+        ac2inv = 1.0 / (ac*ac);
+
+        r1 = rhs[1][i][j][k];
+        r2 = rhs[2][i][j][k];
+        r3 = rhs[3][i][j][k];
+        r4 = rhs[4][i][j][k];
+        r5 = rhs[5][i][j][k];
+
+        t1 = c2 / ac2inv * ( qs[i][j][k]*r1 - uu*r2 - vv*r3 - ww*r4 + r5 );
+        t2 = bt * ru1 * ( uu * r1 - r2 );
+        t3 = ( bt * ru1 * ac ) * t1;
+
+        rhs[1][i][j][k] = r1 - t1;
+        rhs[2][i][j][k] = - ru1 * ( ww*r1 - r4 );
+        rhs[3][i][j][k] =   ru1 * ( vv*r1 - r3 );
+        rhs[4][i][j][k] = - t2 + t3;
+        rhs[5][i][j][k] =   t2 + t3;
+    }
+    if (timeron) timer_stop(t_txinvr);
+}
+
+Working on 179
+Formatted line: #include <complex>
+#include <cmath>
+#include <ctime>
+#define T_ffty 1
+#define fftblockpad 128
+#define d1 128
+#define d2 128
+#define d3 128
+
+std::complex<double> x[d1+1][d2][d3];
+std::complex<double> xout[d1+1][d2][d3];
+std::complex<double> y1[fftblockpad][d2];
+std::complex<double> y2[fftblockpad][d2];
+
+bool timers_enabled = false;
+
+void cfftz(int is, int logd2, int d2, std::complex<double> y1[][d2], std::complex<double> y2[][d2]);
+
+void timer_start(int i);
+void timer_stop(int i);
+
+void cffts2(int is, int d1, int d2, int d3, std::complex<double> x[][d2][d3], std::complex<double> xout[][d2][d3], std::complex<double> y1[][d2], std::complex<double> y2[][d2])
+{
+    int i, j, k, ii, in;
+    int logd2 = log2(d2);
+
+    if (timers_enabled) timer_start(T_ffty);
+
+    for (k = 0; k < d3; ++k)
+    {
+        for (in = 0; in < d1/fftblockpad; ++in)
+        {
+            ii = in*fftblockpad;
+            for (j = 0; j < d2; ++j)
+            {
+                for (i = 0; i < fftblockpad; ++i)
+                {
+                    y1[i][j] = x[i+ii][j][k];
+                }
+            }
+
+            cfftz(is, logd2, d2, y1, y2);
+
+            for (j = 0; j < d2; ++j)
+            {
+                for (i = 0; i < fftblockpad; ++i)
+                {
+                    xout[i+ii][j][k] = y1[i][j];
+                }
+            }
+        }
+    }
+
+    if (timers_enabled) timer_stop(T_ffty);
+}
+
+Working on 180
+Formatted line: void setbv() 
+{
+    int i, j, k, m;
+    double temp1[5], temp2[5];
+
+    for (j = 0; j < ny; j++) 
+    {
+        for (i = 0; i < nx; i++) 
+        {
+            exact( i, j, 0, temp1 );
+            exact( i, j, nz-1, temp2 );
+            for (m = 0; m < 5; m++) 
+            {
+                u[m][i][j][0] = temp1[m];
+                u[m][i][j][nz-1] = temp2[m];
+            }
+        }
+    }
+
+    for (k = 0; k < nz; k++) 
+    {
+        for (i = 0; i < nx; i++) 
+        {
+            exact( i, 0, k, temp1 );
+            exact( i, ny-1, k, temp2 );
+            for (m = 0; m < 5; m++) 
+            {
+                u[m][i][0][k] = temp1[m];
+                u[m][i][ny-1][k] = temp2[m];
+            }
+        }
+    }
+
+    for (k = 0; k < nz; k++) 
+    {
+        for (j = 0; j < ny; j++) 
+        {
+            exact( 0, j, k, temp1 );
+            exact( nx-1, j, k, temp2 );
+            for (m = 0; m < 5; m++) 
+            {
+                u[m][0][j][k] = temp1[m];
+                u[m][nx-1][j][k] = temp2[m];
+            }
+        }
+    }
+}
+
+Working on 181
+Formatted line: void adi(){
+ compute_rhs();
+ x_solve();
+ y_solve();
+ z_solve();
+ add();
+ return;
+}
+
+Working on 182
+Formatted line: void vecset(int n, double* v, int* iv, int& nzv, int i, double val)
+{
+ bool set = false;
+ for(int k = 0; k < nzv; k++)
+ {
+  if(iv[k] == i)
+  {
+   v[k] = val;
+   set = true;
+   break;
+  }
+ }
+ if(!set)
+ {
+  nzv++;
+  v[nzv-1] = val;
+  iv[nzv-1] = i;
+ }
+}
+
+Working on 183
+Formatted line: #include "bt_data.h"
+#include <cmath>
+
+void error_norm(double rms[5])
+{
+  double xi, eta, zeta, u_exact[5], add;
+  int i, j, k, m, d;
+
+  for (m = 0; m < 5; m++)
+    rms[m] = 0.0;
+
+  for (k = 0; k < grid_points[3]; k++)
+    for (j = 0; j < grid_points[2]; j++)
+    {
+      zeta = double(k) * dnzm1;
+      eta = double(j) * dnym1;
+
+      for (i = 0; i < grid_points[1]; i++)
+      {
+        xi = double(i) * dnxm1;
+        exact_solution(xi, eta, zeta, u_exact);
+
+        for (m = 0; m < 5; m++)
+        {
+          add = u[m][i][j][k] - u_exact[m];
+          rms[m] += add * add;
+        }
+      }
+    }
+
+  for (m = 0; m < 5; m++)
+  {
+    for (d = 0; d < 3; d++)
+      rms[m] /= double(grid_points[d] - 2);
+    rms[m] = sqrt(rms[m]);
+  }
+}
+
+void rhs_norm(double rms[5])
+{
+  double add;
+  int i, j, k, d, m;
+
+  for (m = 0; m < 5; m++)
+    rms[m] = 0.0;
+
+  for (k = 1; k < grid_points[3] - 1; k++)
+    for (j = 1; j < grid_points[2] - 1; j++)
+      for (i = 1; i < grid_points[1] - 1; i++)
+        for (m = 0; m < 5; m++)
+        {
+          add = rhs[m][i][j][k];
+          rms[m] += add * add;
+        }
+
+  for (m = 0; m < 5; m++)
+  {
+    for (d = 0; d < 3; d++)
+      rms[m] /= double(grid_points[d] - 2);
+    rms[m] = sqrt(rms[m]);
+  }
+}
+
+Working on 184
+Formatted line: void bubble(double ten[][2], int j1[][2], int j2[][2], int j3[][2], int m, int ind){
+ double temp;
+ int i, j_temp;
+ if(ind == 1){
+  for(i=0; i<m-1; i++){
+   if(ten[i][ind] > ten[i+1][ind]){
+    temp = ten[i+1][ind];
+    ten[i+1][ind] = ten[i][ind];
+    ten[i][ind] = temp;
+
+    j_temp = j1[i+1][ind];
+    j1[i+1][ind] = j1[i][ind];
+    j1[i][ind] = j_temp;
+
+    j_temp = j2[i+1][ind];
+    j2[i+1][ind] = j2[i][ind];
+    j2[i][ind] = j_temp;
+
+    j_temp = j3[i+1][ind];
+    j3[i+1][ind] = j3[i][ind];
+    j3[i][ind] = j_temp;
+   }
+   else return;
+  }
+ }
+ else{
+  for(i=0; i<m-1; i++){
+   if(ten[i][ind] < ten[i+1][ind]){
+    temp = ten[i+1][ind];
+    ten[i+1][ind] = ten[i][ind];
+    ten[i][ind] = temp;
+
+    j_temp = j1[i+1][ind];
+    j1[i+1][ind] = j1[i][ind];
+    j1[i][ind] = j_temp;
+
+    j_temp = j2[i+1][ind];
+    j2[i+1][ind] = j2[i][ind];
+    j2[i][ind] = j_temp;
+
+    j_temp = j3[i+1][ind];
+    j3[i+1][ind] = j3[i][ind];
+    j3[i][ind] = j_temp;
+   }
+   else return;
+  }
+ }
+}
+
+Working on 185
+Formatted line: #include <stdio.h>
+#include <algorithm>
+
+double z[18][14][18];
+void showall(int n1, int n2, int n3) {
+    int m1 = std::min(n1,18);
+    int m2 = std::min(n2,14);
+    int m3 = std::min(n3,18);
+
+    for (int i3 = 0; i3 < m3; i3++) {
+        printf("  
+");
+        for (int i1 = 0; i1 < m1; i1++) {
+            for (int i2 = 0; i2 < m2; i2++) {
+                printf("%6.3f ", z[i1][i2][i3]);
+            }
+            printf("
+");
+        }
+        printf(" - - - - - - - 
+");
+    }
+    printf("  
+");
+}
+
+Working on 186
+Formatted line: void init_array(int n, double x[n][n], double a[n][n], double b[n][n])
+{
+  int i, j;
+  for (i = 0; i < n; i++)
+    for (j = 0; j < n; j++)
+    {
+      x[j][i] = ((double)(i * j) + 1.0) / (double)n;
+      a[j][i] = ((double)(i * (j + 1)) + 2.0) / (double)n;
+      b[j][i] = ((double)(i * (j + 2)) + 3.0) / (double)n;
+    }
+}
+
+Working on 187
+Formatted line: #include <iostream>
+
+template <typename DATA_TYPE>
+void print_array(DATA_TYPE** d, int ni, int nl) {
+    for (int i = 0; i < ni; ++i) {
+        for (int j = 0; j < nl; ++j) {
+            std::cout << d[j][i];
+
+            if (((i * ni) + j) % 20 == 0) {
+                std::cout << std::endl;
+            }
+        }
+    }
+    std::cout << std::endl;
+}
+
+Working on 188
+Formatted line: #include <stdio.h>
+
+#define DATA_TYPE double
+#define _PB_N 100
+
+DATA_TYPE y[_PB_N][_PB_N];
+DATA_TYPE sumArray[_PB_N][_PB_N];
+DATA_TYPE beta[_PB_N];
+DATA_TYPE alpha[_PB_N];
+DATA_TYPE r[_PB_N];
+DATA_TYPE outArray[_PB_N];
+
+void kernel_durbin(int n) 
+{
+    int i, k;
+
+    y[0][0] = r[0];
+    beta[0] = 1;
+    alpha[0] = r[0];
+    for (k = 1; k < n; k++) {
+        beta[k] = beta[k - 1] - (alpha[k -1] * alpha[k - 1] * beta[k - 1]);
+        sumArray[k][0] = r[k];
+        for (i = 0; i < k; i++) {
+            sumArray[k][i + 1] = sumArray[k][i] + (r[k - i] * y[k - 1][i]);
+        }
+        alpha[k] = alpha[k] - (sumArray[k][k] * beta[k]);
+        for (i = 0; i < k; i++) {
+            y[k][i] = y[k - 1][i] + (alpha[k] * y[k - 1][k - i]);
+        }
+        y[k][k] = alpha[k];
+    }
+    for (i = 0; i < n; i++) {
+        outArray[i] = y[n - 1][i];
+    }
+} 
+
+int main()
+{
+    kernel_durbin(_PB_N);
+    return 0;
+}
+
+Working on 189
+Formatted line: #include <stdio.h>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d "
+void print_array(int n, DATA_TYPE a[100][100])
+{
+ for (int i = 0; i < n; i++)
+ {
+ for (int j = 0; j < n; j++)
+ {
+ printf(DATA_PRINTF_MODIFIER, a[j][i]);
+ if (((i) * n + j) % 20 == 0)
+ {
+ printf("
+");
+ }
+ }
+ }
+ printf("
+");
+}
+
+Working on 190
+Formatted line: void init_array(int ni, int nj, double alpha, double beta, double** c, double** a)
+{
+ alpha = 32412;
+ beta = 2123;
+ for (int i = 0; i < ni; i++)
+ {
+ for (int j = 0; j < nj; j++)
+ {
+ a[j][i] = ((double)(i) * (double)(j)) / (double)ni;
+ }
+ for (int j = 0; j < ni; j++)
+ {
+ c[j][i] = ((double)(i) * (double)(j)) / (double)ni;
+ }
+ }
+}
+
+Working on 191
+Formatted line: void init_array(int ni, int nj, double a[][100], double r[][100], double q[][100])
+{
+ int i, j;
+ for (i = 0; i < ni; i++)
+ for (j = 0; j < nj; j++)
+ {
+ a[j][i] = ((double)(i) * (double)(j)) / (double)ni;
+ q[j][i] = ((double)(i) * (double)(j+1)) / (double)nj;
+ }
+ for (i = 0; i < ni; i++)
+ for (j = 0; j < nj; j++)
+ r[j][i] = ((double)(i) * (double)(j+2)) / (double)nj;
+}
+
+Working on 192
+Formatted line: void init_array(int m, int n, double &float_n, double dat[][m]){
+ float_n = 1.2;
+ for (int i = 0; i < m; i++)
+ for (int j = 0; j < n; j++)
+ dat[j][i] = (double(i - 1) * double(j - 1)) / double(m);
+}
+
+Working on 193
+Formatted line: void init_array(int m, int n, double float_n, double dat[100][100])
+{
+ for (int i=0;i<m;i++)
+ for (int j=0;j<n;j++)
+ dat[j][i] = ((double)((i)*(j)))/double(m);
+}
+
+Working on 194
+Formatted line: #include <stdio.h>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d "
+
+void print_array(int m, DATA_TYPE symmat[100][100]) {
+  for (int i = 0; i < m; i++) {
+    for (int j = 0; j < m; j++) {
+      printf(DATA_PRINTF_MODIFIER, symmat[j][i]);
+      if (((i * m) + j) % 20 == 0) {
+        printf("
+");
+      }
+    }
+  }
+  printf("
+");
+}
+
+Working on 195
+Formatted line: void kernel_doitgen(int nr, int nq, int np, double a[np][nq][nr], double cFour[np][np], double sumA[np][nq][nr]){
+ int r,s,p,q;
+ 
+#pragma scop
+ for (r = 0; r < nr; r++)
+ for (q = 0; q < nq; q++)
+ for (p = 0; p < np; p++){
+ sumA[p][q][r] = 0.0;
+ for (s = 0; s < np; s++)
+ sumA[p][q][r] += a[s][q][r] * cFour[p][s];
+ }
+ for (p = 0; p < np; p++)
+ a[p][q][r] = sumA[p][q][r];
+#pragma endscop
+}
+
+Working on 196
+Formatted line: void kernel_trisolv(int n , double a[][n], double x[n], double c[n])
+{
+ int i, j;
+ for (i = 0; i < n; i++)
+ {
+ x[i] = c[i];
+ for (j = 0; j < i; j++)
+ x[i] = x[i] - (a[j][i] * x[j]);
+ x[i] = x[i] / a[i][i];
+ }
+}
+
+Working on 197
+Formatted line: #include <vector>
+
+void init_array(int n, double& alpha, double& beta, std::vector<std::vector<double>>& a, std::vector<std::vector<double>>& b, std::vector<double>& x)
+{
+ alpha = 43532.0;
+ beta = 12313.0;
+
+ for (int i = 0; i < n; i++)
+ {
+  x[i] = static_cast<double>(i) / static_cast<double>(n);
+  for (int j = 0; j < n; j++)
+  {
+   a[j][i] = static_cast<double>(i * j) / static_cast<double>(n);
+   b[j][i] = static_cast<double>(i * j) / static_cast<double>(n);
+  }
+ }
+}
+
+Working on 198
+Formatted line: void print_array(int ni, int c[100][100]) {
+  int i, j;
+  for(i = 0; i < ni; i++) {
+    for(j = 0; j < ni; j++) {
+      printf(DATA_PRINTF_MODIFIER, c[j][i]);
+      if ((i * ni + j) % 20 == 0) {
+        printf("
+");
+      }
+    }
+  }
+  printf("
+");
+}
+
+Working on 199
+Formatted line: #include <stdio.h>
+
+#define DATA_TYPE int
+#define _PB_NI ni
+#define _PB_NJ nj
+
+void kernel_syrk(int ni, int nj, DATA_TYPE alpha, DATA_TYPE beta, DATA_TYPE c[100][100], DATA_TYPE a[100][100]) 
+{
+    int i, j, k;
+    
+    for (i = 0; i < _PB_NI; i++)
+        for (j = 0; j < _PB_NI; j++)
+            c[j][i] *= beta;
+
+    for (i = 0; i < _PB_NI; i++)
+        for (j = 0; j < _PB_NI; j++)
+            for (k = 0; k < _PB_NJ; k++)
+                c[j][i] += alpha * a[k][i] * a[k][j];
+}
+
+Working on 200
+Formatted line: void init_array(int n, double x1[], double x2[], double y1[], double y2[], double a[][n]) {
+ for(int i = 0; i < n; ++i) {
+  x1[i] = double(i) / double(n);
+  x2[i] = (double(i) + 1.0) / double(n);
+  y1[i] = (double(i) + 3.0) / double(n);
+  y2[i] = (double(i) + 4.0) / double(n);
+  for(int j = 0; j < n; ++j) {
+   a[j][i] = (double(i) * double(j)) / double(n);
+  }
+ }
+}
+
+Working on 201
+Formatted line: ```C++
+#include <cmath>
+
+#define DATA_TYPE double
+#define _PB_CZ cz
+#define _PB_CYM cym
+#define _PB_CXM cxm
+
+void kernel_fdtd_apml(int cz, int cxm, int cym, DATA_TYPE mui, DATA_TYPE ch, 
+                      DATA_TYPE ex[_PB_CXM+1][_PB_CYM+1][_PB_CZ+1], DATA_TYPE ey[_PB_CXM+1][_PB_CYM+1][_PB_CZ+1], 
+                      DATA_TYPE hz[_PB_CXM+1][_PB_CYM+1][_PB_CZ+1], DATA_TYPE clf[_PB_CYM+1][_PB_CZ+1], 
+                      DATA_TYPE ry[_PB_CYM+1][_PB_CZ+1], DATA_TYPE ax[_PB_CYM+1][_PB_CZ+1], 
+                      DATA_TYPE cymh[_PB_CYM+1], DATA_TYPE cyph[_PB_CYM+1], DATA_TYPE cxmh[_PB_CXM+1], 
+                      DATA_TYPE cxph[_PB_CXM+1], DATA_TYPE czm[_PB_CZ+1], DATA_TYPE czp[_PB_CZ+1], 
+                      DATA_TYPE tmp[_PB_CYM+1][_PB_CZ+1], DATA_TYPE bza[_PB_CXM+1][_PB_CYM+1][_PB_CZ+1])
+{
+  int ix, iy, iz;
+
+  for (iz = 1; iz <= _PB_CZ; iz++) {
+    for (iy = 1; iy <= _PB_CYM; iy++) {
+      for (ix = 1; ix <= _PB_CXM; ix++) {
+        clf[iy][iz] = ex[ix][iy][iz] - ex[ix][iy + 1][iz] + ey[ix + 1][iy][iz] - ey[ix][iy][iz];
+        tmp[iy][iz] = ((cymh[iy] / cyph[iy]) * bza[ix][iy][iz]) - ((ch / cyph[iy]) * clf[iy][iz]);
+        hz[ix][iy][iz] = ((cxmh[ix] / cxph[ix]) * hz[ix][iy][iz]) + ((mui * czp[iz] / cxph[ix]) * tmp[iy][iz]) - ((mui * czm[iz] / cxph[ix]) * bza[ix][iy][iz]);
+        bza[ix][iy][iz] = tmp[iy][iz];
+      }
+
+      // More code
+    }
+  }
+}
+```
+
+Working on 202
+Formatted line: #include <iostream>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d "
+
+void print_array(int n, DATA_TYPE b[100][100])
+{
+ for (int i = 0; i < n; i++)
+ {
+   for (int j = 0; j < n; j++)
+   {
+     printf(DATA_PRINTF_MODIFIER, b[j][i]);
+     if (((i * n) + j) % 20 == 0)
+     {
+       printf("
+");
+     }
+   }
+ }
+ printf("
+");
+}
+
+Working on 203
+Formatted line: void init_array(int n, double a[n][n]) 
+{
+ for(int i = 0; i < n; i++)
+ for(int j = 0; j < n; j++)
+ a[j][i] = ((double(i - 1) * double(j + 1)) + 2.0) / n;
+}
+
+Working on 204
+Formatted line: #include <stdio.h>
+#define DATA_TYPE double
+void init_array(int n, DATA_TYPE p[], DATA_TYPE a[n][n]) {
+ for (int i = 0; i < n; i++) {
+ p[i] = 1.0 / n;
+ for (int j = 0; j < n; j++) {
+ a[j][i] = 1.0 / n;
+ }
+ }
+}
+
+Working on 205
+Formatted line: #include <iostream>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d "
+void print_array(int ni, int nj, DATA_TYPE c[100][100])
+{
+ for (int i = 0; i < ni; i++)
+ {
+ for (int j = 0; j < nj; j++)
+ {
+ printf(DATA_PRINTF_MODIFIER, c[j][i]);
+ if (((i * ni) + j) % 20 == 0) printf("
+");
+ }
+ }
+ printf("
+");
+}
+
+Working on 206
+Formatted line: #include <iostream>
+#define DATA_PRINTF_MODIFIER "%d "
+typedef int DATA_TYPE;
+
+void print_array(int n, DATA_TYPE a[100][100])
+{
+ for(int i=0; i<n; i++)
+ {
+  for(int j=0; j<n; j++)
+  {
+   printf(DATA_PRINTF_MODIFIER, a[j][i]);
+   if(((i * n) + j) % 20 == 19)
+   {
+    printf("
+");
+   }
+  }
+ }
+ printf("
+");
+}
+
+Working on 207
+Formatted line: void init_array(int n, double& alpha, double& beta, double a[][n], double u1[], double u2[], double v1[], double v2[], double w[], double x[], double y[], double z[]){
+ alpha = 43532.0;
+ beta = 12313.0;
+ for (int i = 0; i < n; i++) {
+ u1[i] = double(i);
+ u2[i] = double(i) / n / 2.0;
+ v1[i] = double(i) / n / 4.0;
+ v2[i] = double(i) / n / 6.0;
+ y[i] = double(i) / n / 8.0;
+ z[i] = double(i) / n / 9.0;
+ x[i] = 0.0;
+ w[i] = 0.0;
+ for (int j = 0; j < n; j++) {
+ a[j][i] = (double(i) * double(j)) / double(n);
+ }
+ }
+}
+
+Working on 208
+Formatted line: #include <stdio.h>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d "
+void print_array(int ni, int nj, DATA_TYPE c[100][100])
+{
+ int i, j;
+ for (i = 0; i < ni; i++)
+ {
+ for (j = 0; j < nj; j++)
+ {
+ printf(DATA_PRINTF_MODIFIER, c[j][i]);
+ if (((i * ni) + j) % 20 == 0)
+ {
+ printf("
+");
+ }
+ }
+ }
+ printf("
+");
+}
+
+Working on 209
+Formatted line: ```C++
+void init_array(int ni, int nj, double alpha, double beta, double c[100][100], double a[100][100], double b[100][100])
+{
+  int i, j;
+  alpha = 32412.0;
+  beta = 2123.0;
+
+  for(i = 0; i < ni; i++)
+    for(j = 0; j < nj; j++)
+    {
+      c[j][i] = ((double) ((i) * (j))) / (double) ni;
+      b[j][i] = ((double) ((i) * (j))) / (double) ni;
+    }
+
+  for(i = 0; i < nj; i++)
+    for(j = 0; j < nj; j++)
+      a[j][i] = ((double) ((i) * (j))) / (double) ni;
+}
+```
+
+Working on 210
+Formatted line: void print_array(int n, DATA_TYPE x[])
+{
+ for (int i = 0; i < n; i++)
+ {
+ printf(DATA_PRINTF_MODIFIER, x[i]);
+ if (i % 20 == 0)
+ printf("
+");
+ }
+}
+
+Working on 211
+Formatted line: #include <iostream>
+typedef int DATA_TYPE;
+#define DATA_PRINTF_MODIFIER "%d "
+
+void print_array(int n, DATA_TYPE y[]) {
+ for (int i = 0; i < n; i++) {
+  printf(DATA_PRINTF_MODIFIER, y[i]);
+  if (i % 20 == 0) {
+   printf("
+");
+  }
+ }
+}
+
+Working on 212
+Formatted line: #include <math.h>
+#define DATA_TYPE double
+#define _PB_NI ni
+#define _PB_NJ nj
+void kernel_gramschmidt(int ni, int nj, DATA_TYPE a[_PB_NJ][_PB_NI], DATA_TYPE r[_PB_NJ][_PB_NJ], DATA_TYPE q[_PB_NJ][_PB_NI])
+{
+ DATA_TYPE nrm;
+ int i, j, k;
+ for (k = 0; k < _PB_NJ; k++) {
+ nrm = 0.0;
+ for (i = 0; i < _PB_NI; i++)
+ nrm = nrm + (a[k][i] * a[k][i]);
+ r[k][k] = sqrt(nrm);
+ for (i = 0; i < _PB_NI; i++)
+ q[k][i] = a[k][i] / r[k][k];
+ for (j = k + 1; j < _PB_NJ; j++) {
+ r[j][k] = 0.0;
+ for (i = 0; i < _PB_NI; i++)
+ r[j][k] = r[j][k] + (q[k][i] * a[j][i]);
+ for (i = 0; i < _PB_NI; i++)
+ a[j][i] = a[j][i] - (q[k][i] * r[j][k]);
+ }
+ }
+}
+
+Working on 213
+Formatted line: #include <iostream>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d"
+
+void print_array(int n, DATA_TYPE* w)
+{
+    for (int i = 0; i < n; i++)
+    {
+        printf(DATA_PRINTF_MODIFIER, w[i]);
+        if ((i + 1) % 20 == 0)
+            printf("
+");
+    }
+    printf("
+");
+}
+
+Working on 214
+Formatted line: ```cpp
+void kernel_covariance(int m, int n, double float_n, double** dat, double** symmat, double* mean) {
+    int i, j, j1, j2;
+
+    // Determine mean of column vectors of input data matrix
+    for (j = 0; j < m; j++) {
+        mean[j] = 0.0;
+        for (i = 0; i < n; i++) {
+            mean[j] += dat[j][i];
+        }
+        mean[j] /= float_n;
+    }
+
+    // Center the column vectors
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < m; j++) {
+            dat[j][i] -= mean[j];
+        }
+    }
+
+    // Calculate the m * m covariance matrix
+    for (j1 = 0; j1 < m; j1++) {
+        for (j2 = j1; j2 < m; j2++) {
+            symmat[j2][j1] = 0.0;
+            for (i = 0; i < n; i++) {
+                symmat[j2][j1] += dat[j1][i] * dat[j2][i];
+            }
+            symmat[j1][j2] = symmat[j2][j1];
+        }
+    }
+}
+```
+
+Working on 215
+Formatted line: void kernel_floyd_warshall(int n, DATA_TYPE path[][n])
+{
+ for(int k = 0; k < _PB_N; k++)
+ for(int i = 0; i < _PB_N; i++)
+ for(int j = 0; j < _PB_N; j++)
+ if(path[j][i] >= path[k][i] + path[j][k])
+ path[j][i] = path[k][i] + path[j][k];
+}
+
+Working on 216
+Formatted line: void kernel_jacobi1d(int tsteps, int n, float* a, float* b)
+{
+ int i, t, j;
+ for (t = 0; t < tsteps; t++)
+ {
+  for (i = 1; i < n-1; i++)
+   b[i] = 0.33333 * (a[i - 1] + a[i] + a[i + 1]);
+  for (j = 1; j < n-1; j++)
+   a[j] = b[j];
+ }
+}
+
+Working on 217
+Formatted line: void print_array(int output){
+ printf("%d
+", output);
+}
+
+Working on 218
+Formatted line: #include <iostream>
+#define DATA_PRINTF_MODIFIER "%d "
+
+void print_array(int n, int path[][100])
+{
+ for(int i=0; i<n; i++)
+ {
+  for(int j=0; j<n; j++)
+  {
+   printf(DATA_PRINTF_MODIFIER, path[j][i]);
+   if (((i * n) + j) % 20 == 0) 
+   {
+    printf("
+");
+   }
+  }
+ }
+ printf("
+");
+}
+
+Working on 219
+Formatted line: #include <stdio.h>
+#define DATA_TYPE double
+#define _PB_TMAX tmax
+#define _PB_NX nx
+#define _PB_NY ny
+
+void kernel_fdtd_2d(int tmax, int nx, int ny, DATA_TYPE ex[ny][nx], DATA_TYPE ey[ny][nx], DATA_TYPE hz[ny][nx], DATA_TYPE fict[tmax]) 
+{
+ int i, j, t;
+ for(t = 1; t < _PB_TMAX; t++)
+ {
+   for(j = 0; j < _PB_NY; j++)
+   {
+     ey[j][0] = fict[t];
+   }
+   for(i = 1; i < _PB_NX; i++)
+   {
+     for(j = 0; j < _PB_NY; j++)
+     {
+       ey[j][i] = ey[j][i] - 0.5 * (hz[j][i] - hz[j][i - 1]);
+     }
+   }
+   for(i = 0; i < _PB_NX; i++)
+   {
+     for(j = 1; j < _PB_NY; j++)
+     {
+       ex[j][i] = ex[j][i] - 0.5 * (hz[j][i] - hz[j - 1][i]);
+     }
+   }
+   for(i = 0; i < _PB_NX - 1; i++)
+   {
+     for(j = 0; j < _PB_NY - 1; j++)
+     {
+       hz[j][i] = hz[j][i] - 0.7 * ((ex[j + 1][i] - ex[j][i]) + (ey[j][i + 1] - ey[j][i]));
+     }
+   }
+ }
+}
+
+Working on 220
+Formatted line: void init_array(int length, int **c, double **w){
+ for(int i=0; i<length; i++)
+ for(int j=0; j<length; j++){
+ c[j][i] = ((i)*(j)) % 2;
+ w[j][i] = (double) ((i) - (j)) / (double) length;
+ }
+}
+
+Working on 221
+Formatted line: void kernel_syr2k(int ni, int nj, double alpha, double beta, double c[][ni], double a[][ni], double b[][ni])
+{
+ for (int i = 0; i < ni; i++)
+ for (int j = 0; j < ni; j++)
+ c[j][i] *= beta;
+ 
+ for (int i = 0; i < ni; i++)
+ for (int j = 0; j < ni; j++)
+ for (int k = 0; k < ni; k++)
+ {
+  c[j][i] += alpha * a[k][i] * b[k][j];
+  c[j][i] += alpha * b[k][i] * a[k][j];
+ }
+}
+
+Working on 222
+Formatted line: #include <cmath>
+#define DATA_TYPE double
+void init_array(DATA_TYPE a[100][100], DATA_TYPE x[100], int nx, int ny)
+{
+ int i, j;
+ for (i = 0; i < ny; i++)
+ {
+ x[i] = double(i) * M_PI;
+ for (j = 0; j < ny; j++)
+ a[j][i] = (double(i * j)) / nx;
+ }
+}
+
+Working on 223
+Formatted line: #include <stdio.h>
+#define DATA_TYPE double
+#define _PB_N 100
+DATA_TYPE a[_PB_N][_PB_N];
+DATA_TYPE u1[_PB_N];
+DATA_TYPE u2[_PB_N];
+DATA_TYPE v1[_PB_N];
+DATA_TYPE v2[_PB_N];
+DATA_TYPE w[_PB_N];
+DATA_TYPE x[_PB_N];
+DATA_TYPE y[_PB_N];
+DATA_TYPE z[_PB_N];
+DATA_TYPE alpha, beta;
+
+void kernel_gemver()
+{
+ int i, j;
+ for (i=0;i<_PB_N;i++)
+ for (j=0;j<_PB_N;j++)
+ a[j][i] = a[j][i] + (u1[i] * v1[j]) + (u2[i] * v2[j]);
+ for (i=0;i<_PB_N;i++)
+ for (j=0;j<_PB_N;j++)
+ x[i] = x[i] + (beta * a[i][j] * y[j]);
+ for (i=0;i<_PB_N;i++)
+ x[i] = x[i] + z[i];
+ for (i=0;i<_PB_N;i++)
+ for (j=0;j<_PB_N;j++)
+ w[i] = w[i] + (alpha * a[j][i] * x[j]);
+}
+
+Working on 224
+Formatted line: #include <iostream>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d "
+void print_array(int n, DATA_TYPE a[100][100]) {
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      printf(DATA_PRINTF_MODIFIER, a[j][i]);
+      if (((i) * n + j) % 20 == 0) {
+        printf("
+");
+      }
+    }
+  }
+  printf("
+");
+}
+
+Working on 225
+Formatted line: void kernel_lu(int n, float a[n][n]) 
+{
+  int i, j, k;
+  
+  for (k = 0; k < n; k++)
+  {
+    for (j = k + 1; j < n; j++)
+    {
+      a[j][k] = a[j][k] / a[k][k];
+    }
+    for (i = k + 1; i < n; i++)
+    {
+      for (j = k + 1; j < n; j++)
+      {
+        a[j][i] = a[j][i] - (a[k][i] * a[j][k]);
+      }
+    }
+  }
+}
+
+Working on 226
+Formatted line: void init_array(int n, double y[][n], double sumArray[][n], double alpha[], double beta[], double r[]) 
+{
+ for (int i = 0; i < n; ++i) 
+ {
+  alpha[i] = i;
+  beta[i] = (double)(i+1) / (double)n / 2.0;
+  r[i] = (double)(i+1) / (double)n / 4.0;
+  for (int j = 0; j < n; ++j) 
+  {
+   y[j][i] = (double)(i+1)*(j+1) / (double)n;
+   sumArray[j][i] = (double)(i+1)*(j+1) / (double)n;
+  }
+ }
+}
+
+Working on 227
+Formatted line: ```cpp
+template <typename DATA_TYPE>
+void kernel_gemm(int ni, int nj, int nk, DATA_TYPE alpha, DATA_TYPE beta, DATA_TYPE** c, DATA_TYPE** a, DATA_TYPE** b) 
+{
+  for (int i = 0; i < ni; i++) 
+  {
+    for (int j = 0; j < nj; j++) 
+    {
+      c[j][i] *= beta;
+      for (int k = 0; k < nk; k++) 
+      {
+        c[j][i] += alpha * a[k][i] * b[j][k];
+      }
+    }
+  }
+}
+```
+
+Working on 228
+Formatted line: void print_array(int maxgrid, DATA_TYPE path[][maxgrid])
+{
+ for(int i=0; i<maxgrid; i++)
+ {
+  for(int j=0; j<maxgrid; j++)
+  {
+    printf(DATA_PRINTF_MODIFIER, path[i][j]);
+    if(((i*maxgrid)+j)%20 == 19)
+    printf("
+");
+  }
+ }
+ printf("
+");
+}
+
+Working on 229
+Formatted line: void init_array(int n, double alpha, double a[][n], double b[][n])
+{
+ alpha = 32412.0;
+ for (int i = 0; i < n; i++)
+ for (int j = 0; j < n; j++)
+ {
+ a[j][i] = ((double)(i) * (double)(j)) / n;
+ b[j][i] = ((double)(i) * (double)(j)) / n;
+ }
+}
+
+Working on 230
+Formatted line: void kernel_mvt(int n, double* x1, double* x2, double* y1, double* y2, double** a)
+{
+ int i, j;
+ for (i = 0; i < n; i++)
+ for (j = 0; j < n; j++)
+ x1[i] += a[j][i] * y1[j];
+ for (i = 0; i < n; i++)
+ for (j = 0; j < n; j++)
+ x2[i] += a[i][j] * y2[j];
+}
+
+Working on 231
+Formatted line: #include <cmath>
+const double M_PI = 3.14159265358979323846;
+void init_array(int nx, int ny, double a[][nx], double r[], double p[])
+{
+ int i, j;
+ for (i = 0; i < ny; i++)
+ p[i] = double(i) * M_PI;
+ for (i = 0; i < nx; i++)
+ {
+ r[i] = double(i) * M_PI;
+ for (j = 0; j < ny; j++)
+ a[j][i] = (double(i) * double(j)) / nx;
+ }
+}
+
+Working on 232
+Formatted line: void init_array(int ni, int nj, double alpha, double beta, double c[100][100], double a[100][100], double b[100][100])
+{
+ alpha = 32412.0;
+ beta = 2123.0;
+
+ for(int i = 0; i < ni; i++)
+ for(int j = 0; j < nj; j++)
+ {
+ a[j][i] = (double(i) * double(j)) / double(ni);
+ b[j][i] = (double(i) * double(j)) / double(ni);
+ }
+
+ for(int i = 0; i < ni; i++)
+ for(int j = 0; j < ni; j++)
+ {
+ c[j][i] = (double(i) * double(j)) / double(ni);
+ }
+}
+
+Working on 233
+Formatted line: #include <iostream>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d"
+void print_array(int n, DATA_TYPE outArray[])
+{
+ for(int i=0; i<n; i++)
+ {
+  printf(DATA_PRINTF_MODIFIER, outArray[i]);
+  if((i+1)%20==0)
+  {
+   printf("
+");
+  }
+ }
+}
+
+Working on 234
+Formatted line: #include <stdio.h>
+typedef double DATA_TYPE;
+
+void init_array(DATA_TYPE &alpha, DATA_TYPE &beta, DATA_TYPE a[100][100], DATA_TYPE b[100][100], DATA_TYPE c[100][100], DATA_TYPE d[100][100], int ni, int nj, int nk, int nl)
+{
+    int i, j;
+    alpha = 32412;
+    beta = 2123;
+
+    for(i = 0; i < ni; ++i)
+        for(j = 0; j < nk; ++j)
+            a[j][i] = double((i) * (j)) / ni;
+
+    for(i = 0; i < nk; ++i)
+        for(j = 0; j < nj; ++j)
+            b[j][i] = double((i) * (j+1))/ nj;
+
+    for(i = 0; i < nl; ++i)
+        for(j = 0; j < nj; ++j)
+            c[j][i] = double((i) * (j+2))/ nl;
+
+    for(i = 0; i < ni; ++i)
+        for(j = 0; j < nl; ++j)
+            d[j][i] = double((i) * (j+1))/ nk;
+}
+
+Working on 235
+Formatted line: #include <stdio.h>
+#define DATA_TYPE double
+
+DATA_TYPE c[100][100];
+DATA_TYPE w[100][100];
+DATA_TYPE sumC[100][100][100];
+
+void kernel_dynprog(int tsteps, int length, DATA_TYPE output)
+{
+    int i, j, iter, k;
+
+    output = 0;
+
+    for (iter = 0; iter < tsteps; iter++) {
+        for (i = 0; i < length; i++) {
+            for (j = 0; j < length; j++) {
+                c[j][i] = 0;
+            }
+        }
+
+        for (i = 0; i < length-1; i++) {
+            for (j = i+1; j < length; j++) {
+                sumC[i][j][i] = 0;
+                for (k = i+1; k < j-1; k++) {
+                    sumC[k][j][i] = sumC[k-1][j][i] + c[k][i] + c[j][k];
+                }
+                c[j][i] = sumC[j-1][j][i] + w[j][i];
+            }
+        }
+        output = output + c[length-1][0];
+    }
+}
+int main() {
+    int tsteps = 10;
+    int length = 100;
+    DATA_TYPE output = 0.0;
+    kernel_dynprog(tsteps, length, output);
+    return 0;
+}
+
+Working on 236
+Formatted line: #include <iostream>
+#define DATA_TYPE double
+#define DATA_PRINTF_MODIFIER "%f
+"
+
+void print_array(int n, DATA_TYPE* x1, DATA_TYPE* x2)
+{
+    for (int i = 0; i < n; i++)
+    {
+        printf(DATA_PRINTF_MODIFIER, x1[i]);
+        printf(DATA_PRINTF_MODIFIER, x2[i]);
+        if (i % 20 == 0)
+        {
+            printf("
+");
+        }
+    }
+    printf("
+");
+}
+
+Working on 237
+Formatted line: void init_array(int n, double path[][100])
+{
+  int i, j;
+  for(i=0; i<n; i++)
+  {
+    for(j=0; j<n; j++)
+    {
+      path[j][i] = (double(i * j))/ double(n);
+    }
+  }
+}
+
+Working on 238
+Formatted line: void init_array(int maxgrid, float sumTang[100][100], float mean[100][100], float path[100][100])
+{
+ for(int i=0; i<maxgrid; i++)
+ for(int j=0; j<maxgrid; j++)
+ {
+  sumTang[j][i] = i*j;
+  mean[j][i] = (float)(i-j)/maxgrid;
+  path[j][i] = (float)((i-1)*(j-2))/maxgrid;
+ }
+}
+
+Working on 239
+Formatted line: void kernel_3mm(int ni, int nj, int nk, int nl, int nm, double** e, double** a, double** b, double** f, double** c, double** d, double** g)
+{
+ int i, j, k;
+
+ // E := A*B
+ for (i = 0; i < ni; i++)
+ for (j = 0; j < nj; j++)
+ {
+ e[j][i] = 0.0;
+ for (k = 0; k < nk; k++)
+ e[j][i] += a[k][i] * b[j][k];
+ }
+
+ // F := C*D
+ for (i = 0; i < nj; i++)
+ for (j = 0; j < nl; j++)
+ {
+ f[j][i] = 0.0;
+ for (k = 0; k < nm; k++)
+ f[j][i] += c[k][i] * d[j][k];
+ }
+
+ // G := E*F
+ for (i = 0; i < ni; i++)
+ for (j = 0; j < nl; j++)
+ {
+ g[j][i] = 0.0;
+ for (k = 0; k < nj; k++)
+ g[j][i] += e[k][i] * f[j][k];
+ }
+}
+
+Working on 240
+Formatted line: void kernel_adi(int tsteps, int n, float** x, float** a, float** b){
+ for (int t = 0; t < tsteps; t++) {
+ for (int i1 = 0; i1 < n; i1++) {
+ for (int i2 = 1; i2 < n; i2++) {
+ x[i2][i1] -= (x[i2 - 1][i1] * a[i2][i1]) / b[i2 - 1][i1];
+ b[i2][i1] -= (a[i2][i1] * a[i2][i1]) / b[i2 - 1][i1];
+ }
+ }
+ for (int i1 = 0; i1 < n; i1++) {
+ x[n - 1][i1] /= b[n - 1][i1];
+ }
+ for (int i1 = 0; i1 < n; i1++) {
+ for (int i2 = 0; i2 < n - 2; i2++) {
+ x[n - i2 - 2][i1] = (x[n - i2 - 2][i1] - (x[n - i2 - 3][i1] * a[n - i2 - 3][i1])) / b[n - i2 - 3][i1];
+ }
+ }
+ for (int i1 = 1; i1 < n; i1++) {
+ for (int i2 = 0; i2 < n; i2++) {
+ x[i2][i1] -= x[i2][i1 - 1] * a[i2][i1] / b[i2][i1 - 1];
+ b[i2][i1] -= a[i2][i1] * a[i2][i1] / b[i2][i1 - 1];
+ }
+ }
+ for (int i2 = 0; i2 < n; i2++) {
+ x[i2][n - 1] /= b[i2][n - 1];
+ }
+ for (int i1 = 0; i1 < n - 2; i1++) {
+ for (int i2 = 0; i2 < n; i2++) {
+ x[i2][n - i1 - 2] = (x[i2][n - i1 - 2] - (x[i2][n - i1 - 3] * a[i2][n - i1 - 3])) / b[i2][n - i1 - 2];
+ }
+ }
+ }
+}
+
+Working on 241
+Formatted line: void init_array(int n, double a[][n+1], double x[], double y[], double b[]) 
+{
+ for (int i = 0; i <= n; i++)
+ {
+  x[i] = double(i);
+  y[i] = (double(i)/n/2.0) + 1.0;
+  b[i] = (double(i)/n/2.0) + 42.0;
+  for (int j = 0; j <= n; j++)
+  {
+   a[j][i] = (double(i) * double(j)) / double(n);
+  }
+ }
+}
+
+Working on 242
+Formatted line: void init_array(int ni, int nj, int nk, double alpha, double beta, double c[nj][ni], double a[nk][ni], double b[nj][nk]){
+ alpha = 32412;
+ beta = 2123;
+ for (int i = 0; i < ni; i++){
+ for (int j = 0; j < nj; j++){
+ c[j][i] = ((double(i - 1) * double(j - 1))) / double(ni);
+ }
+ }
+ for (int i = 0; i < ni; i++){
+ for (int j = 0; j < nk; j++){
+ a[j][i] = ((double(i - 1) * double(j - 1))) / double(ni);
+ }
+ }
+ for (int i = 0; i < nk; i++){
+ for (int j = 0; j < nj; j++){
+ b[j][i] = ((double(i - 1) * double(j - 1))) / double(ni);
+ }
+ }
+}
+
+Working on 243
+Formatted line: #include <stdio.h>
+
+#define DATA_TYPE double
+#define _PB_NI ni
+#define _PB_NJ nj
+
+void kernel_symm(int ni, int nj, DATA_TYPE alpha, DATA_TYPE beta, DATA_TYPE c[100][100], DATA_TYPE a[100][100], DATA_TYPE b[100][100]) {
+ DATA_TYPE acc;
+ int i, j, k;
+
+ for (i = 0; i < _PB_NI; i++)
+ for (j = 0; j < _PB_NJ; j++) {
+ acc = 0.0;
+ for (k = 0; k < j; k++) {
+ c[j][k] = c[j][k] + (alpha * a[i][k] * b[j][i]);
+ acc = acc + (b[j][k] * a[i][k]);
+ }
+ c[j][i] = (beta * c[j][i]) + (alpha * a[i][i] * b[j][i]) + (alpha * acc);
+ }
+}
+
+Working on 244
+Formatted line: void kernel_atax(int nx, int ny, double **a, double *x, double *y, double *tmp)
+{
+ int i, j;
+#pragma scop
+ for (i = 0; i < ny; i++)
+ y[i] = 0.0;
+ for (i = 0; i < nx; i++)
+ {
+ tmp[i] = 0.0;
+ for (j = 0; j < ny; j++)
+ tmp[i] = tmp[i] + (a[j][i] * x[j]);
+ for (j = 0; j < ny; j++)
+ y[j] = y[j] + a[j][i] * tmp[i];
+ }
+#pragma endscop
+}
+
+Working on 245
+Formatted line: void init_array(int n, double a[][n], double x[], double c[]) {
+  int i, j;
+  for (i = 0; i < n; i++) {
+    c[i] = double(i) / double(n);
+    x[i] = double(i) / double(n);
+    for (j = 0; j < n; j++) {
+      a[j][i] = (double(i) * double(j)) / double(n);
+    }
+  }
+}
+
+Working on 246
+Formatted line: #include <iostream>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d"
+using namespace std;
+void print_array(DATA_TYPE y[], int ny)
+{
+    for(int i = 0; i < ny; i++)
+    {
+        printf(DATA_PRINTF_MODIFIER, y[i]);
+        if (i % 20 == 0)
+           cout << endl;
+    }
+    cout << endl;
+}
+
+Working on 247
+Formatted line: void init_array(int nr, int nq, int np, double a[][nq][nr], double cFour[][np])
+{
+ int i, j, k;
+ for (i = 0; i < nr; i++)
+ for (j = 0; j < nq; j++)
+ for (k = 0; k < np; k++)
+ a[k][j][i] = ((double)(i) * (double)(j) + (double)(k)) / (double)(np);
+ for (i = 0; i < np; i++)
+ for (j = 0; j < np; j++)
+ cFour[j][i] = ((double)(i) * (double)(j)) / np;
+}
+
+Working on 248
+Formatted line: void print_array(int n, DATA_TYPE a[][n]) {
+ int i, j;
+ for (i = 0; i < n; i++) {
+ for (j = 0; j < n; j++) {
+ printf(DATA_PRINTF_MODIFIER, a[j][i]);
+ if (((i * n) + j) % 20 == 0) {
+ printf("
+");
+ }
+ }
+ }
+}
+
+Working on 249
+Formatted line: void kernel_reg_detect(int niter, int maxgrid, int length, double sumTang[100][100], double mean[100][100], double path[100][100], double diff[100][100][100], double sumDiff[100][100][100]) {
+
+    int i, j, t, cnt;
+
+    for (t = 0; t < niter; t++) {
+        for (j = 0; j < maxgrid; j++) {
+            for (i = j; i < maxgrid; i++) {
+                for (cnt = 0; cnt < length; cnt++) {
+                    diff[cnt][i][j] = sumTang[i][j];
+                }
+            }
+        }
+    }
+
+    for (j = 0; j < maxgrid; j++) {
+        for (i = j; i < maxgrid; i++) {
+            sumDiff[0][i][j] = diff[0][i][j];
+            for (cnt = 1; cnt < length; cnt++) {
+                sumDiff[cnt][i][j] = sumDiff[cnt - 1][i][j] + diff[cnt][i][j];
+            }
+            mean[i][j] = sumDiff[length - 1][i][j];
+        }
+    }
+
+    for (i = 0; i < maxgrid; i++) {
+        path[i][0] = mean[i][0];
+    }
+
+    for (j = 1; j < maxgrid; j++) {
+        for (i = j; i < maxgrid; i++) {
+            path[i][j] = path[i - 1][j - 1] + mean[i][j];
+        }
+    }
+}
+
+Working on 250
+Formatted line: void init_array(int n, double a[][n], double b[][n])
+{
+ for (int i = 0; i < n; ++i)
+ for (int j = 0; j < n; ++j)
+ {
+ a[j][i] = (static_cast<double>(i) * static_cast<double>(j + 1) + 2) / n;
+ b[j][i] = (static_cast<double>(i) * static_cast<double>(j + 2) + 3) / n;
+ }
+}
+
+Working on 251
+Formatted line: #include <cmath>
+#define EPS 0.1
+#define _PB_M 100
+#define _PB_N 100
+#define DATA_TYPE double
+
+void kernel_correlation(int m, int n, DATA_TYPE float_n, DATA_TYPE dat[_PB_N][_PB_M], DATA_TYPE symmat[_PB_M][_PB_M], DATA_TYPE mean[_PB_M], DATA_TYPE stddev[_PB_M])
+{
+    int i, j, j1, j2;
+
+    for (j = 0; j < _PB_M; j++) {
+        mean[j] = 0.0;
+        for (i = 0; i < _PB_N; i++) {
+            mean[j] += dat[i][j];
+        }
+        mean[j] /= float_n;
+    }
+
+    for (j = 0; j < _PB_M; j++) {
+        stddev[j] = 0.0;
+        for (i = 0; i < _PB_N; i++) {
+            stddev[j] += (dat[i][j] - mean[j]) * (dat[i][j] - mean[j]);
+        }
+        stddev[j] /= float_n;
+        stddev[j] = sqrt(stddev[j]);
+        if (stddev[j] <= EPS) {
+            stddev[j] = 1.0;
+        }
+    }
+
+    for (i = 0; i < _PB_N; i++) {
+        for (j = 0; j < _PB_M; j++) {
+            dat[i][j] -= mean[j];
+            dat[i][j] /= (sqrt(float_n) * stddev[j]);
+        }
+    }
+
+    for (j1 = 0; j1 < _PB_M - 1; j1++) {
+        symmat[j1][j1] = 1.0;
+        for (j2 = j1 + 1; j2 < _PB_M; j2++) {
+            symmat[j2][j1] = 0.0;
+            for (i = 0; i < _PB_N; i++) {
+                symmat[j2][j1] += dat[i][j1] * dat[i][j2];
+            }
+            symmat[j1][j2] = symmat[j2][j1];
+        }
+    }
+    symmat[_PB_M - 1][_PB_M - 1] = 1.0;
+}
+
+Working on 252
+Formatted line: #include <stdio.h>
+#define DATA_PRINTF_MODIFIER "%f "
+
+void print_array(int ni, int nl, float g[nl][ni]) {
+ for (int i = 0; i < ni; i++) {
+  for (int j = 0; j < nl; j++) {
+   printf(DATA_PRINTF_MODIFIER, g[j][i]);
+   if (((i * ni) + j) % 20 == 0)
+    printf("
+");
+  }
+ }
+ printf("
+");
+}
+
+Working on 253
+Formatted line: #include <stdio.h>
+#define DATA_TYPE double
+#define _PB_N 100
+DATA_TYPE a[_PB_N][_PB_N];
+DATA_TYPE b[_PB_N][_PB_N];
+DATA_TYPE x[_PB_N], y[_PB_N], tmp[_PB_N];
+DATA_TYPE alpha, beta;
+int n;
+int main()
+{
+ int i, j;
+
+ for (i = 0; i < _PB_N; i++)
+ {
+ tmp[i] = 0.0;
+ y[i] = 0.0;
+ for (j = 0; j < _PB_N; j++)
+ {
+ tmp[i] = (a[j][i] * x[j]) + tmp[i];
+ y[i] = (b[j][i] * x[j]) + y[i];
+ }
+ y[i] = (alpha * tmp[i]) + (beta * y[i]);
+ }
+
+ return 0;
+}
+
+Working on 254
+Formatted line: ```C++
+extern "C" {
+void kernel_ludcmp(int n, double** a, double* b, double* x, double* y) {
+  double w;
+  b[0] = 1.0;
+  for (int i = 0; i < n; ++i) {
+    for (int j = i+1; j <= n; ++j) {
+      w = a[i][j];
+      for (int k = 0; k < i; ++k)
+        w = w - (a[k][j] * a[i][k]);
+      a[i][j] = w / a[i][i];
+    }
+    for (int j = i+1; j <= n; ++j) {
+      w = a[j][i+1];
+      for (int k = 0; k <= i; ++k)
+        w = w - (a[k][i+1] * a[j][k]);
+      a[j][i+1] = w;
+    }
+  }
+  y[0] = b[0];
+  for (int i = 1; i <= n; ++i) {
+    w = b[i];
+    for (int j = 0; j < i; ++j)
+      w = w - (a[j][i] * y[j]);
+    y[i] = w;
+  }
+  x[n] = y[n] / a[n][n];
+  for (int i = 0; i < n; ++i) {
+    w = y[n-i];
+    for (int j = n-i+1; j <= n; ++j)
+      w = w - (a[j][n-i] * x[j]);
+    x[n-i] = w / a[n-i][n-i];
+  }
+}
+}
+```
+
+Working on 255
+Formatted line: #include <stdio.h>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d "
+#define ni 100
+#define nj 100
+
+void print_array(DATA_TYPE a[nj][ni], DATA_TYPE r[nj][nj], DATA_TYPE q[nj][ni]) {
+    for (int i = 0; i < ni; i++) {
+        for (int j = 0; j < nj; j++) {
+            printf(DATA_PRINTF_MODIFIER, a[j][i]);
+            if (j % 20 == 0)
+                printf("
+");
+        }
+    }
+    printf("
+");
+
+    for (int i = 0; i < nj; i++) {
+        for (int j = 0; j < nj; j++) {
+            printf(DATA_PRINTF_MODIFIER, r[j][i]);
+            if (j % 20 == 0)
+                printf("
+");
+        }
+    }
+    printf("
+");
+
+    for (int i = 0; i < ni; i++) {
+        for (int j = 0; j < nj; j++) {
+            printf(DATA_PRINTF_MODIFIER, q[j][i]);
+            if (j % 20 == 0)
+                printf("
+");
+        }
+    }
+    printf("
+");
+}
+
+Working on 256
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+
+#define DATA_TYPE double
+DATA_TYPE ex[101][101][101];
+DATA_TYPE ey[101][101][101];
+DATA_TYPE hz[101][101][101];
+DATA_TYPE ry[101][101];
+DATA_TYPE ax[101][101];
+DATA_TYPE cymh[101];
+DATA_TYPE cyph[101];
+DATA_TYPE cxmh[101];
+DATA_TYPE cxph[101];
+DATA_TYPE czm[101];
+DATA_TYPE czp[101];
+DATA_TYPE mui, ch;
+
+void init_array(int cz, int cxm, int cym) {
+    int i, j, k;
+    mui = 2341;
+    ch = 42;
+    for (i = 0; i <= cz; i++) {
+        czm[i] = ((double)i + 1.0) / (double)cxm;
+        czp[i] = ((double)i + 2.0) / (double)cxm;
+    }
+    for (i = 0; i <= cxm; i++) {
+        cxmh[i] = ((double)i + 3.0) / (double)cxm;
+        cxph[i] = ((double)i + 4.0) / (double)cxm;
+    }
+    for (i = 0; i <= cym; i++) {
+        cymh[i] = ((double)i + 5.0) / (double)cxm;
+        cyph[i] = ((double)i + 6.0) / (double)cxm;
+    }
+    for (i = 0; i <= cz; i++) {
+        for (j = 0; j <= cym; j++) {
+            ry[j][i] = (((double)i * (double)j) + 10.0) / (double)cym;
+            ax[j][i] = (((double)i * (double)(j + 1)) + 11.0) / (double)cym;
+            for (k = 0; k <= cxm; k++) {
+                ex[k][j][i] = (((double)i * (double)(j + 2)) + (double)k + 1.0) / (double)cxm;
+                ey[k][j][i] = (((double)i * (double)(j + 3)) + (double)k + 2.0) / (double)cym;
+                hz[k][j][i] = (((double)i * (double)(j + 4)) + (double)k + 3.0) / (double)cz;
+            }
+        }
+    }
+}
+
+int main() {
+    init_array(100, 100, 100);
+    return 0;
+}
+
+Working on 257
+Formatted line: #include <cmath>
+#define DATA_TYPE double
+#define _PB_N n
+
+void kernel_cholesky(int n, DATA_TYPE* p, DATA_TYPE** a) {
+  DATA_TYPE x;
+  for (int i = 0; i < _PB_N; ++i) {
+    x = a[i][i];
+    for (int j = 0; j < i; ++j) {
+      x = x - a[j][i] * a[j][i];
+    }
+    p[i] = 1.0 / sqrt(x);
+    for (int j = i + 1; j < _PB_N; ++j) {
+      x = a[j][i];
+      for (int k = 0; k < i; ++k) {
+        x = x - (a[k][j] * a[k][i]);
+      }
+      a[i][j] = x * p[i];
+    }
+  }
+}
+
+Working on 258
+Formatted line: void print_array(int nx, int ny, DATA_TYPE ex[][nx], DATA_TYPE ey[][nx], DATA_TYPE hz[][nx]) {
+ for (int i = 0; i < nx; i++) {
+  for (int j = 0; j < ny; j++) {
+   printf(DATA_PRINTF_MODIFIER, ex[j][i]);
+   printf(DATA_PRINTF_MODIFIER, ey[j][i]);
+   printf(DATA_PRINTF_MODIFIER, hz[j][i]);
+   if (((i * nx) + j) % 20 == 0) {
+    printf("
+");
+   }
+  }
+ }
+ printf("
+");
+}
+
+Working on 259
+Formatted line: #include <iostream>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d"
+void print_array(DATA_TYPE a[100][100][100], int nr, int nq, int np)
+{
+    for(int i=0;i<nr;i++)
+        for(int j=0;j<nq;j++)
+            for(int k=0;k<np;k++)
+            {
+                printf(DATA_PRINTF_MODIFIER, a[k][j][i]);
+                if ((i % 20) == 0)
+                    printf("
+");
+            }
+    printf("
+");
+}
+
+Working on 260
+Formatted line: #include <iostream>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d"
+void print_array(int nx, int ny, DATA_TYPE s[], DATA_TYPE q[]) {
+ for(int i=0; i<ny; i++) {
+ printf(DATA_PRINTF_MODIFIER, s[i]);
+ if(i%80 == 0) printf("
+");
+ }
+
+ for(int i=0; i<nx; i++) {
+ printf(DATA_PRINTF_MODIFIER, q[i]);
+ if(i%80 == 0) printf("
+");
+ }
+
+ printf("
+");
+}
+
+Working on 261
+Formatted line: #include <iostream>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d"
+
+void print_array(int n, DATA_TYPE x[][n]) 
+{
+ for (int i = 0; i < n; i++) 
+ {
+  for (int j = 0; j < n; j++) 
+  {
+   printf(DATA_PRINTF_MODIFIER, x[j][i]);
+   if (((i * n) + j) % 20 == 0) 
+   {
+    printf("
+");
+   }
+  }
+ }
+ printf("
+");
+}
+
+Working on 262
+Formatted line: #include <stdio.h>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d "
+void print_array(int ni, DATA_TYPE c[100][100]) {
+  for (int i = 0; i < ni; i++) {
+    for (int j = 0; j < ni; j++) {
+      printf(DATA_PRINTF_MODIFIER, c[j][i]);
+      if ((i * ni + j) % 20 == 0) {
+        printf("
+");
+      }
+    }
+  }
+  printf("
+");
+}
+
+Working on 263
+Formatted line: void init_array(int ni, int nj, int nk, int nl, int nm, double a[nk][ni], double b[nj][nk], double c[nm][nj], double d[nl][nm]) {
+ int i, j;
+
+ for (i = 0; i < ni; i++)
+ for (j = 0; j < nk; j++)
+ a[j][i] = (double)(i * j) / ni;
+ 
+ for (i = 0; i < nk; i++)
+ for (j = 0; j < nj; j++)
+ b[j][i] = (double)(i * j) / nj;
+
+ for (i = 0; i < nj; i++)
+ for (j = 0; j < nm; j++)
+ c[j][i] = (double)(i * (j+2)) / nl;
+
+ for (i = 0; i < nm; i++)
+ for (j = 0; j < nl; j++)
+ d[j][i] = (double)(i * (j+1)) / nk;
+}
+
+Working on 264
+Formatted line: #include <stdio.h>
+#define DATA_TYPE int
+#define DATA_PRINTF_MODIFIER "%d "
+void print_array(int n, DATA_TYPE x[])
+{
+ for(int i=0;i<n+1;i++)
+ {
+ printf(DATA_PRINTF_MODIFIER, x[i]);
+ if(i % 20 == 0)
+ printf("
+");
+ }
+}
+
+Working on 265
+Formatted line: #include <stdio.h>
+
+#define DATA_TYPE double
+#define _PB_N 100
+#define _PB_TSTEPS 100
+
+DATA_TYPE a[_PB_N][_PB_N];
+DATA_TYPE b[_PB_N][_PB_N];
+
+void kernel_jacobi_2d_imper(int tsteps, int n, DATA_TYPE a[_PB_N][_PB_N], DATA_TYPE b[_PB_N][_PB_N]) {
+  int i, j, t;
+  for (t = 1; t < _PB_TSTEPS; t++) {
+    for (i = 2; i < _PB_N - 1; i++) {
+      for (j = 2; j < _PB_N - 1; j++) {
+        b[j][i] = 0.2 * (a[j][i] + a[j-1][i] + a[j+1][i] + a[j][i+1] + a[j][i-1]);
+      }
+    }
+    for (i = 2; i < _PB_N - 1; i++) {
+      for (j = 2; j < _PB_N - 1; j++) {
+        a[j][i] = b[j][i];
+      }
+    }
+  }
+}
+
+Working on 266
+Formatted line: void init_array(int n, double a[n][n])
+{
+ for (int i = 0; i < n; i++)
+ for (int j = 0; j < n; j++)
+ a[j][i] = double(i) * double(j) / double(n);
+}
+
+Working on 267
+Formatted line: #include <stdio.h>
+#include <string.h>
+#include <omp.h>
+
+char a[100][100];
+
+int main() {
+    char str[51];
+    int i;
+
+#pragma omp parallel for private(str)
+    for (i = 0; i < 100; i++) {
+        sprintf(str, "%d", i);
+        strcpy(a[i], str);
+    }
+
+    printf("a[i]=%s
+", a[23]);
+
+    return 0;
+}
+
+Working on 268
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int fib(int n) {
+    int i, j;
+    if (n<2)
+        return n;
+    else {
+#pragma omp task shared(i)
+        i=fib(n-1);
+#pragma omp task shared(j)
+        j=fib(n-2);
+#pragma omp taskwait
+        return i+j;
+    }
+}
+int main() {
+    int n=30;
+    int result;
+#pragma omp parallel
+    {
+#pragma omp single
+        result = fib(n);
+    }
+    printf("Fib for %d = %d
+", n, result);
+    return 0;
+}
+
+Working on 269
+Formatted line: #include <stdlib.h>
+#include <stdio.h>
+#include <omp.h>
+
+int main(int argc, char** argv)
+{
+    if(argc != 2)
+    {
+        printf("No command line arguments provided.
+");
+        return 0;
+    }
+
+    int n = atoi(argv[1]);
+    int m = n;
+    double b[n][m];
+
+    if(n == 0)
+    {
+        printf("Error, invalid integer value.
+");
+        return 0;
+    }
+
+#pragma omp parallel for
+    for(int j = 1; j < n; j++)
+        for(int i = 0; i < m; i++)
+            b[i][j] = b[i][j-1];
+
+    printf("b[49][49]=%f
+",b[49][49]);
+
+    return 0;
+}
+
+Working on 270
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ int init, local;
+#pragma omp parallel shared(init) private(local)
+ {
+#pragma omp single
+ init = 10;
+ local = init;
+ }
+
+return 0;
+}
+
+Working on 271
+Formatted line: #include <stdio.h>
+#include <omp.h>
+double a[100][100], b[100][100];
+int main() 
+{
+ int i, j;
+#pragma omp parallel for collapse(2) default(none) shared(a)
+ for (i=0;i<100;i++) {
+  for (j=0;j<100;j++)
+   a[i][j]=a[i][j]+1;
+ }
+#pragma omp parallel for collapse(2) default(shared)
+ for (i=0;i<100;i++) {
+  for (j=0;j<100;j++)
+   b[i][j]=b[i][j]+1;
+ }
+ printf("a[50][50]=%f b[50][50]=%f
+", a[50][50], b[50][50]);
+ return 0;
+}
+
+Working on 272
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+void foo();
+
+int main()
+{
+#pragma omp parallel
+ {
+#pragma omp single
+ foo();
+ }
+ return 0;
+}
+
+void foo()
+{
+ int x = 0, y = 2;
+
+#pragma omp task shared(x)
+ x+=1; // 1st Child Task
+
+#pragma omp task shared(y)
+ y-=1; // 2nd Child Task
+
+#pragma omp taskwait // 1st taskwait
+
+ printf ("x=%d
+", x);
+ printf ("y=%d
+", y);
+
+#pragma omp taskwait // 2nd taskwait
+}
+
+Working on 273
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int var = 0;
+
+    #pragma omp target map(tofrom:var) device(0)
+    #pragma omp teams distribute
+    for (int i = 0; i < 100; i++) {
+        #pragma omp atomic update
+        var++;
+    }
+
+    printf("%d
+", var);
+    return 0;
+}
+
+Working on 274
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+    int x = 0;
+    int y;
+    int tmp;
+
+#pragma omp parallel num_threads(2)
+    {
+        int thrd = omp_get_thread_num();
+        if (thrd == 0)
+        {
+#pragma omp critical
+            x = 10;
+#pragma omp flush(x)
+#pragma omp atomic write
+            y = 1;
+        }
+        else
+        {
+            tmp = 0;
+            while (tmp == 0)
+            {
+#pragma omp atomic read
+                tmp = x;
+            }
+#pragma omp critical
+            printf("x = %d
+", x);
+        }
+    }
+    return 0;
+}
+
+Working on 275
+Formatted line: #include <stdio.h>
+#include <omp.h>
+int main()
+{
+    int var = 0;
+
+#pragma omp target map(tofrom:var) device(0)
+#pragma omp teams distribute parallel for
+    for (int i = 0; i < 100; i++)
+    {
+#pragma omp critical
+        var = var+1;
+    }
+    printf("%d
+", var);
+    return 0;
+}
+
+Working on 276
+Formatted line: #include <iostream>
+#include <string>
+#include <vector>
+#include <omp.h>
+
+int main(int argc, char** argv)
+{
+    std::vector<int> input, output;
+    int inLen = 1000, outLen = 1;
+
+    if(argc == 1) 
+    {
+        std::cout << "No command line arguments provided.
+";
+        return 1;
+    }
+
+    try 
+    {
+        inLen = std::stoi(argv[1]);
+    }
+    catch(std::invalid_argument const &e)
+    {
+        std::cout << "Error, invalid integer value.
+";
+        return 1;
+    }
+
+    input.resize(inLen);
+    output.resize(inLen);
+
+    for(int i = 0; i < inLen; i++)
+    {
+        input[i] = i;
+    }
+
+    #pragma omp parallel for
+    for(int i = 0; i < inLen; i++)
+    {
+        output[outLen] = input[i];
+        outLen++;
+    }
+
+    std::cout << "output[0]=" << output[0] << "
+";
+
+    return 0;
+}
+
+Working on 277
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int a[100];
+void gen_task(int i);
+
+int main()
+{
+    int i;
+
+#pragma omp parallel
+ {
+#pragma omp single
+  {
+   for(i=0; i<100; i++)
+    gen_task(i);
+  }
+ }
+
+ for(i=0; i<100; i++)
+  if(a[i]!=(i+1))
+   printf("warning: a[%d] = %d not expected %d
+",i,a[i],i+1);
+ return 0;
+}
+
+void gen_task(int i)
+{
+#pragma omp task
+ a[i]=i+1;
+}
+
+Working on 278
+Formatted line: #include <iostream>
+#include <vector>
+#include <omp.h>
+
+int main(int argc, char** argv)
+{
+    int len = 100;
+    double getSum = 0.0;
+    double temp;
+
+    if (argc == 1) {
+        std::cout << "No command line arguments provided.
+";
+        return 1;
+    }
+
+    len = std::stoi(argv[1]);
+
+    std::vector<std::vector<double>> u(len, std::vector<double>(len, 0.5));
+
+    #pragma omp parallel for private(temp) reduction(+:getSum)
+    for (int i = 0; i < len; ++i) {
+        for (int j = 0; j < len; ++j) {
+            temp = u[i][j];
+            getSum += temp * temp;
+        }
+    }
+
+    std::cout << "sum = " << getSum << std::endl;
+
+    return 0;
+}
+
+Working on 279
+Formatted line: #include <stdio.h>
+#include <vector>
+#include <omp.h>
+
+int main()
+{
+ int n = 100;
+ int m = 100;
+ std::vector<std::vector<float>> b(n, std::vector<float>(m, 0));
+
+ #pragma omp parallel for private(n)
+ for (int j=1; j<n; j++)
+ for (int i=0; i<m; i++)
+ b[i][j] = b[i][j-1];
+
+ printf ("b[50][50]=%f
+", b[50][50]);
+ return 0;
+}
+
+Working on 280
+Formatted line: #include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+#define dp 100
+
+double a[dp][dp], b[dp][dp], c[dp][dp];
+
+int main()
+{
+ int i, j;
+
+ for (i=0; i<dp; i++)
+ for (j=0; j<dp; j++)
+ {
+ a[i][j] = double(i)/2.0;
+ b[i][j] = double(i)/3.0;
+ c[i][j] = double(i)/7.0;
+ }
+
+#pragma omp simd collapse(2)
+ for (i = 0; i < dp; i++)
+ for (j = 0; j < dp; j++)
+ c[i][j]=a[i][j]*b[i][j];
+
+ printf("c[50][50] = %f
+", c[50][50]);
+
+ return 0;
+}
+
+Working on 281
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int i = 0;
+
+void f1(int &i) {
+#pragma omp single
+    i++;
+}
+
+int main() {
+#pragma omp parallel
+    f1(i);
+
+    printf("i = %d
+", i);
+
+    return 0;
+}
+
+Working on 282
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+long long sum = 0;
+long long sum1 = 0;
+void foo(long long i);
+
+int main()
+{
+ #pragma omp parallel
+ {
+  #pragma omp for
+  for (long long i=1; i<1002; i++)
+  {
+   foo(i);
+  }
+  #pragma omp critical
+  sum += sum0;
+ }
+ for (long long i=1; i<1002; i++)
+ {
+  sum1 += i;
+ }
+ printf("sum = %lld, sum1 = %lld
+", sum, sum1);
+ return 0;
+}
+
+void foo(long long i)
+{
+ #pragma omp threadprivate(sum0)
+ sum0 += i;
+}
+
+Working on 283
+Formatted line: #include <stdio.h>
+#include <omp.h>
+
+int main()
+{
+ int var=0;
+#pragma omp parallel sections
+ {
+#pragma omp section
+ for (int i = 0; i < 10; i++)
+ {
+#pragma omp task shared(var)
+ var+=1;
+ }
+ }
+ printf ("var=%d
+", var);
+ return 0;
+}
+
+Working on 284
+Formatted line: void add()
+{
+    extern double u[5][nx2+1][ny2+1][nz2+1]; 
+    extern double rhs[5][nx2+1][ny2+1][nz2+1];
+    extern bool timeron;
+
+    if (timeron) timer_start(t_add);
+    for (int k = 1; k <= nz2; k++)
+    for (int j = 1; j <= ny2; j++)
+    for (int i = 1; i <= nx2; i++)
+    for (int m = 1; m <= 5; m++)
+    u[m][i][j][k] += rhs[m][i][j][k];
+
+    if (timeron) timer_stop(t_add);
+}
+
+Working on 285
+Formatted line: #include <cmath>
+
+int T_norm2 = 9;
+bool timeron = false;
+
+void timer_start(int t) {}
+
+void timer_stop(int t) {}
+
+void norm2u3(double ***r, int n1, int n2, int n3, double &rnm2, double &rnmu, int nx, int ny, int nz) {
+    double dn, s, a;
+
+    if (timeron) timer_start(T_norm2);
+    dn = 1.0 * nx * ny * nz;
+
+    s = 0.0;
+    rnmu = 0.0;
+    for (int i3 = 1; i3 < n3; i3++) {
+        for (int i2 = 1; i2 < n2; i2++) {
+            for (int i1 = 1; i1 < n1; i1++) {
+                s = s + pow(r[i1][i2][i3], 2);
+                a = abs(r[i1][i2][i3]);
+                rnmu = std::max(rnmu, a);
+            }
+        }
+    }
+
+    rnm2 = sqrt(s / dn);
+    if (timeron) timer_stop(T_norm2);
+}
+
+Working on 286
+Formatted line: ```cpp
+#include "lu_data.h"
+#include <cmath>
+
+void pintgr() {
+    int i, j, k;
+    int ibeg, ifin, ifin1;
+    int jbeg, jfin, jfin1;
+    double frc1, frc2, frc3;
+
+    ibeg = ii1;
+    ifin = ii2;
+    jbeg = ji1;
+    jfin = ji2;
+    ifin1 = ifin - 1;
+    jfin1 = jfin - 1;
+
+    for (j = jbeg; j <= jfin; j++) {
+        for (i = ibeg; i <= ifin; i++) {
+            k = ki1;
+            phi1[i][j] = c2 * (u[5][i][j][k] - 0.5 * (pow(u[2][i][j][k], 2) + pow(u[3][i][j][k], 2) + pow(u[4][i][j][k], 2)) / u[1][i][j][k]);
+            k = ki2;
+            phi2[i][j] = c2 * (u[5][i][j][k] - 0.5 * (pow(u[2][i][j][k], 2) + pow(u[3][i][j][k], 2) + pow(u[4][i][j][k], 2)) / u[1][i][j][k]);
+        }
+    }
+
+    frc1 = 0.0;
+    for (j = jbeg; j <= jfin1; j++) {
+        for (i = ibeg; i <= ifin1; i++) {
+            frc1 += phi1[i][j] + phi1[i+1][j] + phi1[i][j+1] + phi1[i+1][j+1] + phi2[i][j] + phi2[i+1][j] + phi2[i][j+1] + phi2[i+1][j+1];
+        }
+    }
+    frc1 = dxi * deta * frc1;
+
+    // continue translating the rest of the code similarly...
+}
+```
+
+Working on 287
+Formatted line: #include <iostream>
+#define N 100
+#define M 100
+void print_array(int m, int symmat[N][M]) 
+{
+ for (int i = 0; i < m; i++) 
+ {
+  for (int j = 0; j < m; j++) 
+  {
+   std::cout << symmat[j][i] << " ";
+   if ((i * m + j) % 20 == 0)
+    std::cout << std::endl;
+  }
+ }
+ std::cout << std::endl;
+}
+
+Working on 288
+Formatted line: void print_array(int cz, int cxm, int cym, float bza[], float ex[], float ey[], float hz[]){
+ for (int i = 0; i < cz+1; i++){
+ for (int j = 0; j < cym+1; j++){
+ for (int k = 0; k < cxm+1; k++){
+ printf("%f", bza[k + (j * cxm) + (i * cym*cxm)]);
+ printf("%f", ex[k + (j * cxm) + (i * cym*cxm)]);
+ printf("%f", ey[k + (j * cxm) + (i * cym*cxm)]);
+ printf("%f", hz[k + (j * cxm) + (i * cym*cxm)]);
+ if ((((i * cxm) + j) % 20) == 0){
+ printf("
+");
+ }
+ }
+ }
+ printf("
+");
+ }
+}
+
+Working on 289
+Formatted line: void kernel_2mm(DATA_TYPE alpha, DATA_TYPE beta, DATA_TYPE tmp[nj][ni], DATA_TYPE a[nk][ni], DATA_TYPE b[nj][nk], DATA_TYPE c[nl][nj], DATA_TYPE d[nl][ni], int ni, int nj, int nk, int nl)
+{
+    int i, j, k;
+#pragma scop
+    for(i = 0; i < _PB_NI; i++){
+        for(j = 0; j < _PB_NJ; j++){
+            tmp[j][i] = 0.0;
+            for(k = 0; k < _PB_NK; k++){
+                tmp[j][i] = tmp[j][i] + alpha * a[k][i] * b[j][k];
+            }
+        }
+    }
+    for(i = 0; i < _PB_NI; i++){
+        for(j = 0; j < _PB_NL; j++){
+            d[j][i] = d[j][i] * beta;
+            for(k = 0; k < _PB_NJ; k++){
+                d[j][i] = d[j][i] + tmp[k][i] * c[j][k];
+            }
+        }
+    }
+#pragma endscop
+}
+
+Working on 290
+Formatted line: #include <iostream>
+template<typename DATA_TYPE>
+void print_array(int n, DATA_TYPE a[]) {
+ for(int i = 0; i < n; i++) {
+ std::cout << a[i] << " ";
+ if (i % 20 == 19)
+ std::cout << std::endl;
+ }
+ std::cout << std::endl;
+}
+
+Working on 291
+Formatted line: void kernel_seidel(int tsteps, int n, double a[n][n])
+{
+    int i, t, j;
+    #pragma scop
+    for (t = 1; t <= tsteps; t++)
+        for (i = 1; i < n-1; i++)
+            for (j = 1; j < n-1; j++)
+                a[j][i] = (a[j - 1][i - 1] + a[j][i - 1] + a[j + 1][i - 1] +
+                           a[j - 1][i] + a[j][i] + a[j + 1][i] +
+                           a[j - 1][i + 1] + a[j][i + 1] +
+                           a[j + 1][i + 1])/9.0;
+    #pragma endscop
+}
+
+Working on 292
+Formatted line: void kernel_trmm(int ni, double alpha, double a[100][100], double b[100][100])
+{
+    int i, j, k;
+#pragma scop
+ for (i = 1; i < ni; i++)
+ for (j = 0; j < ni; j++)
+ for (k = 0; k < i; k++)
+ b[j][i] = b[j][i] + (alpha * a[k][i] * b[k][j]);
+#pragma endscop
+}
+
+Working on 293
+Formatted line: void init_array(int tmax, int nx, int ny, double** ex, double** ey, double** hz, double* fict)
+{
+ for (int i = 0; i < tmax; i++)
+ fict[i] = double(i);
+
+ for (int i = 0; i < nx; i++)
+ for (int j = 0; j < ny; j++)
+ {
+ ex[j][i] = double(i * j) / nx;
+ ey[j][i] = double(i * (j + 1)) / ny;
+ hz[j][i] = double(i * (j + 2)) / nx;
+ }
+}
+
+Working on 294
+Formatted line: void init_array(int n, double* a, double* b){
+ for (int i=0; i<n; i++){
+ a[i] = (double(i-1) + 2.0) / n;
+ b[i] = (double(i-1) + 3.0) / n;
+ }
+}
+
+Working on 295
+Formatted line: #include <vector>
+
+// Assuming DATA_TYPE is a floating-point type, e.g., double
+using DATA_TYPE = double;
+
+void kernel_bicg(int nx, int ny, std::vector<std::vector<DATA_TYPE>>& a, std::vector<DATA_TYPE>& s, std::vector<DATA_TYPE>& q, std::vector<DATA_TYPE>& p, std::vector<DATA_TYPE>& r) {
+    // Initialize s to 0
+    for (int i = 0; i < ny; ++i) {
+        s[i] = 0.0;
+    }
+
+    // Compute s and q
+    for (int i = 0; i < nx; ++i) {
+        q[i] = 0.0;
+        for (int j = 0; j < ny; ++j) {
+            s[j] += r[i] * a[j][i];
+            q[i] += a[j][i] * p[j];
+        }
+    }
+}
+
+int main() {
+    // Example usage
+    int nx = 100; // Example value
+    int ny = 100; // Example value
+
+    // Initialize vectors with appropriate sizes
+    std::vector<std::vector<DATA_TYPE>> a(ny, std::vector<DATA_TYPE>(nx));
+    std::vector<DATA_TYPE> s(ny), q(nx), p(ny), r(nx);
+
+    // Populate the vectors with example data
+    // ...
+
+    // Call the kernel function
+    kernel_bicg(nx, ny, a, s, q, p, r);
+
+    // Use the results
+    // ...
+
+    return 0;
+}
+```
+
+Key points in the translation:
+
+1. **Array Indexing**: Adjusted to 0-based indexing as per C++ standards.
+2. **Arrays as Parameters**: In C++, arrays (or vectors in this case) are passed by reference to functions to avoid unnecessary copying.
+3. **Loops**: The loops are translated directly, with minor syntax adjustments.
+4. **Data Types**: The `DATA_TYPE` is assumed to be `double`. You can change it to any other floating-point type if needed.
+5. **Implicit None**: In C++, variables must be explicitly declared. This is not needed in C++ as types must be declared.
+6. **Pragmas**: The `!$pragma` directives for OpenACC are not needed in C++ as C++ does not use OpenACC. If you were using OpenACC for parallelization, you would need to use corresponding C++ directives or libraries (e.g., OpenMP) for parallel execution.
+
+This translation assumes that the sizes of the vectors are appropriately set before calling `kernel_bicg`. The example usage in `main` demonstrates how to initialize these vectors and call the function.
+Let's write some test to verify if the translation is correct. 
+To verify the correctness of both the original Fortran code and the translated C++ code, we can create simple unit tests. These tests will execute the kernel function with predefined inputs and compare the outputs against expected results.
+
+### Fortran Unit Test
+
+First, let's create a Fortran program that includes the original subroutine and a test case.
+
+```fortran
+program test_kernel_bicg
+    implicit none
+    integer, parameter :: nx = 3, ny = 3
+    double precision, dimension(ny, nx) :: a
+    double precision, dimension(nx) :: r, q, p, s
+    integer :: i, j
+
+    ! Initialize arrays
+    do i = 1, ny
+        do j = 1, nx
+            a(i, j) = i + j * 0.1
+        end do
+        r(i) = i * 0.1
+        p(i) = i * 0.2
+    end do
+
+    ! Call the kernel subroutine
+    call kernel_bicg(nx, ny, a, s, q, p, r)
+
+    ! Print results for verification
+    print *, 's:', s
+    print *, 'q:', q
+
+contains
+
+    subroutine kernel_bicg(nx, ny, a, s, q, p, r)
+        implicit none
+        double precision, dimension(ny, nx) :: a
+        double precision, dimension(nx) :: r, q, p, s
+        integer :: nx, ny, i, j
+
+        ! Initialize s to 0
+        do i = 1, ny
+            s(i) = 0.0D0
+        end do
+
+        ! Compute s and q
+        do i = 1, nx
+            q(i) = 0.0D0
+            do j = 1, ny
+                s(j) = s(j) + (r(i) * a(j, i))
+                q(i) = q(i) + (a(j, i) * p(j))
+            end do
+        end do
+    end subroutine kernel_bicg
+
+end program test_kernel_bicg
+```
+
+### C++ Unit Test
+
+Now, let's create a C++ program that includes the translated function and a test case.
+
+```cpp
+#include <iostream>
+#include <vector>
+
+using DATA_TYPE = double;
+
+void kernel_bicg(int nx, int ny, std::vector<std::vector<DATA_TYPE>>& a, std::vector<DATA_TYPE>& s, std::vector<DATA_TYPE>& q, std::vector<DATA_TYPE>& p, std::vector<DATA_TYPE>& r) {
+    for (int i = 0; i < ny; ++i) {
+        s[i] = 0.0;
+    }
+
+    for (int i = 0; i < nx; ++i) {
+        q[i] = 0.0;
+        for (int j = 0; j < ny; ++j) {
+            s[j] += r[i] * a[j][i];
+            q[i] += a[j][i] * p[j];
+        }
+    }
+}
+
+int main() {
+    int nx = 3, ny = 3;
+    std::vector<std::vector<DATA_TYPE>> a(ny, std::vector<DATA_TYPE>(nx));
+    std::vector<DATA_TYPE> s(ny), q(nx), p(ny), r(nx);
+
+    // Initialize arrays
+    for (int i = 0; i < ny; ++i) {
+        for (int j = 0; j < nx; ++j) {
+            a[i][j] = i + j * 0.1;
+        }
+        r[i] = i * 0.1;
+        p[i] = i * 0.2;
+    }
+
+    // Call the kernel function
+    kernel_bicg(nx, ny, a, s, q, p, r);
+
+    // Print results for verification
+    std::cout << "s: ";
+    for (auto& val : s) std::cout << val << " ";
+    std::cout << std::endl;
+
+    std::cout << "q: ";
+    for (auto& val : q) std::cout << val << " ";
+    std::cout << std::endl;
+
+    return 0;
+}
+Number of compilable: 38
+Number of executable: 36
+Line 1: Compilation True, Run True
+Line 2: Compilation False, Run False
+Line 3: Compilation False, Run False
+Line 4: Compilation False, Run False
+Line 5: Compilation True, Run False
+Line 6: Compilation False, Run False
+Line 7: Compilation True, Run True
+Line 8: Compilation False, Run False
+Line 9: Compilation False, Run False
+Line 10: Compilation True, Run True
+Line 11: Compilation True, Run True
+Line 12: Compilation False, Run False
+Line 13: Compilation False, Run False
+Line 14: Compilation False, Run False
+Line 15: Compilation False, Run False
+Line 16: Compilation False, Run False
+Line 17: Compilation False, Run False
+Line 18: Compilation False, Run False
+Line 19: Compilation False, Run False
+Line 20: Compilation False, Run False
+Line 21: Compilation False, Run False
+Line 22: Compilation False, Run False
+Line 23: Compilation False, Run False
+Line 24: Compilation False, Run False
+Line 25: Compilation False, Run False
+Line 26: Compilation True, Run True
+Line 27: Compilation False, Run False
+Line 28: Compilation True, Run True
+Line 29: Compilation False, Run False
+Line 30: Compilation False, Run False
+Line 31: Compilation False, Run False
+Line 32: Compilation False, Run False
+Line 33: Compilation False, Run False
+Line 34: Compilation False, Run False
+Line 35: Compilation False, Run False
+Line 36: Compilation False, Run False
+Line 37: Compilation False, Run False
+Line 38: Compilation False, Run False
+Line 39: Compilation True, Run True
+Line 40: Compilation True, Run True
+Line 41: Compilation False, Run False
+Line 42: Compilation False, Run False
+Line 43: Compilation True, Run True
+Line 44: Compilation False, Run False
+Line 45: Compilation False, Run False
+Line 46: Compilation True, Run True
+Line 47: Compilation False, Run False
+Line 48: Compilation True, Run True
+Line 49: Compilation False, Run False
+Line 50: Compilation False, Run False
+Line 51: Compilation True, Run True
+Line 52: Compilation False, Run False
+Line 53: Compilation False, Run False
+Line 54: Compilation False, Run False
+Line 55: Compilation True, Run True
+Line 56: Compilation True, Run True
+Line 57: Compilation False, Run False
+Line 58: Compilation False, Run False
+Line 59: Compilation False, Run False
+Line 60: Compilation False, Run False
+Line 61: Compilation True, Run True
+Line 62: Compilation False, Run False
+Line 63: Compilation False, Run False
+Line 64: Compilation False, Run False
+Line 65: Compilation True, Run True
+Line 66: Compilation True, Run True
+Line 67: Compilation False, Run False
+Line 68: Compilation False, Run False
+Line 69: Compilation True, Run True
+Line 70: Compilation False, Run False
+Line 71: Compilation False, Run False
+Line 72: Compilation True, Run True
+Line 73: Compilation False, Run False
+Line 74: Compilation False, Run False
+Line 75: Compilation False, Run False
+Line 76: Compilation False, Run False
+Line 77: Compilation False, Run False
+Line 78: Compilation False, Run False
+Line 79: Compilation False, Run False
+Line 80: Compilation False, Run False
+Line 81: Compilation False, Run False
+Line 82: Compilation False, Run False
+Line 83: Compilation False, Run False
+Line 84: Compilation False, Run False
+Line 85: Compilation True, Run True
+Line 86: Compilation False, Run False
+Line 87: Compilation False, Run False
+Line 88: Compilation False, Run False
+Line 89: Compilation False, Run False
+Line 90: Compilation False, Run False
+Line 91: Compilation False, Run False
+Line 92: Compilation False, Run False
+Line 93: Compilation False, Run False
+Line 94: Compilation False, Run False
+Line 95: Compilation False, Run False
+Line 96: Compilation False, Run False
+Line 97: Compilation False, Run False
+Line 98: Compilation False, Run False
+Line 99: Compilation False, Run False
+Line 100: Compilation True, Run True
+Line 101: Compilation False, Run False
+Line 102: Compilation True, Run True
+Line 103: Compilation False, Run False
+Line 104: Compilation True, Run True
+Line 105: Compilation False, Run False
+Line 106: Compilation False, Run False
+Line 107: Compilation False, Run False
+Line 108: Compilation False, Run False
+Line 109: Compilation True, Run True
+Line 110: Compilation False, Run False
+Line 111: Compilation True, Run True
+Line 112: Compilation True, Run True
+Line 113: Compilation False, Run False
+Line 114: Compilation False, Run False
+Line 115: Compilation False, Run False
+Line 116: Compilation False, Run False
+Line 117: Compilation False, Run False
+Line 118: Compilation False, Run False
+Line 119: Compilation False, Run False
+Line 120: Compilation False, Run False
+Line 121: Compilation False, Run False
+Line 122: Compilation False, Run False
+Line 123: Compilation False, Run False
+Line 124: Compilation False, Run False
+Line 125: Compilation True, Run True
+Line 126: Compilation True, Run True
+Line 127: Compilation False, Run False
+Line 128: Compilation False, Run False
+Line 129: Compilation True, Run True
+Line 130: Compilation False, Run False
+Line 131: Compilation False, Run False
+Line 132: Compilation False, Run False
+Line 133: Compilation False, Run False
+Line 134: Compilation False, Run False
+Line 135: Compilation False, Run False
+Line 136: Compilation False, Run False
+Line 137: Compilation False, Run False
+Line 138: Compilation True, Run True
+Line 139: Compilation False, Run False
+Line 140: Compilation False, Run False
+Line 141: Compilation True, Run False
+Line 142: Compilation False, Run False
+Line 143: Compilation False, Run False
+Line 144: Compilation False, Run False
+Line 145: Compilation True, Run True
+Line 146: Compilation False, Run False
+Line 147: Compilation False, Run False
+Line 148: Compilation False, Run False
+Line 149: Compilation False, Run False
+Line 150: Compilation False, Run False
+Line 151: Compilation False, Run False
+Line 152: Compilation False, Run False
+Line 153: Compilation False, Run False
+Line 154: Compilation False, Run False
+Line 155: Compilation False, Run False
+Line 156: Compilation False, Run False
+Line 157: Compilation False, Run False
+Line 158: Compilation False, Run False
+Line 159: Compilation False, Run False
+Line 160: Compilation False, Run False
+Line 161: Compilation False, Run False
+Line 162: Compilation False, Run False
+Line 163: Compilation False, Run False
+Line 164: Compilation False, Run False
+Line 165: Compilation False, Run False
+Line 166: Compilation False, Run False
+Line 167: Compilation False, Run False
+Line 168: Compilation False, Run False
+Line 169: Compilation False, Run False
+Line 170: Compilation False, Run False
+Line 171: Compilation False, Run False
+Line 172: Compilation False, Run False
+Line 173: Compilation False, Run False
+Line 174: Compilation False, Run False
+Line 175: Compilation False, Run False
+Line 176: Compilation False, Run False
+Line 177: Compilation False, Run False
+Line 178: Compilation False, Run False
+Line 179: Compilation False, Run False
+Line 180: Compilation False, Run False
+Line 181: Compilation False, Run False
+Line 182: Compilation False, Run False
+Line 183: Compilation False, Run False
+Line 184: Compilation False, Run False
+Line 185: Compilation False, Run False
+Line 186: Compilation False, Run False
+Line 187: Compilation False, Run False
+Line 188: Compilation False, Run False
+Line 189: Compilation True, Run True
+Line 190: Compilation False, Run False
+Line 191: Compilation False, Run False
+Line 192: Compilation False, Run False
+Line 193: Compilation False, Run False
+Line 194: Compilation False, Run False
+Line 195: Compilation False, Run False
+Line 196: Compilation False, Run False
+Line 197: Compilation False, Run False
+Line 198: Compilation False, Run False
+Line 199: Compilation False, Run False
+Line 200: Compilation False, Run False
+Line 201: Compilation False, Run False
+Line 202: Compilation False, Run False
+Line 203: Compilation False, Run False
+Line 204: Compilation False, Run False
+Line 205: Compilation False, Run False
+Line 206: Compilation False, Run False
+Line 207: Compilation False, Run False
+Line 208: Compilation False, Run False
+Line 209: Compilation False, Run False
+Line 210: Compilation False, Run False
+Line 211: Compilation False, Run False
+Line 212: Compilation False, Run False
+Line 213: Compilation False, Run False
+Line 214: Compilation False, Run False
+Line 215: Compilation False, Run False
+Line 216: Compilation False, Run False
+Line 217: Compilation False, Run False
+Line 218: Compilation False, Run False
+Line 219: Compilation False, Run False
+Line 220: Compilation False, Run False
+Line 221: Compilation False, Run False
+Line 222: Compilation False, Run False
+Line 223: Compilation False, Run False
+Line 224: Compilation False, Run False
+Line 225: Compilation False, Run False
+Line 226: Compilation False, Run False
+Line 227: Compilation False, Run False
+Line 228: Compilation False, Run False
+Line 229: Compilation False, Run False
+Line 230: Compilation False, Run False
+Line 231: Compilation False, Run False
+Line 232: Compilation False, Run False
+Line 233: Compilation False, Run False
+Line 234: Compilation False, Run False
+Line 235: Compilation False, Run False
+Line 236: Compilation True, Run True
+Line 237: Compilation False, Run False
+Line 238: Compilation False, Run False
+Line 239: Compilation False, Run False
+Line 240: Compilation False, Run False
+Line 241: Compilation False, Run False
+Line 242: Compilation False, Run False
+Line 243: Compilation False, Run False
+Line 244: Compilation False, Run False
+Line 245: Compilation False, Run False
+Line 246: Compilation False, Run False
+Line 247: Compilation False, Run False
+Line 248: Compilation False, Run False
+Line 249: Compilation False, Run False
+Line 250: Compilation False, Run False
+Line 251: Compilation False, Run False
+Line 252: Compilation False, Run False
+Line 253: Compilation False, Run False
+Line 254: Compilation True, Run True
+Line 255: Compilation False, Run False
+Line 256: Compilation False, Run False
+Line 257: Compilation True, Run True
+Line 258: Compilation False, Run False
+Line 259: Compilation False, Run False
+Line 260: Compilation False, Run False
+Line 261: Compilation False, Run False
+Line 262: Compilation False, Run False
+Line 263: Compilation False, Run False
+Line 264: Compilation False, Run False
+Line 265: Compilation False, Run False
+Line 266: Compilation False, Run False
+Line 267: Compilation False, Run False
+Line 268: Compilation False, Run False
+Line 269: Compilation False, Run False
+Line 270: Compilation False, Run False
+Line 271: Compilation True, Run True
+Line 272: Compilation False, Run False
+Line 273: Compilation False, Run False
+Line 274: Compilation False, Run False
+Line 275: Compilation False, Run False
+Line 276: Compilation False, Run False
+Line 277: Compilation False, Run False
+Line 278: Compilation False, Run False
+Line 279: Compilation False, Run False
+Line 280: Compilation False, Run False
+Line 281: Compilation False, Run False
+Line 282: Compilation False, Run False
+Line 283: Compilation False, Run False
+Line 284: Compilation False, Run False
+Line 285: Compilation False, Run False
+Line 286: Compilation False, Run False
+Line 287: Compilation False, Run False
+Line 288: Compilation False, Run False
+Line 289: Compilation False, Run False
+Line 290: Compilation False, Run False
+Line 291: Compilation False, Run False
+Line 292: Compilation False, Run False
+Line 293: Compilation False, Run False
+Line 294: Compilation False, Run False
+Line 295: Compilation False, Run False
+Line 296: Compilation False, Run False

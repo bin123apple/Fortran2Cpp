@@ -34,7 +34,7 @@ def compile_and_run_each_line(source_file):
             # First process the line to skip \n inside quotes
             processed_line = skip_newline_within_quotes(line)
             formatted_line = bytes(processed_line, "utf-8").decode("unicode_escape")
-            
+            print(f"Formatted line: {formatted_line}")
             cpp_source_path = os.path.join(tmpdirname, f"temp_{index}.cpp")
             executable_path = os.path.join(tmpdirname, f"temp_{index}")
             with open(cpp_source_path, 'w') as cpp_file:
@@ -87,7 +87,7 @@ def compile_and_run_each_line(source_file):
     return results, compilable, executable
 
 # Usage
-source_file = '/home/uconn/BinLei/F2C-Translator/data/StarCoder2/StarCoder2_FT_HPEC_Clean.txt'
+source_file = '/home/uconn/BinLei/F2C-Translator/data/gpt-4o/gpt_4o_HPEC.txt'
 result, compilable, executable = compile_and_run_each_line(source_file)
 print(f"Number of compilable: {compilable}")
 print(f"Number of executable: {executable}")

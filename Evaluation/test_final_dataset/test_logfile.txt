@@ -1,0 +1,3 @@
+ ---- WARNING: This is a warning message.
+ **** ERROR: This is an error message.
+ NOTE: This is a note message.

@@ -209,6 +209,38 @@ pip install -r requirements.txt
 python chatbot.py
 ```
 
+## Fine-tuning
+
+1. Install packages
+```
+deepspeed==0.12.3
+pyarrow==13.0.0
+torch==2.0.1
+```
+
+2. Collect the data
+If you only want to use the code pairs.
+Put them into a two column csv file should be fine.
+
+If you would like to fine-tune the multi-dialogue dataset.
+handle data like this:
+```
+<User1><Assistant1><User2><Assistant2><User3><Assistant3>
+
+->
+
+1. <User1>                                            <Assistant1>
+2. <User1><Assistant1><User2>                         <Assistant2>
+3. <User1><Assistant1><User2><Assistant2><User3>      <Assistant3>
+```
+Put the first part of message to the first colunm of csv file and the last part(`<Assistant1,2,3>`) to the second column.
+
+3. Start traning by running
+
+```
+python NLP_task_training.py
+```
+
 **NOTE:** This demo will not use the interpreter function. This feature is a potential extension for this work.
 
 ## Hardware requirements

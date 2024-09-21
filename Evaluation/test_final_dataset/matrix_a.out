@@ -1,0 +1,11 @@
+ matrix number            1
+ row            1  value   0.10000000149011612     
+ row            2  value   0.20000000298023224     
+ row            3  value   0.30000001192092896     
+ column            1
+column          1 row          1 value  0.50000000E+00
+ column            2
+column          2 row          2 value  0.30000001E+00
+ column            3
+column          3 row          3 value  0.60000002E+00
+ maxdiff_impuls   0.0000000000000000     
