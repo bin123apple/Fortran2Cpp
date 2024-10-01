@@ -1,0 +1,54 @@
+# Compiler and flags
+CC = g++
+CXXFLAGS = -c -fopenmp
+LDFLAGS = -fopenmp
+
+# Source files
+SRC = $(wildcard *.cpp)
+
+# Object files
+OBJ = $(SRC:.cpp=.o)
+
+# Executable files
+EXE = $(SRC:.cpp=.exe)
+
+# Logs for execution
+LOGS = $(SRC:.cpp=.exe.log)
+
+# Default target: compile and then execute
+all: compile execute report
+
+# Compile .cpp files into .exe files
+compile: $(EXE)
+
+# Pattern rule for compiling .cpp files into .exe files
+%.exe: %.cpp
+	@$(CC) $< $(LDFLAGS) -o $@ 2> $*.err
+	@if [ $$? -ne 0 ]; then \
+		echo "Compilation error in $<, see $*.err for details."; \
+	else \
+		rm -f $*.err; \
+	fi
+
+# Run each .exe and store logs
+execute: $(LOGS)
+
+%.exe.log: %.exe
+	@./$< > $@ 2>&1
+	@if [ $$? -ne 0 ]; then \
+		echo "Runtime error in $<, see $@ for details."; \
+	else \
+		echo "Execution of $< succeeded."; \
+	fi
+
+# Count successful compilations and executions
+report:
+	@compiled_files=$$(ls *.exe 2>/dev/null | wc -l); \
+	running_files=$$(ls *.exe.log 2>/dev/null | wc -l); \
+	echo "Compiled executables: $$compiled_files"; \
+	echo "Successfully executed: $$running_files";
+
+# Clean up object files, executables, logs, and error files
+clean:
+	rm -f $(OBJ) *.exe *.exe.log *.err
+
