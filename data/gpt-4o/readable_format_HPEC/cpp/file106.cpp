@@ -16,7 +16,6 @@ int main()
  }
  for (int i=0;i<100;i++)
  if (var[i]!=i+1) 
- printf("Data Race Present
-");
+ printf("Data Race Present\n");
  return 0;
 }

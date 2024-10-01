@@ -8,7 +8,6 @@ int main()
     for (i = 0; i < len; i++)
         for (j = 1; j < len; j++)
             b[i][j] = b[i][j-1];
-    printf("b[500][500] = %.6f
-", b[500][500]);
+    printf("b[500][500] = %.6f\n", b[500][500]);
     return 0;
 }

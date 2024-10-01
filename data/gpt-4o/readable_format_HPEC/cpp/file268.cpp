@@ -21,7 +21,6 @@ int main() {
 #pragma omp single
         result = fib(n);
     }
-    printf("Fib for %d = %d
-", n, result);
+    printf("Fib for %d = %d\n", n, result);
     return 0;
 }

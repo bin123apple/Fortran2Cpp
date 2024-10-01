@@ -11,7 +11,6 @@ int main()
 #pragma omp ordered
  x=x+1;
  }
- printf ("x = %d
-", x);
+ printf ("x = %d\n", x);
  return 0;
 }

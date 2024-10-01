@@ -15,7 +15,6 @@ int main()
     A::counter=A::counter+1;
     A::pcounter=A::pcounter+1;
 }
-printf("%d %d
-", A::counter, A::pcounter);
+printf("%d %d\n", A::counter, A::pcounter);
 return 0;
 }

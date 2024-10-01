@@ -10,8 +10,7 @@ int main(int argc, char* argv[])
 
     if (argc == 1) 
     {
-        printf("No command line arguments provided.
-");
+        printf("No command line arguments provided.\n");
         return 0;
     }
 
@@ -31,8 +30,7 @@ int main(int argc, char* argv[])
         a[i + 1] = a[i] + b[i];
 
     for (i = 0; i < len; i++)
-        printf("Values for i and a[i] are: %d %d
-", i, a[i]);
+        printf("Values for i and a[i] are: %d %d\n", i, a[i]);
 
     free(a);
     free(b);

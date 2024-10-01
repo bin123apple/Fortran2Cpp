@@ -16,8 +16,7 @@ int main() {
     }
 
     if (i != 2) {
-        printf("i is not equal to 2
-");
+        printf("i is not equal to 2\n");
     }
 
     return 0;

@@ -6,14 +6,12 @@ int main(int argc, char* argv[])
  int i, tmp;
  int len = 100;
  if (argc == 1) {
- printf("No command line arguments provided.
-");
+ printf("No command line arguments provided.\n");
  return 0;
  }
  len = atoi(argv[1]);
  if (len == 0) {
- printf("Error, invalid integer value.
-");
+ printf("Error, invalid integer value.\n");
  return 0;
  }
  int a[len];
@@ -25,7 +23,6 @@ int main(int argc, char* argv[])
  tmp = a[i] + i+1;
  a[i] = tmp;
  }
- printf ("a[50]=%d
-", a[50]);
+ printf ("a[50]=%d\n", a[50]);
  return 0;
 }

@@ -22,8 +22,7 @@ int main()
 
  for (i = 0; i < 16; i++)
  if (var[i] != 20)
- printf ("%d %d
-", var[i], i);
+ printf ("%d %d\n", var[i], i);
 
  return 0;
 }

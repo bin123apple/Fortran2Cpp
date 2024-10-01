@@ -19,8 +19,7 @@ int main()
  j = j + 1;
  }
 
- printf("c[50] = %f
-", c[50]);
+ printf("c[50] = %f\n", c[50]);
 
  return 0;
 }

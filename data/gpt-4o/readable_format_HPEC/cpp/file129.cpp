@@ -26,7 +26,6 @@ int main()
             }
         }
     }
-    printf("result = %d
-", result);
+    printf("result = %d\n", result);
     return 0;
 }

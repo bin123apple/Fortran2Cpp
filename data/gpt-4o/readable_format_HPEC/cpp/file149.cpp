@@ -17,8 +17,7 @@ void makea(int n, int nz, double* a, int* colidx, int* rowstr, int firstrow, int
     if (num_threads > max_threads) 
     {
         if (myid == 0) 
-            printf("Warning: num_threads %d exceeded an internal limit %d
-", num_threads, max_threads);
+            printf("Warning: num_threads %d exceeded an internal limit %d\n", num_threads, max_threads);
         num_threads = max_threads;
     }
     int work = (n + num_threads - 1) / num_threads;

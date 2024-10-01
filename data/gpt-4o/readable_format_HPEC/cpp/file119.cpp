@@ -24,7 +24,6 @@ int main()
         }
     }
 
-    printf("numNodes2 = %d
-", numNodes2);
+    printf("numNodes2 = %d\n", numNodes2);
     return 0;
 }

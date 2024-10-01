@@ -20,8 +20,7 @@ int main()
         base[idx2] += 3.0;
     }
 
-    printf("xa1(999) = %lf xa2(1285) = %lf
-", base[998], base[1284]);
+    printf("xa1(999) = %lf xa2(1285) = %lf\n", base[998], base[1284]);
 
     return 0;
 }

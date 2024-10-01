@@ -8,8 +8,7 @@ int main() {
   #pragma omp master
   {
    k = omp_get_num_threads();
-   printf("Number of threads requested = %d
-", k);
+   printf("Number of threads requested = %d\n", k);
   }
  }
  return 0;

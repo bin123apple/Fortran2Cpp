@@ -11,8 +11,7 @@ int main(int argc, char **argv)
 
     if (argc == 1)
     {
-        printf("No command line arguments provided.
-");
+        printf("No command line arguments provided.\n");
         return 1;
     }
 
@@ -43,8 +42,7 @@ int main(int argc, char **argv)
         }
     }
 
-    printf("numNodes2 = %d
-", numNodes2);
+    printf("numNodes2 = %d\n", numNodes2);
 
     free(x);
 

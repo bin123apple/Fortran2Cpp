@@ -8,9 +8,7 @@ void print_array(int n, DATA_TYPE* w)
     {
         printf(DATA_PRINTF_MODIFIER, w[i]);
         if ((i + 1) % 20 == 0)
-            printf("
-");
+            printf("\n");
     }
-    printf("
-");
+    printf("\n");
 }

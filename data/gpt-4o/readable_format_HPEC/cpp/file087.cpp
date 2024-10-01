@@ -19,7 +19,6 @@ int main()
  }
  for (i = 0; i < 100; i++)
  if (a[i] != i + 1)
- printf("warning: a[%d] = %d not expected %d
-", i, a[i], i + 1);
+ printf("warning: a[%d] = %d not expected %d\n", i, a[i], i + 1);
  return 0;
 }

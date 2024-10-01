@@ -11,7 +11,6 @@ int main() {
         var++;
     }
 
-    printf("%d
-", var);
+    printf("%d\n", var);
     return 0;
 }

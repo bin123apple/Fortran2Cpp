@@ -68,10 +68,8 @@ void jacobi() {
         k++;
     } while (k <= mits);
 
-    printf("Total number of iterations: %d
-", k);
-    printf("Residual: %.15f
-", error);
+    printf("Total number of iterations: %d\n", k);
+    printf("Residual: %.15f\n", error);
 }
 
 int main() {

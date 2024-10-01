@@ -9,8 +9,7 @@ int main()
     numThreads = omp_get_num_threads();
   }
   else {
-    printf("numThreads = %d
-", numThreads);
+    printf("numThreads = %d\n", numThreads);
   }
  }
  return 0;

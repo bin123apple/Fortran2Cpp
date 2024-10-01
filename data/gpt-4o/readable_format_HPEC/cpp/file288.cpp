@@ -7,12 +7,10 @@ void print_array(int cz, int cxm, int cym, float bza[], float ex[], float ey[], 
  printf("%f", ey[k + (j * cxm) + (i * cym*cxm)]);
  printf("%f", hz[k + (j * cxm) + (i * cym*cxm)]);
  if ((((i * cxm) + j) % 20) == 0){
- printf("
-");
+ printf("\n");
  }
  }
  }
- printf("
-");
+ printf("\n");
  }
 }

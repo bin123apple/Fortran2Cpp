@@ -34,8 +34,7 @@ int main(int argc, char *argv[])
             b[i][j] = b[i-1][j-1];
         }
     }
-    printf("b[500][500] = %.6f
-", b[500][500]);
+    printf("b[500][500] = %.6f\n", b[500][500]);
 
     for (i = 0; i < n; i++)
     {

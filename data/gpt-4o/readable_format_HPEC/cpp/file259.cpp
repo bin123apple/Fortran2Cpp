@@ -9,9 +9,7 @@ void print_array(DATA_TYPE a[100][100][100], int nr, int nq, int np)
             {
                 printf(DATA_PRINTF_MODIFIER, a[k][j][i]);
                 if ((i % 20) == 0)
-                    printf("
-");
+                    printf("\n");
             }
-    printf("
-");
+    printf("\n");
 }

@@ -31,8 +31,7 @@ int main()
  {
   if(c[i]!=len)
   {
-   printf("%d
-", c[i]);
+   printf("%d\n", c[i]);
   }
  }
 

@@ -13,8 +13,7 @@ int main()
 #pragma omp teams num_teams(2)
     a[50] = a[50] * 2.0;
 
-    printf("a[50]=%f
-", a[50]);
+    printf("a[50]=%f\n", a[50]);
 
     return 0;
 }

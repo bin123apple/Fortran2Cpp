@@ -13,7 +13,6 @@ int main()
         b[i] = b[i-m] - 1.0;
     }
 
-    printf("%f
-", b[3]);
+    printf("%f\n", b[3]);
     return 0;
 }

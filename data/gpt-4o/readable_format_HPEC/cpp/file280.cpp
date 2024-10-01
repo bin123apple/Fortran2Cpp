@@ -23,8 +23,7 @@ int main()
  for (j = 0; j < dp; j++)
  c[i][j]=a[i][j]*b[i][j];
 
- printf("c[50][50] = %f
-", c[50][50]);
+ printf("c[50][50] = %f\n", c[50][50]);
 
  return 0;
 }

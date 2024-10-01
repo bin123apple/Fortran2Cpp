@@ -10,8 +10,7 @@ int main()
  {
   a[i][j] = a[i][j]+1;
   #pragma omp ordered depend(sink:i-1,j) depend(sink:i,j-1)
-  printf("test i = %d, j = %d
-", i, j);
+  printf("test i = %d, j = %d\n", i, j);
   #pragma omp ordered depend(source)
  }
  return 0;

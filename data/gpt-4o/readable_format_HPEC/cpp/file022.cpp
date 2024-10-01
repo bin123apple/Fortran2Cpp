@@ -17,8 +17,7 @@ int main()
         var[i] = var[i-16] + 1;
     }
 
-    printf("%d
-", var[98]);
+    printf("%d\n", var[98]);
 
     return 0;
 }

@@ -24,12 +24,10 @@ int main()
             }
         }
     }
-    printf("j = %d  k = %d
-", j, k);
+    printf("j = %d  k = %d\n", j, k);
     if (j != 1 || k != 1)
     {
-        printf("Race Condition
-");
+        printf("Race Condition\n");
     }
     return 0;
 }

@@ -28,7 +28,6 @@ int main()
  b[i]=tmp2;
  }
  }
- printf ("%d   %d
-", a[49], b[49]);
+ printf ("%d   %d\n", a[49], b[49]);
  return 0;
 }

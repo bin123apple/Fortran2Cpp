@@ -11,7 +11,6 @@ int main() {
         }
     }
 
-    printf("numThreads = %d
-", numThreads);
+    printf("numThreads = %d\n", numThreads);
     return 0;
 }

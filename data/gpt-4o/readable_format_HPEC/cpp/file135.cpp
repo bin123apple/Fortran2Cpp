@@ -10,7 +10,6 @@ int main()
 #pragma omp single
  count += 1;
  }
- printf("count = %d
-", count);
+ printf("count = %d\n", count);
  return 0;
 }

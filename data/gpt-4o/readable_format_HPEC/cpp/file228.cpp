@@ -6,10 +6,8 @@ void print_array(int maxgrid, DATA_TYPE path[][maxgrid])
   {
     printf(DATA_PRINTF_MODIFIER, path[i][j]);
     if(((i*maxgrid)+j)%20 == 19)
-    printf("
-");
+    printf("\n");
   }
  }
- printf("
-");
+ printf("\n");
 }

@@ -8,7 +8,6 @@ int main()
 #pragma omp atomic
  a+=1;
  }
- printf ("a=%d
-", a);
+ printf ("a=%d\n", a);
  return 0;
 }

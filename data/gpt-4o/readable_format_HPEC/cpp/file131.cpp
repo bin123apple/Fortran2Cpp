@@ -9,8 +9,7 @@ int main()
  {
    foo(&counter);
  }
- printf("%d
-", counter);
+ printf("%d\n", counter);
 
  return 0;
 }

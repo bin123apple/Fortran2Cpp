@@ -18,7 +18,6 @@ int main()
    outLen++;
  }
 
- printf ("output[500]=%d
-", output[499]);
+ printf ("output[500]=%d\n", output[499]);
  return 0;
 }

@@ -23,9 +23,7 @@ void foo(){
  y = y-1;
 #pragma omp task depend(in: x) if(0)
  ;
- printf("x= %d
-", x);
+ printf("x= %d\n", x);
 #pragma omp taskwait
- printf("y= %d
-", y);
+ printf("y= %d\n", y);
 }

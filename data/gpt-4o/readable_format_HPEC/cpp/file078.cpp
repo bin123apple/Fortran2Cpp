@@ -18,8 +18,7 @@ int main()
     
     omp_destroy_lock(&lck);
     
-    printf("%d
-", var);
+    printf("%d\n", var);
 
     return 0;
 }

@@ -10,7 +10,6 @@ int main()
 #pragma omp section
  i=2;
  }
- printf ("i=%d
-", i);
+ printf ("i=%d\n", i);
  return 0;
 }

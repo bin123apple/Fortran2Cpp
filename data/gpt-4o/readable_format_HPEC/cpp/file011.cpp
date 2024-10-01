@@ -33,11 +33,9 @@ void foo() {
         // 1st taskwait
     }
 
-    printf("x=%d
-", x);
+    printf("x=%d\n", x);
 
     #pragma omp taskwait
 
-    printf("y=%d
-", y);
+    printf("y=%d\n", y);
 }

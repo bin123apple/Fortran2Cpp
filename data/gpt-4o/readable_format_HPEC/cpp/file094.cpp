@@ -13,7 +13,6 @@ int main()
  for (i=0;i<99;i++)
  a[i+1] = a[i] + b[i];
 
- printf ("a[50]=%d
-", a[49]);
+ printf ("a[50]=%d\n", a[49]);
  return 0;
 }

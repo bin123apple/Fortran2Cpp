@@ -13,7 +13,6 @@ int main()
   a[i]=tmp;
  }
 
- printf ("a[50]=%d
-", a[50]);
+ printf ("a[50]=%d\n", a[50]);
  return 0;
 }

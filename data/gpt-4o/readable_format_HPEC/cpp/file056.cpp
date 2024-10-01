@@ -16,8 +16,7 @@ int main() {
             a += i;
 
 #pragma omp single
-        printf("Sum is %d
-", a);
+        printf("Sum is %d\n", a);
     }
 
     return 0;

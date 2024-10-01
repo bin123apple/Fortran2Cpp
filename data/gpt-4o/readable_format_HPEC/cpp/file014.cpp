@@ -14,7 +14,6 @@ int main()
 
     pi = pi * 4.0 * interval_width;
 
-    printf("PI = %.20f
-", pi);
+    printf("PI = %.20f\n", pi);
     return 0;
 }

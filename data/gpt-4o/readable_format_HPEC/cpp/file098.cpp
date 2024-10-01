@@ -11,8 +11,7 @@ int main()
  file.open("mytempfile.txt", std::ios_base::app);
 #pragma omp parallel for
  for (i=0; i<1000; i++)
- file << a[i] << "
-";
+ file << a[i] << "\n";
  file.close();
  return 0;
 }

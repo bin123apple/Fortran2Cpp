@@ -25,7 +25,6 @@ int main()
 
     omp_destroy_lock(&lock);
     
-    printf("I = %d
-", i);
+    printf("I = %d\n", i);
     return 0;
 }

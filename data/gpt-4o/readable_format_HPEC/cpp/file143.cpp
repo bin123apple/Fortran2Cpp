@@ -17,8 +17,7 @@ int main()
   for (j=0; j<N; j++)
   {
    sum += a[i][j]*v[j];
-   printf("%f
-",sum);
+   printf("%f\n",sum);
   }
   v_out[i] = sum;
  }

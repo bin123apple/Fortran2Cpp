@@ -24,7 +24,6 @@ int main()
             sum = psum[1]+psum[0];
         }
     }
-    printf("sum = %d
-", sum);
+    printf("sum = %d\n", sum);
     return 0;
 }

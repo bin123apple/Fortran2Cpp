@@ -29,8 +29,7 @@ int main()
     #pragma omp single
     result = fib(input);
     }
-    printf("Fib for %d = %d
-", input, result);
+    printf("Fib for %d = %d\n", input, result);
 
     return 0;
 }

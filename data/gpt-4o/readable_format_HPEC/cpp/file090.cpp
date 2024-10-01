@@ -22,7 +22,6 @@ int main()
             d = c; // Task T6
         }
     }
-    printf("%d
-", d);
+    printf("%d\n", d);
     return 0;
 }

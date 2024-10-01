@@ -23,8 +23,7 @@ int main()
 #pragma omp single
  error = a[8] + 1;
 
- printf("error = %d
-", error);
+ printf("error = %d\n", error);
 
  free(a);
  return 0;

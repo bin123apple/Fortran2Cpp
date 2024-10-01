@@ -22,15 +22,10 @@ void error() {
         errnm[m] = sqrt(errnm[m] / ((double)(nx0 - 2)*(ny0 - 2)*(nz0 - 2)));
 
     printf("
- RMS-norm of error in soln. to first pde  = %.5e"
-        "
- RMS-norm of error in soln. to second pde = %.5e"
-        "
- RMS-norm of error in soln. to third pde  = %.5e"
-        "
- RMS-norm of error in soln. to fourth pde = %.5e"
-        "
- RMS-norm of error in soln. to fifth pde  = %.5e
-",
+ RMS-norm of error in soln. to first pde  = %.5e"\n"
+ RMS-norm of error in soln. to second pde = %.5e"\n"
+ RMS-norm of error in soln. to third pde  = %.5e"\n"
+ RMS-norm of error in soln. to fourth pde = %.5e"\n"
+ RMS-norm of error in soln. to fifth pde  = %.5e\n",
         errnm[0], errnm[1], errnm[2], errnm[3], errnm[4]);
 }

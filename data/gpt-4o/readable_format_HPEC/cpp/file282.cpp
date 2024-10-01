@@ -21,8 +21,7 @@ int main()
  {
   sum1 += i;
  }
- printf("sum = %lld, sum1 = %lld
-", sum, sum1);
+ printf("sum = %lld, sum1 = %lld\n", sum, sum1);
  return 0;
 }
 

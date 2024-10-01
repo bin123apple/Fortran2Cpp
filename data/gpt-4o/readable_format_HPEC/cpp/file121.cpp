@@ -7,7 +7,6 @@ void foo(int* a, int len, int value) {
 }
 int main() {
  foo(a, 100, 7);
- printf("%d
-", a[50]);
+ printf("%d\n", a[50]);
  return 0;
 }

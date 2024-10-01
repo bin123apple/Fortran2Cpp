@@ -22,5 +22,5 @@ all: $(OBJ)
 
 # Clean up object files, error files, and executables
 clean:
-	rm -f $(OBJ) *.err
+	rm -f $(OBJ) *.err *.exe*
 

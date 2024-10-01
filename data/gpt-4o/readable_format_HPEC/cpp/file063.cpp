@@ -17,8 +17,7 @@ int main()
     }
 
     for (int i = 0; i < len; i++)
-        printf("Values for i and a[i] are: %d %d
-", i+1, a[i]);
+        printf("Values for i and a[i] are: %d %d\n", i+1, a[i]);
 
     return 0;
 }

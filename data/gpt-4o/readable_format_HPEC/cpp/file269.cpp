@@ -6,8 +6,7 @@ int main(int argc, char** argv)
 {
     if(argc != 2)
     {
-        printf("No command line arguments provided.
-");
+        printf("No command line arguments provided.\n");
         return 0;
     }
 
@@ -17,8 +16,7 @@ int main(int argc, char** argv)
 
     if(n == 0)
     {
-        printf("Error, invalid integer value.
-");
+        printf("Error, invalid integer value.\n");
         return 0;
     }
 
@@ -27,8 +25,7 @@ int main(int argc, char** argv)
         for(int i = 0; i < m; i++)
             b[i][j] = b[i][j-1];
 
-    printf("b[49][49]=%f
-",b[49][49]);
+    printf("b[49][49]=%f\n",b[49][49]);
 
     return 0;
 }

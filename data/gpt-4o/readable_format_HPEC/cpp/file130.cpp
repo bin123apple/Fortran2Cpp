@@ -12,14 +12,12 @@ int main()
 #pragma omp section
  {
  section_count = section_count + 1;
- printf ("section_count = %d
-", section_count);
+ printf ("section_count = %d\n", section_count);
  }
 #pragma omp section
  {
  section_count = section_count + 1;
- printf ("section_count = %d
-", section_count);
+ printf ("section_count = %d\n", section_count);
  }
  }
  }

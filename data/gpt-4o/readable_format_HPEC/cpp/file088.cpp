@@ -20,10 +20,8 @@ void foo()
         //No operation
     }
 
-    printf("x= %d
-", x);
-    printf("y= %d
-", y);
+    printf("x= %d\n", x);
+    printf("y= %d\n", y);
 
     #pragma omp taskwait
 }

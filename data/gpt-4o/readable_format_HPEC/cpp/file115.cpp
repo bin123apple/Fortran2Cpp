@@ -28,8 +28,7 @@ int main() {
     for (int i = 0; i < len; i++)
         sum2 += a[i] * b[i];
 
-    printf("sum = %d; sum2 = %d
-", (int)sum, (int)sum2);
+    printf("sum = %d; sum2 = %d\n", (int)sum, (int)sum2);
 
     return 0;
 }

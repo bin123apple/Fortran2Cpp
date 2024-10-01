@@ -10,11 +10,9 @@ void print_array(int n, int path[][100])
    printf(DATA_PRINTF_MODIFIER, path[j][i]);
    if (((i * n) + j) % 20 == 0) 
    {
-    printf("
-");
+    printf("\n");
    }
   }
  }
- printf("
-");
+ printf("\n");
 }

@@ -20,7 +20,6 @@ int main()
  for (j = 0; j < 8; j++)
  var[j]++;
  }
- printf("%d
-", var[7]);
+ printf("%d\n", var[7]);
  return 0;
 }

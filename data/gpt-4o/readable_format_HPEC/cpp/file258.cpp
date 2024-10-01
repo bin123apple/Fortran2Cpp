@@ -5,11 +5,9 @@ void print_array(int nx, int ny, DATA_TYPE ex[][nx], DATA_TYPE ey[][nx], DATA_TY
    printf(DATA_PRINTF_MODIFIER, ey[j][i]);
    printf(DATA_PRINTF_MODIFIER, hz[j][i]);
    if (((i * nx) + j) % 20 == 0) {
-    printf("
-");
+    printf("\n");
    }
   }
  }
- printf("
-");
+ printf("\n");
 }

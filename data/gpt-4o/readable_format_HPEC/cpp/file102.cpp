@@ -23,8 +23,7 @@ int main()
         base[idx2] = base[idx2] + 3.0;
     }
 
-    printf("xa1[999] = %f, xa2[1285] = %f
-", base[998], base[1284]);
+    printf("xa1[999] = %f, xa2[1285] = %f\n", base[998], base[1284]);
 
     return 0;
 }

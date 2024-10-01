@@ -23,7 +23,6 @@ int main() {
             }
         }
     }
-    printf("error = %d
-", error);
+    printf("error = %d\n", error);
     return 0;
 }

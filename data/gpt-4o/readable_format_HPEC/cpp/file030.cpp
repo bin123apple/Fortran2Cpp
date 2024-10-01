@@ -23,8 +23,7 @@ int main() {
 
     for (int i = 0; i < 64; i++) {
         if (x[i] != 3)
-            printf("%d
-",x[i]);
+            printf("%d\n",x[i]);
     }
 
 #pragma omp taskwait

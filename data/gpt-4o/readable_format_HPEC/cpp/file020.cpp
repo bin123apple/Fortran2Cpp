@@ -7,8 +7,7 @@ void foo() {
     for (i = 0; i < 100; i++) {
         x = i;
     }
-    printf("x = %d
-", x);
+    printf("x = %d\n", x);
 }
 
 int main() {

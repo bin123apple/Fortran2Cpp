@@ -9,13 +9,11 @@ int main(int argc, char* argv[])
     if (argc > 1) {
         len = atoi(argv[1]);
         if (len <= 0) {
-            printf("Error, invalid integer value.
-");
+            printf("Error, invalid integer value.\n");
             return 1;
         }
     } else {
-        printf("No command line arguments provided.
-");
+        printf("No command line arguments provided.\n");
     }
 
     for (i = 0; i < len; i++)
@@ -27,8 +25,7 @@ int main(int argc, char* argv[])
         for (j = 0; j < len; j++)
             a[i][j] = a[i][j] + a[i+1][j];
 
-    printf("a[10][10] = %f
-", a[10][10]);
+    printf("a[10][10] = %f\n", a[10][10]);
 
     return 0;
 }

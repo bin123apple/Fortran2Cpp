@@ -13,7 +13,6 @@ int main()
  for (int i=0; i<m; i++)
  b[i][j] = b[i][j-1];
 
- printf ("b[50][50]=%f
-", b[50][50]);
+ printf ("b[50][50]=%f\n", b[50][50]);
  return 0;
 }

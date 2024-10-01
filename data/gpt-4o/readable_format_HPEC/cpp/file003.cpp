@@ -13,10 +13,8 @@ void foo() {
     #pragma omp task depend(in: x) if(false)
     ;
 
-    printf("x=%d
-", x);
-    printf("y=%d
-", y);
+    printf("x=%d\n", x);
+    printf("y=%d\n", y);
 
     #pragma omp taskwait
 }

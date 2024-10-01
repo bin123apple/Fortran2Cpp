@@ -7,13 +7,11 @@ int main(int argc, char* argv[]) {
   if(argc > 1){
     len = atoi(argv[1]);
     if(len <= 0){
-      std::cout<<"Error, invalid integer value.
-";
+      std::cout<<"Error, invalid integer value.\n";
       return 1;
     }
   } else {
-    std::cout<<"No command line arguments provided.
-";
+    std::cout<<"No command line arguments provided.\n";
   }
 
   int* a = new int[len];

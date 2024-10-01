@@ -10,11 +10,9 @@ void print_array(int n, DATA_TYPE a[100][100])
  printf(DATA_PRINTF_MODIFIER, a[j][i]);
  if (((i) * n + j) % 20 == 0)
  {
- printf("
-");
+ printf("\n");
  }
  }
  }
- printf("
-");
+ printf("\n");
 }

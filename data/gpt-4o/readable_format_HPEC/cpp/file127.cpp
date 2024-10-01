@@ -8,7 +8,6 @@ int main()
 #pragma omp parallel for
  for (i=0; i<999; i++)
  a[i]=a[i+1]+1;
- printf ("a[500]=%d
-", a[500]);
+ printf ("a[500]=%d\n", a[500]);
  return 0;
 }

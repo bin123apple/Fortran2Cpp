@@ -9,8 +9,7 @@ int main(int argc, char** argv)
     double temp;
 
     if (argc == 1) {
-        std::cout << "No command line arguments provided.
-";
+        std::cout << "No command line arguments provided.\n";
         return 1;
     }
 

@@ -4,7 +4,6 @@ void print_array(int n, DATA_TYPE x[])
  {
  printf(DATA_PRINTF_MODIFIER, x[i]);
  if (i % 20 == 0)
- printf("
-");
+ printf("\n");
  }
 }

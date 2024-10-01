@@ -10,8 +10,7 @@ int main(int argc, char** argv)
 
     if(argc == 1) 
     {
-        std::cout << "No command line arguments provided.
-";
+        std::cout << "No command line arguments provided.\n";
         return 1;
     }
 
@@ -21,8 +20,7 @@ int main(int argc, char** argv)
     }
     catch(std::invalid_argument const &e)
     {
-        std::cout << "Error, invalid integer value.
-";
+        std::cout << "Error, invalid integer value.\n";
         return 1;
     }
 
@@ -41,8 +39,7 @@ int main(int argc, char** argv)
         outLen++;
     }
 
-    std::cout << "output[0]=" << output[0] << "
-";
+    std::cout << "output[0]=" << output[0] << "\n";
 
     return 0;
 }

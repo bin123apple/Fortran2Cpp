@@ -23,8 +23,7 @@ int main()
   a[i+1] = a[i]+1;
  }
 
- printf("a[50] = %.f
-",a[50]);
+ printf("a[50] = %.f\n",a[50]);
 
  return 0;
 }

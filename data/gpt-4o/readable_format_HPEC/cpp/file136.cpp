@@ -37,7 +37,6 @@ int main(){
  }
 
  omp_destroy_nest_lock(&(p.lck));
- printf("%d
-",p.b);
+ printf("%d\n",p.b);
  return 0;
 }

@@ -19,8 +19,7 @@ int main() {
         }
     }
     
-    printf("sum = %f
-", getSum);
+    printf("sum = %f\n", getSum);
     
     return 0;
 }

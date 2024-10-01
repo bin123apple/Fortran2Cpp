@@ -18,7 +18,6 @@ int main()
  var[j]+=1;
  }
 
- printf ("%d
-", var[15]);
+ printf ("%d\n", var[15]);
  return 0;
 }

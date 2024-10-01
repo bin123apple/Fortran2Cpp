@@ -11,7 +11,6 @@ int main()
 {
 f1(i);
 if (i != 0)
-printf("i = %d
-", i);
+printf("i = %d\n", i);
 return 0;
 }

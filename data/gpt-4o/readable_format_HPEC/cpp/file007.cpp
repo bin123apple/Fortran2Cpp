@@ -27,7 +27,6 @@ int A::pcounter = 0;
 int main() {
   A c(0,0);
   A::foo();
-  printf("%d %d
-", A::counter, A::pcounter);
+  printf("%d %d\n", A::counter, A::pcounter);
   return 0;
 }

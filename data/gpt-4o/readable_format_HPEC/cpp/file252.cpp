@@ -6,10 +6,8 @@ void print_array(int ni, int nl, float g[nl][ni]) {
   for (int j = 0; j < nl; j++) {
    printf(DATA_PRINTF_MODIFIER, g[j][i]);
    if (((i * ni) + j) % 20 == 0)
-    printf("
-");
+    printf("\n");
   }
  }
- printf("
-");
+ printf("\n");
 }

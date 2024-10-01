@@ -11,7 +11,6 @@ int main()
     sum+=i;
  }
  if (sum != 10)
- printf ("sum=%d
-", sum);
+ printf ("sum=%d\n", sum);
  return 0;
 }

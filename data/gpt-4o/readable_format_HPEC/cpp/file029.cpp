@@ -11,7 +11,6 @@ int main()
  for (i=0;i<len-1;i++)
  a[i+1]=a[i]+1;
 
- printf ("a[50]=%d
-", a[50]);
+ printf ("a[50]=%d\n", a[50]);
  return 0;
 }

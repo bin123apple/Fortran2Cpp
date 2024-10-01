@@ -12,8 +12,7 @@ int main()
  *counter = *counter + 1;
  }
 
- printf("%d
-", *counter);
+ printf("%d\n", *counter);
 
  delete counter;
 

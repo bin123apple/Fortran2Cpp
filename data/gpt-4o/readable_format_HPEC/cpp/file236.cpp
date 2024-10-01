@@ -1,7 +1,6 @@
 #include <iostream>
 #define DATA_TYPE double
-#define DATA_PRINTF_MODIFIER "%f
-"
+#define DATA_PRINTF_MODIFIER "%f\n"
 
 void print_array(int n, DATA_TYPE* x1, DATA_TYPE* x2)
 {
@@ -11,10 +10,8 @@ void print_array(int n, DATA_TYPE* x1, DATA_TYPE* x2)
         printf(DATA_PRINTF_MODIFIER, x2[i]);
         if (i % 20 == 0)
         {
-            printf("
-");
+            printf("\n");
         }
     }
-    printf("
-");
+    printf("\n");
 }

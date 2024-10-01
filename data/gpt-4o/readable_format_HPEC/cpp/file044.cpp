@@ -39,8 +39,7 @@ int main()
  for (i=0; i<8; i++)
  {
  if (val != b[i])
- printf("%d, %d
-", b[i], val);
+ printf("%d, %d\n", b[i], val);
  }
 
  return 0;

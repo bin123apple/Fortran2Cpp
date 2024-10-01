@@ -1,4 +1,3 @@
 void print_array(int output){
- printf("%d
-", output);
+ printf("%d\n", output);
 }

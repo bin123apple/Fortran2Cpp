@@ -13,7 +13,6 @@ int main()
  var+=1;
  }
  }
- printf ("var=%d
-", var);
+ printf ("var=%d\n", var);
  return 0;
 }

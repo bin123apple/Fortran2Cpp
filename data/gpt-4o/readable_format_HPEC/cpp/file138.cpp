@@ -13,7 +13,6 @@ int main()
   b[i] = 0.0;
  }
  x = foo(a,b,len);
- printf ("b[50] = %f
-", b[50]);
+ printf ("b[50] = %f\n", b[50]);
  return 0;
 }

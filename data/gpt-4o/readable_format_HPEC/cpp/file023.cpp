@@ -8,8 +8,7 @@ int main(int argc, char **argv){
     N = 100;
 
     if(argc==1){
-        printf("No command line arguments provided.
-");
+        printf("No command line arguments provided.\n");
         return 1;
     }
 
@@ -17,16 +16,14 @@ int main(int argc, char **argv){
 
     a = (int*)malloc(N* sizeof(int));
     if(a==NULL){
-        printf("Allocation error, program terminated.
-");
+        printf("Allocation error, program terminated.\n");
         exit(1);
     }
 
     if(N>=1){
         N = atoi(argv[1]);
         if(N == 0){
-            printf("Error, invalid integer value.
-");
+            printf("Error, invalid integer value.\n");
             return 1;
         }
     }

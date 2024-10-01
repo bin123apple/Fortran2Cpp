@@ -14,8 +14,7 @@ int main() {
         strcpy(a[i], str);
     }
 
-    printf("a[i]=%s
-", a[23]);
+    printf("a[i]=%s\n", a[23]);
 
     return 0;
 }
