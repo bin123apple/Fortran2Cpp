@@ -1,6 +1,6 @@
 # Compiler and flags
 CC = g++
-CXXFLAGS = -c -fopenmp
+CXXFLAGS = -c
 
 # Source files
 SRC = $(wildcard *.cpp)
@@ -22,5 +22,5 @@ all: $(OBJ)
 
 # Clean up object files, error files, and executables
 clean:
-	rm -f $(OBJ) *.err *.exe*
+	rm -f $(OBJ) *.err
 
