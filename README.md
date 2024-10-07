@@ -235,6 +235,12 @@ handle data like this:
 ```
 Put the first part of message to the first colunm of csv file and the last part(`<Assistant1,2,3>`) to the second column.
 
+You can achieve that by runing this command `python training/utils/data/spliting_multiturns_dialogue.py`
+
+Input file is `data/F2C_dialogue_2.5K.json`
+
+The converted json file is shown in `data/F2C_dialogue_2.5K_test.json`
+
 3. Start traning by running
 
 ```
