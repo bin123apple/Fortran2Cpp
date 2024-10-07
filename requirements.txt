@@ -1,7 +1,9 @@
-torch
 transformers
 datasets
 accelerate
 tiktoken
 openai==0.28.0
 backoff
+deepspeed==0.12.3
+pyarrow==13.0.0
+torch==2.0.1
