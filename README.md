@@ -216,6 +216,7 @@ python chatbot.py
 deepspeed==0.12.3
 pyarrow==13.0.0
 torch==2.0.1
+numpy==1.26.4
 ```
 
 2. Collect the data
