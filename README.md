@@ -245,7 +245,12 @@ The converted json file is shown in `data/F2C_dialogue_2.5K_test.json`
 3. Start traning by running
 
 ```
-python NLP_task_training.py
+export RANK=0
+export WORLD_SIZE=1
+export MASTER_ADDR="localhost"
+export MASTER_PORT="12355"
+export LOCAL_RANK=8 # GPU number
+python NLP_task_training.py --model_name_or_path Qwen/Qwen2.5-72B-Instruct
 ```
 
 **NOTE:** This demo will not use the interpreter function. This feature is a potential extension for this work.
